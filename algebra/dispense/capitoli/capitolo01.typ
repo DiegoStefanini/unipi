@@ -23,7 +23,7 @@ In questo capitolo introduciamo gli strumenti essenziali: le matrici come oggett
 
 L'insieme di tutte le matrici $m times n$ a coefficienti in $KK$ si denota con $M_(m times n)(KK)$. Quando $m = n$, la matrice si dice *quadrata* di ordine $n$.
 
-== Operazioni tra Matrici
+=== Operazioni tra Matrici
 
 Le matrici non sono soltanto tabelle di numeri: su di esse si definiscono operazioni algebriche che le rendono oggetti con una struttura ricca. Introduciamo le tre operazioni fondamentali.
 
@@ -39,7 +39,7 @@ Le matrici non sono soltanto tabelle di numeri: su di esse si definiscono operaz
 ]
 
 #definizione("Prodotto per uno Scalare")[
-  Data una matrice $A in M_(m times n)(KK)$ e uno scalare $lambda in KK$, il *prodotto scalare* $lambda A$ è la matrice definita da:
+  Data una matrice $A in M_(m times n)(KK)$ e uno scalare $lambda in KK$, il *prodotto per scalare* $lambda A$ è la matrice definita da:
   $
   (lambda A)_(i j) = lambda dot a_(i j)
   $
@@ -77,7 +77,7 @@ Le matrici non sono soltanto tabelle di numeri: su di esse si definiscono operaz
   $
 ]
 
-== Proprietà delle Operazioni Matriciali
+=== Proprietà delle Operazioni Matriciali
 
 Le operazioni matriciali soddisfano molte delle proprietà algebriche familiari, con una differenza cruciale: il prodotto *non è commutativo*.
 
@@ -122,7 +122,7 @@ Date matrici $A, B in M_(m times k)(KK)$ e $C, D in M_(k times n)(KK)$, valgono 
   $ I_m dot A = A = A dot I_n $
 ]
 
-== Matrice Trasposta
+=== Matrice Trasposta
 
 #definizione("Matrice Trasposta")[
   Data una matrice $A = (a_(i j)) in M_(m times n)(KK)$, la sua *trasposta* $""^t A in M_(n times m)(KK)$ è la matrice definita da:
@@ -182,12 +182,8 @@ Per dividere numeri complessi, si moltiplica numeratore e denominatore per il co
   $
 ]
 
-#teorema("Teorema Fondamentale dell'Algebra")[
-  Ogni polinomio di grado $n >= 1$ a coefficienti complessi:
-  $
-  p(x) = a_0 + a_1 x + a_2 x^2 + dots + a_n x^n quad (a_n != 0)
-  $
-  ammette esattamente $n$ radici in $CC$, contate con la loro molteplicità.
+#nota[
+  Si può dimostrare che ogni polinomio di grado $n >= 1$ a coefficienti complessi ammette esattamente $n$ radici in $CC$, contate con la loro molteplicità (_Teorema Fondamentale dell'Algebra_). La dimostrazione esula dagli scopi di questo corso, ma il risultato garantisce che $CC$ è *algebricamente chiuso*: ogni equazione polinomiale ha sempre soluzione.
 ]
 
 == Sistemi Lineari
@@ -364,6 +360,13 @@ La forma ridotta per righe semplifica il sistema, ma non lo risolve del tutto. P
 
 Per passare dalla forma ridotta per righe alla forma completamente ridotta, si prosegue l'algoritmo *dal basso verso l'alto*: si divide ogni riga per il suo pivot e poi si eliminano gli elementi *sopra* ciascun pivot.
 
+#osservazione[
+  Dalla forma completamente ridotta la soluzione di un sistema si legge in modo diretto:
+  - Le colonne contenenti un pivot corrispondono alle *variabili pivot* (determinate dal sistema)
+  - Le colonne senza pivot corrispondono alle *variabili libere*, che assumono il ruolo di parametri
+  - Ogni variabile pivot è uguale al termine noto della sua riga, meno i contributi delle variabili libere. In pratica, basta portare le variabili libere a destra del segno di uguale per ottenere la soluzione parametrica.
+]
+
 #teorema("Unicità della Forma Completamente Ridotta")[
   La forma completamente ridotta di una matrice è *unica*: indipendentemente dalla sequenza di operazioni elementari scelta, si ottiene sempre la stessa matrice.
 ]
@@ -532,6 +535,14 @@ Il criterio di esistenza delle soluzioni si può esprimere in modo elegante util
   dove $n$ è il numero di incognite. In altre parole, il numero di parametri liberi nella soluzione è $n - r(A)$.
 ]
 
+#dimostrazione[
+  _Schema di prova._ Riduciamo la matrice completa $(A | b)$ alla forma a scala. Si presentano due casi:
+
+  - Se $r(A) < r(A|b)$, significa che nella forma ridotta esiste una riga in cui tutti i coefficienti delle incognite sono nulli ma il termine noto è non nullo, cioè una riga del tipo $(0 space 0 space dots space 0 space | space c)$ con $c != 0$. Questa riga corrisponde all'equazione $0 = c$, che è impossibile: il sistema non ha soluzioni.
+
+  - Se $r(A) = r(A|b)$, non si presentano equazioni impossibili. Nella forma completamente ridotta, le $r(A)$ variabili pivot sono espresse in funzione delle restanti $n - r(A)$ variabili libere, che fungono da parametri. Se $n - r(A) = 0$ la soluzione è unica; altrimenti si ottiene una famiglia di soluzioni dipendente da $n - r(A)$ parametri.
+]
+
 #osservazione[
   Dal teorema seguono tre casi:
   - Se $r(A) != r(A|b)$: il sistema è *impossibile* (nessuna soluzione)
@@ -590,4 +601,96 @@ La matrice inversa è importante perché fornisce una formula diretta per la sol
 
 #nota[
   L'inversione dell'ordine nella proprietà $(A B)^(-1) = B^(-1) A^(-1)$ è analoga a quanto accade per la trasposizione: $""^t(A B) = ""^t B dot ""^t A$. In entrambi i casi, l'ordine dei fattori si inverte.
+]
+
+== Esercizi
+
+Gli esercizi seguenti coprono gli argomenti principali del capitolo. Le soluzioni sintetiche si trovano nell'Appendice.
+
+=== Operazioni tra Matrici
+
+#esercizio[
+  Date le matrici
+  $
+  A = mat(1, 2; 3, 4) quad B = mat(0, -1; 2, 5)
+  $
+  calcolare $A + B$, $3A$, $A B$ e $B A$. Verificare che $A B != B A$.
+]
+
+#esercizio[
+  Date le matrici
+  $
+  A = mat(1, 0, 2; -1, 3, 1) quad B = mat(2, 1; 0, -1; 4, 3)
+  $
+  calcolare $A B$ e dire se il prodotto $B A$ è definito. Se sì, calcolarlo e confrontare le dimensioni dei due risultati.
+]
+
+#esercizio[
+  Sia $A = mat(1, 1; 0, 1)$. Calcolare $A^2$, $A^3$ e congetturare una formula per $A^n$.
+]
+
+=== Riduzione per Righe e Algoritmo di Gauss
+
+#esercizio[
+  Ridurre alla forma a scala la matrice
+  $
+  A = mat(1, 2, 3; 2, 4, 7; 3, 6, 10)
+  $
+  e determinare il rango di $A$.
+]
+
+#esercizio[
+  Ridurre alla forma completamente ridotta (RREF) la matrice
+  $
+  mat(1, 3, 1, |, 2; 2, 6, 4, |, 8; 0, 0, 2, |, 4)
+  $
+  e identificare variabili pivot e variabili libere.
+]
+
+=== Risoluzione di Sistemi Lineari
+
+#esercizio[
+  Risolvere il sistema lineare:
+  $
+  cases(
+    x + 2y - z = 3,
+    2x + 5y + z = 1,
+    3x + 7y = 4
+  )
+  $
+]
+
+#esercizio[
+  Determinare per quali valori del parametro $k in RR$ il sistema
+  $
+  cases(
+    x + y + z = 1,
+    x + 2y + 3z = 2,
+    2x + 3y + (k+3)z = 3
+  )
+  $
+  ammette soluzione unica, infinite soluzioni, o nessuna soluzione.
+]
+
+#esercizio[
+  Risolvere il sistema omogeneo:
+  $
+  cases(
+    x_1 + 2x_2 + x_3 + x_4 = 0,
+    2x_1 + 4x_2 + 3x_3 + 2x_4 = 0
+  )
+  $
+  e descrivere lo spazio delle soluzioni.
+]
+
+=== Rango e Rouché-Capelli
+
+#esercizio[
+  Sia $A = mat(1, 2, 3; 4, 5, 6; 7, 8, 9)$. Calcolare $r(A)$ e determinare quante soluzioni ha il sistema $A x = b$ con $b = mat(1; 2; 3)$.
+]
+
+=== Matrice Inversa
+
+#esercizio[
+  Calcolare l'inversa della matrice $A = mat(1, 2; 3, 7)$ utilizzando la riduzione per righe sulla matrice aumentata $(A | I_2)$.
 ]

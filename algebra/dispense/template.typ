@@ -214,6 +214,23 @@
   #corpo
 ]
 
+// Esercizio - numerato
+#let grigio-eser = rgb("#4a4a4a")
+#let esercizio(corpo) = block(
+  width: 100%,
+  breakable: false,
+  inset: (x: 12pt, y: 10pt),
+  radius: 2pt,
+  stroke: (left: 3pt + grigio-eser, rest: 0.5pt + grigio-eser.lighten(50%)),
+  fill: grigio-eser.lighten(95%),
+)[
+  #text(weight: "bold", fill: grigio-eser)[
+    Esercizio #_prossimo-numero().
+  ]
+  #v(4pt)
+  #corpo
+]
+
 // ============================================================
 // AMBIENTI DI SUPPORTO (non numerati)
 // ============================================================
