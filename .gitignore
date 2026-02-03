@@ -1,0 +1,12 @@
+.claude
+
+# File di sistema
+desktop.ini
+.DS_Store
+Thumbs.db
+
+# File temporanei Typst
+*.tmp
+
+# Cartelle temporanee
+temp/

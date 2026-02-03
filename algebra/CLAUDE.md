@@ -1,58 +1,72 @@
-# Algebra Lineare - Dispense
+# Algebra Lineare - Dispense Universitarie
 
-Progetto per la raccolta di appunti del corso di Algebra Lineare.
+Progetto per la raccolta di dispense professionali del corso di Algebra Lineare.
+Stile ottimizzato per lo studio approfondito e la comprensione dei concetti.
 
-## Struttura
+## Stile e Struttura del Documento
 
-```
-algebra/
-├── CLAUDE.md
-├── dispense/
-│   ├── main.typ          # File principale - compila questo per il PDF completo
-│   ├── template.typ      # Stili condivisi (definizione, teorema, esempio, nota, dimostrazione)
-│   └── lezioni/
-│       ├── lezione01.typ
-│       ├── lezione02.typ
-│       └── ...
-└── [immagini appunti]    # Foto temporanee degli appunti da convertire
-```
+### 1. Organizzazione per Argomenti
+- Il contenuto è organizzato per *argomenti tematici*, non per lezioni
+- Ogni capitolo si apre con una breve introduzione che delinea gli obiettivi e gli argomenti trattati
+- Il contenuto è suddiviso in blocchi logici numerati (definizioni, teoremi, esempi, ecc.)
+- Il documento adotta una progressione che va dal semplice al complesso
 
-## Aggiungere una nuova lezione
+### 2. Stile di Esposizione
+Lo stile è quello di un *professore* che scrive un testo universitario:
+- **Rigore Matematico:** notazione simbolica precisa alternata al linguaggio naturale
+- **Chiarezza Espositiva:** passaggi logici espliciti, significato intuitivo prima di quello formale
+- **Approccio Multimodale alle Dimostrazioni:** approcci distinti per provare gli enunciati
+
+### 3. Elementi Grafici e Formattazione
+- **Tabelle Riassuntive:** per leggi algebriche o confronto proprietà
+- **Formattazione del Testo:** grassetto per termini chiave, italico per enfasi
+
+## Aggiungere Nuovo Contenuto
 
 1. L'utente fornisce le foto degli appunti
-2. Creare `dispense/lezioni/lezioneXX.typ` con questo formato:
-   ```typst
-   #import "../template.typ": *
+2. Trascrivere il contenuto nel file `.typ` appropriato in `dispense/capitoli/`, organizzandolo per argomento
+3. Ogni file deve importare il template: `#import "../template.typ": *`
+4. Se nuovo file, aggiungere l'include in `dispense/main.typ`
 
-   #nuova-lezione(XX, "Titolo della Lezione")
+## Ambienti Disponibili
 
-   = Primo Argomento
-   // contenuto...
-   ```
-3. Aggiungere in `dispense/main.typ`:
-   ```typst
-   #include "lezioni/lezioneXX.typ"
-   ```
+### Ambienti Teorici (numerati automaticamente)
 
-## Stili disponibili (da template.typ)
+| Ambiente | Colore | Uso |
+|---|---|---|
+| `#definizione("titolo")[...]` | Blu | Concetti fondamentali |
+| `#teorema("titolo")[...]` | Rosso | Risultati principali |
+| `#lemma("titolo")[...]` | Viola | Risultati ausiliari |
+| `#corollario("titolo")[...]` | Azzurro | Conseguenze dirette |
+| `#proposizione("titolo")[...]` | Verde acqua | Risultati intermedi |
 
-- `#definizione("Titolo")[Contenuto]` - box blu
-- `#teorema("Titolo")[Contenuto]` - box rosso
-- `#esempio[Contenuto]` - box verde
-- `#nota[Contenuto]` - box arancione
-- `#dimostrazione[Contenuto]` - box grigio con QED
-- `#nuova-lezione(numero, "titolo")` - intestazione lezione con page break
+### Ambienti di Supporto
+
+| Ambiente | Colore | Uso |
+|---|---|---|
+| `#dimostrazione[...]` | Grigio | Con simbolo QED finale |
+| `#esempio[...]` | Verde | Numerato |
+| `#nota[...]` | Arancione | Informazioni aggiuntive |
+| `#osservazione[...]` | Grigio chiaro | Numerata |
+| `#attenzione[...]` | Rosso | Errori comuni |
+| `#ricorda[...]` | Blu evidenziato | Concetti chiave per l'esame |
+
+## Formule Matematiche
+
+- **Inline:** `$x + y$`
+- **Display (centrata):** `$ sum_(i=1)^n a_i $`
+- **Simboli comuni:** `$NN$`, `$ZZ$`, `$QQ$`, `$RR$`, `$CC$`
+- **Vettori:** `$arrow(v)$` o `$bold(v)$`
+- **Matrici:** `$mat(a, b; c, d)$`
 
 ## Compilazione
 
 ```bash
-typst compile dispense/main.typ
+typst compile dispense/main.typ dispense/main.pdf
 ```
 
-## Note
+## Note Tecniche
 
-- L'indice mostra solo i titoli delle lezioni (depth: 1)
-- Ogni lezione inizia su una nuova pagina
-- Formule matematiche: usare `$ ... $` per inline, `$ ... $` su riga separata per display
 - Prof: Patrizio Frosini
-- Università di Pisa - Informatica
+- Università di Pisa - Corso di Laurea in Informatica
+- I contatori (definizioni, teoremi, etc.) sono globali nel documento
