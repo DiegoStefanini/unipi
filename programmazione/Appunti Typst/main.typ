@@ -92,6 +92,7 @@
 
     // Autore
     #text(size: 14pt, weight: "medium")[Diego Stefanini]
+    #text(size: 14pt, weight: "medium")[cc. Davide Paolocchi]
 
     #v(0.8cm)
 
