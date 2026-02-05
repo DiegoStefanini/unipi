@@ -309,3 +309,101 @@ Si legge "$f(n)$ è in Omega Grande di $g(n)$"
 #figure(
   image("../images/big_omega.jpg", width: 25%),
 )
+
+=== Proprietà della notazione asintotica
+
+Le notazioni $Theta$, $O$ e $Omega$ godono di alcune proprietà fondamentali che permettono di manipolare e confrontare le complessità degli algoritmi.
+
+#definition(title: "Transitività")[
+  Se $f(n) = Theta(g(n))$ e $g(n) = Theta(h(n))$, allora $f(n) = Theta(h(n))$
+
+  Questa proprietà vale anche per $O$ e $Omega$:
+  - $f(n) = O(g(n)) and g(n) = O(h(n)) arrow.double f(n) = O(h(n))$
+  - $f(n) = Omega(g(n)) and g(n) = Omega(h(n)) arrow.double f(n) = Omega(h(n))$
+]
+
+#definition(title: "Riflessività")[
+  Per ogni funzione $f(n)$:
+  $ f(n) = Theta(f(n)) $
+
+  Questa proprietà vale anche per $O$ e $Omega$:
+  - $f(n) = O(f(n))$
+  - $f(n) = Omega(f(n))$
+]
+
+#definition(title: "Simmetria")[
+  $ f(n) = Theta(g(n)) arrow.l.r.double g(n) = Theta(f(n)) $
+
+  #note[
+    La simmetria vale *solo* per $Theta$, non per $O$ e $Omega$.
+  ]
+]
+
+#definition(title: "Simmetria trasposta")[
+  $ f(n) = O(g(n)) arrow.l.r.double g(n) = Omega(f(n)) $
+
+  Questa proprietà collega $O$ e $Omega$: dire che $f$ è limitata superiormente da $g$ equivale a dire che $g$ è limitata inferiormente da $f$.
+]
+
+#note(title: "Relazione tra le notazioni")[
+  Vale la seguente equivalenza:
+  $ f(n) = Theta(g(n)) arrow.l.r.double f(n) = O(g(n)) and f(n) = Omega(g(n)) $
+
+  Ovvero $f(n)$ ha limite asintotico stretto $g(n)$ se e solo se $g(n)$ è sia limite superiore che inferiore per $f(n)$.
+]
+
+=== Esercizi sulla notazione asintotica
+
+#example(title: "Dimostrare che " + $3n^2 - 2n - 1 in Theta(n^2)$)[
+  Dobbiamo trovare costanti $c_1, c_2 > 0$ e $n_0 >= 1$ tali che:
+  $ forall n >= n_0: quad c_1 dot n^2 <= 3n^2 - 2n - 1 <= c_2 dot n^2 $
+
+  *Limite superiore* ($O$): Dimostriamo che $3n^2 - 2n - 1 <= c_2 dot n^2$
+
+  Per $n >= 1$: $quad 3n^2 - 2n - 1 <= 3n^2$
+
+  Quindi con $c_2 = 3$ il limite superiore è verificato per ogni $n >= 1$.
+
+  *Limite inferiore* ($Omega$): Dimostriamo che $c_1 dot n^2 <= 3n^2 - 2n - 1$
+
+  Riscriviamo: $quad 3n^2 - 2n - 1 >= c_1 dot n^2$
+
+  Dividendo per $n^2$ (per $n >= 1$): $quad 3 - frac(2, n) - frac(1, n^2) >= c_1$
+
+  Per $n >= 2$:
+  - $frac(2, n) <= 1$
+  - $frac(1, n^2) <= frac(1, 4)$
+
+  Quindi: $quad 3 - 1 - frac(1, 4) = frac(7, 4) >= c_1$
+
+  Scegliendo $c_1 = 1$ (più semplice), verifichiamo per $n = 2$:
+  $ 3(4) - 2(2) - 1 = 12 - 4 - 1 = 7 >= 1 dot 4 = 4 quad checkmark $
+
+  *Conclusione*: Con $c_1 = 1$, $c_2 = 3$, $n_0 = 2$ abbiamo dimostrato che:
+  $ 3n^2 - 2n - 1 in Theta(n^2) $
+]
+
+#example(title: "Ordinamento per crescita asintotica")[
+  Ordinare le seguenti funzioni in ordine crescente di crescita asintotica:
+  $ 2, quad log n, quad log^2 n, quad (log n)^2, quad sqrt(n), quad n, quad n log n, quad n log^2 n, quad n^2, quad 2^n, quad 3^n, quad n! $
+
+  *Soluzione*:
+
+  $ 2 prec log n prec log^2 n = (log n)^2 prec sqrt(n) prec n prec n log n prec n log^2 n prec n^2 prec 2^n prec 3^n prec n! $
+
+  Dove $f prec g$ significa $f(n) = o(g(n))$, ovvero $f$ cresce strettamente più lentamente di $g$.
+
+  *Spiegazione delle classi*:
+  - *Costanti*: $2 = Theta(1)$
+  - *Logaritmiche*: $log n$, $log^2 n = (log n)^2$
+  - *Sublineari*: $sqrt(n) = n^(1/2)$
+  - *Lineari*: $n$
+  - *Linearitmiche*: $n log n$, $n log^2 n$
+  - *Polinomiali*: $n^2$
+  - *Esponenziali*: $2^n prec 3^n$ (base maggiore $arrow.double$ crescita più rapida)
+  - *Fattoriali*: $n!$ (cresce più velocemente di qualsiasi esponenziale $c^n$)
+
+  #note[
+    Per confrontare $log^2 n$ e $(log n)^2$: sono la stessa funzione! La notazione $log^2 n$ significa $(log n)^2$, non $log(log n)$.
+  ]
+]

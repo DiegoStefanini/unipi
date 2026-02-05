@@ -144,3 +144,256 @@ Voglio dimostrare che una proprietà è valida per tutti i giudizi derivabili in
 #figure(
   image("../images/induz_deriv.png", width: 70%),
 )
+
+== Esercizi: Dimostrazioni Induttive su Grammatiche
+
+In questa sezione vengono presentati esercizi di dimostrazione per induzione strutturale su grammatiche context-free. Per ogni esercizio si richiede di dimostrare una proprieta' valida per tutte le stringhe del linguaggio generato.
+
+=== Esercizio 1: Bilanciamento di $a$ e $b$
+
+#example(title: "Grammatica")[
+  Data la grammatica:
+  $ S ::= a S b | a b $
+
+  Dimostrare per induzione strutturale che ogni stringa $w in L(S)$ soddisfa $\#_a (w) = \#_b (w)$, dove $\#_a (w)$ indica il numero di occorrenze del simbolo $a$ nella stringa $w$.
+]
+
+#demonstration[
+  Procediamo per induzione strutturale sulla derivazione di $w$.
+
+  *Caso base:* $S arrow.r a b$
+
+  La stringa generata e' $w = a b$. Contiamo le occorrenze:
+  - $\#_a (a b) = 1$
+  - $\#_b (a b) = 1$
+
+  Quindi $\#_a (w) = \#_b (w) = 1$. #sym.checkmark
+
+  *Caso induttivo:* $S arrow.r a S b$
+
+  Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_a (w') = \#_b (w') = k$ per qualche $k >= 1$.
+
+  La nuova stringa e' $w = a w' b$. Contiamo le occorrenze:
+  - $\#_a (a w' b) = 1 + \#_a (w') = 1 + k$
+  - $\#_b (a w' b) = \#_b (w') + 1 = k + 1$
+
+  Quindi $\#_a (w) = \#_b (w) = k + 1$. #sym.checkmark
+]
+
+#example(title: "Alberi di derivazione")[
+  Mostriamo gli alberi di derivazione per alcune stringhe del linguaggio:
+
+  *Stringa $a b$* (caso base):
+  ```
+      S
+     / \
+    a   b
+  ```
+
+  *Stringa $a a b b$* (una applicazione della regola ricorsiva):
+  ```
+        S
+      / | \
+     a  S  b
+       / \
+      a   b
+  ```
+
+  *Stringa $a a a b b b$* (due applicazioni della regola ricorsiva):
+  ```
+          S
+        / | \
+       a  S  b
+        / | \
+       a  S  b
+         / \
+        a   b
+  ```
+]
+
+#note[
+  Il linguaggio $L(S) = \{a^n b^n | n >= 1\}$ e' l'esempio classico di linguaggio context-free non regolare. La proprieta' dimostrata ($\#_a = \#_b$) e' necessaria ma non sufficiente per caratterizzare il linguaggio (ad esempio $a b a b$ ha lo stesso numero di $a$ e $b$ ma non appartiene a $L(S)$).
+]
+
+=== Esercizio 2: Stringhe con esattamente una $c$
+
+#example(title: "Grammatica")[
+  Data la grammatica:
+  $ S ::= b S a | a S b | c $
+
+  Dimostrare per induzione strutturale che ogni stringa $w in L(S)$ soddisfa:
+  + $\#_c (w) = 1$ (esattamente una occorrenza di $c$)
+  + $\#_a (w) = \#_b (w)$ (stesso numero di $a$ e $b$)
+]
+
+#demonstration[
+  Procediamo per induzione strutturale sulla derivazione di $w$.
+
+  *Caso base:* $S arrow.r c$
+
+  La stringa generata e' $w = c$. Verifichiamo:
+  - $\#_c (c) = 1$ #sym.checkmark
+  - $\#_a (c) = 0 = \#_b (c)$ #sym.checkmark
+
+  *Caso induttivo 1:* $S arrow.r b S a$
+
+  Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_c (w') = 1$ e $\#_a (w') = \#_b (w') = k$ per qualche $k >= 0$.
+
+  La nuova stringa e' $w = b w' a$. Verifichiamo:
+  - $\#_c (b w' a) = \#_c (w') = 1$ #sym.checkmark
+  - $\#_a (b w' a) = \#_a (w') + 1 = k + 1$
+  - $\#_b (b w' a) = 1 + \#_b (w') = 1 + k = k + 1$
+
+  Quindi $\#_a (w) = \#_b (w) = k + 1$. #sym.checkmark
+
+  *Caso induttivo 2:* $S arrow.r a S b$
+
+  Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_c (w') = 1$ e $\#_a (w') = \#_b (w') = k$ per qualche $k >= 0$.
+
+  La nuova stringa e' $w = a w' b$. Verifichiamo:
+  - $\#_c (a w' b) = \#_c (w') = 1$ #sym.checkmark
+  - $\#_a (a w' b) = 1 + \#_a (w') = 1 + k$
+  - $\#_b (a w' b) = \#_b (w') + 1 = k + 1$
+
+  Quindi $\#_a (w) = \#_b (w) = k + 1$. #sym.checkmark
+]
+
+#example(title: "Alberi di derivazione")[
+  Mostriamo gli alberi di derivazione per alcune stringhe del linguaggio:
+
+  *Stringa $c$* (caso base):
+  ```
+    S
+    |
+    c
+  ```
+
+  *Stringa $b c a$* (regola $b S a$):
+  ```
+      S
+    / | \
+   b  S  a
+      |
+      c
+  ```
+
+  *Stringa $a c b$* (regola $a S b$):
+  ```
+      S
+    / | \
+   a  S  b
+      |
+      c
+  ```
+
+  *Stringa $a b c a b$* (composizione di regole):
+  ```
+          S
+        / | \
+       a  S  b
+        / | \
+       b  S  a
+          |
+          c
+  ```
+  Derivazione: $S arrow.r a S b arrow.r a b S a b arrow.r a b c a b$
+]
+
+#note[
+  Questa grammatica genera il linguaggio delle stringhe palindrome? No! Ad esempio $a b c b a$ non e' generabile. La grammatica genera stringhe dove $c$ e' sempre al centro, ma le $a$ e $b$ a sinistra e destra di $c$ non sono necessariamente simmetriche.
+]
+
+=== Esercizio 3: Almeno una $a$
+
+#example(title: "Grammatica")[
+  Data la grammatica:
+  $ S ::= S a | S b | a $
+
+  Dimostrare per induzione strutturale che ogni stringa $w in L(S)$ soddisfa $\#_a (w) >= 1$.
+]
+
+#demonstration[
+  Procediamo per induzione strutturale sulla derivazione di $w$.
+
+  *Caso base:* $S arrow.r a$
+
+  La stringa generata e' $w = a$. Verifichiamo:
+  - $\#_a (a) = 1 >= 1$ #sym.checkmark
+
+  *Caso induttivo 1:* $S arrow.r S a$
+
+  Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_a (w') >= 1$.
+
+  La nuova stringa e' $w = w' a$. Verifichiamo:
+  - $\#_a (w' a) = \#_a (w') + 1 >= 1 + 1 = 2 >= 1$ #sym.checkmark
+
+  *Caso induttivo 2:* $S arrow.r S b$
+
+  Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_a (w') >= 1$.
+
+  La nuova stringa e' $w = w' b$. Verifichiamo:
+  - $\#_a (w' b) = \#_a (w') >= 1$ #sym.checkmark
+
+  (Aggiungere una $b$ non cambia il numero di $a$, che rimane almeno 1.)
+]
+
+#example(title: "Alberi di derivazione")[
+  Mostriamo gli alberi di derivazione per alcune stringhe del linguaggio:
+
+  *Stringa $a$* (caso base):
+  ```
+    S
+    |
+    a
+  ```
+
+  *Stringa $a b$*:
+  ```
+      S
+     / \
+    S   b
+    |
+    a
+  ```
+
+  *Stringa $a a$*:
+  ```
+      S
+     / \
+    S   a
+    |
+    a
+  ```
+
+  *Stringa $a b a b$*:
+  ```
+            S
+           / \
+          S   b
+         / \
+        S   a
+       / \
+      S   b
+      |
+      a
+  ```
+  Derivazione: $S arrow.r S b arrow.r S a b arrow.r S b a b arrow.r a b a b$
+]
+
+#note[
+  Questa grammatica genera il linguaggio $L(S) = \{a\} dot (a | b)^*$, cioe' tutte le stringhe su $\{a, b\}$ che iniziano con $a$. La proprieta' dimostrata ($\#_a >= 1$) e' una conseguenza immediata di questa caratterizzazione: ogni stringa inizia con almeno una $a$.
+]
+
+=== Osservazioni metodologiche
+
+#note(title: "Schema generale per l'induzione strutturale")[
+  Per dimostrare una proprieta' $P(w)$ per tutte le stringhe $w in L(S)$:
+
+  + *Identificare i casi base*: produzioni della forma $X ::= omega$ dove $omega in T^*$ (solo terminali)
+
+  + *Identificare i casi induttivi*: produzioni della forma $X ::= alpha_1 Y_1 alpha_2 Y_2 ... Y_n alpha_(n+1)$ dove $Y_i$ sono non-terminali
+
+  + *Per ogni caso base*: verificare direttamente che $P(omega)$ vale
+
+  + *Per ogni caso induttivo*: assumere che $P(w_i)$ valga per le stringhe $w_i$ generate dai non-terminali $Y_i$ (ipotesi induttiva), e dimostrare che $P(alpha_1 w_1 alpha_2 w_2 ... w_n alpha_(n+1))$ vale
+]

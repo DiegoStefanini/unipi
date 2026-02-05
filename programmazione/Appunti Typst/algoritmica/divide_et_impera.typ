@@ -57,6 +57,93 @@ Tipicamente si dimostra per induzione sulla dimensione $n$ del problema:
 - *Caso base*: $n = 0, n = 1, ... n <= n_0$ si dimostra che l'algoritmo è corretto nelle condizioni dei casi base in modo diretto.
 - *Caso induttivo*: Si assume, per ipotesi induttiva, che le soluzioni dei sottoproblemi siano corrette (ovvero che l'algoritmo è corretto $forall n'$ $n_0 < n' < n$ e si dimostra che di conseguenza è corretto per n
 
+=== Varianti della Ricerca Binaria
+
+La ricerca binaria standard trova _una_ occorrenza di un elemento, ma non garantisce quale (prima, ultima, o una qualsiasi). Le seguenti varianti permettono di trovare specificamente la prima o l'ultima occorrenza.
+
+==== Ricerca Binaria Sinistra
+
+Trova la *prima occorrenza* (più a sinistra) di un elemento $k$ in un array ordinato.
+
+#example(title: "Ricerca Binaria Sinistra")[
+  ```
+  int ricercaBinariaSx(int[] a, int sx, int dx, int k) {
+      if (sx > dx) {
+          return -1;
+      }
+      int cx = (sx + dx) / 2;
+      if (a[cx] == k and (cx == sx or a[cx - 1] != k)) {
+          return cx;
+      }
+      if (a[cx] >= k) {
+          return ricercaBinariaSx(a, sx, cx - 1, k);
+      } else {
+          return ricercaBinariaSx(a, cx + 1, dx, k);
+      }
+  }
+  ```
+
+  *Idea*: quando troviamo $k$ in posizione $"cx"$, verifichiamo se è la prima occorrenza controllando che:
+  - $"cx" = "sx"$ (siamo al bordo sinistro), oppure
+  - $a["cx" - 1] != k$ (l'elemento precedente è diverso)
+
+  Se non è la prima occorrenza, continuiamo a cercare nella metà sinistra.
+]
+
+==== Ricerca Binaria Destra
+
+Trova l'*ultima occorrenza* (più a destra) di un elemento $k$ in un array ordinato.
+
+#example(title: "Ricerca Binaria Destra")[
+  ```
+  int ricercaBinariaDx(int[] a, int sx, int dx, int k) {
+      if (sx > dx) {
+          return -1;
+      }
+      int cx = (sx + dx) / 2;
+      if (a[cx] == k and (cx == dx or a[cx + 1] != k)) {
+          return cx;
+      }
+      if (a[cx] <= k) {
+          return ricercaBinariaDx(a, cx + 1, dx, k);
+      } else {
+          return ricercaBinariaDx(a, sx, cx - 1, k);
+      }
+  }
+  ```
+
+  *Idea*: quando troviamo $k$ in posizione $"cx"$, verifichiamo se è l'ultima occorrenza controllando che:
+  - $"cx" = "dx"$ (siamo al bordo destro), oppure
+  - $a["cx" + 1] != k$ (l'elemento successivo è diverso)
+
+  Se non è l'ultima occorrenza, continuiamo a cercare nella metà destra.
+]
+
+==== Conta Occorrenze
+
+Usando le due varianti possiamo contare il numero di occorrenze di $k$ in tempo $Theta(log n)$.
+
+#example(title: "Conta Occorrenze")[
+  ```
+  int contaOccorrenze(int[] a, int n, int k) {
+      int prima = ricercaBinariaSx(a, 0, n - 1, k);
+      if (prima == -1) {
+          return 0;
+      }
+      int ultima = ricercaBinariaDx(a, 0, n - 1, k);
+      return ultima - prima + 1;
+  }
+  ```
+
+  *Complessità*: $Theta(log n)$
+
+  Eseguiamo al massimo due ricerche binarie, ciascuna con complessità $O(log n)$, quindi la complessità totale è $Theta(log n)$.
+]
+
+#note(title: "Confronto con approccio lineare")[
+  Un approccio naive che scorre l'array contando le occorrenze richiede $Theta(n)$. L'uso delle varianti della ricerca binaria permette di ottenere $Theta(log n)$, un miglioramento significativo per array di grandi dimensioni.
+]
+
 === Merge Sort
 
 #example(title: "Merge Sort")[

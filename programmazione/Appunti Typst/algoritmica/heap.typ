@@ -96,6 +96,40 @@ $ T(n) = O(h) = O(log n) $
 
 dove $h$ è l'altezza del nodo $i$. Nel caso pessimo, l'elemento "scende" fino alle foglie.
 
+#example(title: "Max-Heapify passo-passo")[
+  Consideriamo l'array $A = [16, 4, 10, 14, 7, 9, 3, 2, 8, 1]$ e chiamiamo `Max-Heapify(A, 2)` (indice del nodo con valore 4).
+
+  I sottoalberi sinistro (radice 14) e destro (radice 7) sono già max-heap, ma il nodo 4 viola la proprietà.
+
+  *Passo 1: Confronto iniziale*
+  - Nodo corrente: $A[2] = 4$
+  - Figlio sinistro: $A[4] = 14$
+  - Figlio destro: $A[5] = 7$
+  - Il massimo tra $\{4, 14, 7\}$ è $14$ (in posizione 4)
+  - Poiché $14 > 4$, scambiamo $A[2]$ con $A[4]$
+
+  Array dopo passo 1: $[16, bold(14), 10, bold(4), 7, 9, 3, 2, 8, 1]$
+
+  *Passo 2: Ricorsione su posizione 4*
+  - Nodo corrente: $A[4] = 4$
+  - Figlio sinistro: $A[8] = 2$
+  - Figlio destro: $A[9] = 8$
+  - Il massimo tra $\{4, 2, 8\}$ è $8$ (in posizione 9)
+  - Poiché $8 > 4$, scambiamo $A[4]$ con $A[9]$
+
+  Array dopo passo 2: $[16, 14, 10, bold(8), 7, 9, 3, 2, bold(4), 1]$
+
+  *Passo 3: Ricorsione su posizione 9*
+  - Nodo corrente: $A[9] = 4$
+  - Figlio sinistro: $A[18]$ non esiste (fuori dall'heap)
+  - Figlio destro: $A[19]$ non esiste (fuori dall'heap)
+  - Il nodo è una foglia: terminazione
+
+  *Risultato finale*: $[16, 14, 10, 8, 7, 9, 3, 2, 4, 1]$
+
+  Il valore 4 è "sceso" dalla posizione 2 alla posizione 9, attraverso 2 scambi.
+]
+
 === Build-Max-Heap
 
 Costruisce un max-heap a partire da un array non ordinato.
@@ -125,6 +159,66 @@ buildMaxHeap(int[] A, int n){
   - *Inizializzazione*: Prima della prima iterazione ($i = floor(n/2)$), i nodi $floor(n/2)+1, ..., n$ sono foglie, quindi banalmente radici di max-heap.
   - *Mantenimento*: `Max-Heapify(A, i)` rende $i$ radice di un max-heap (i figli sono già radici di max-heap per l'invariante)
   - *Terminazione*: Quando $i = 0$, ogni nodo $1, 2, ..., n$ è radice di un max-heap. In particolare il nodo 1 (radice).
+]
+
+#example(title: "Build-Max-Heap passo-passo")[
+  Costruiamo un max-heap dall'array $A = [7, 4, 3, 8, 9, 6]$ con $n = 6$.
+
+  Calcoliamo $floor(n\/2) = floor(6\/2) = 3$, quindi partiamo da $i = 3$ e andiamo fino a $i = 1$.
+
+  *Stato iniziale*:
+  #align(center)[
+    Array: $[7, 4, 3, 8, 9, 6]$ (indici 1-6)
+  ]
+
+  *Iterazione 1: Max-Heapify(A, 3)*
+  - Nodo: $A[3] = 3$
+  - Figlio sinistro: $A[6] = 6$
+  - Figlio destro: non esiste
+  - Massimo: $6 > 3$, scambio $A[3]$ con $A[6]$
+
+  Array dopo i=3: $[7, 4, bold(6), 8, 9, bold(3)]$
+
+  *Iterazione 2: Max-Heapify(A, 2)*
+  - Nodo: $A[2] = 4$
+  - Figlio sinistro: $A[4] = 8$
+  - Figlio destro: $A[5] = 9$
+  - Massimo: $9 > 4$, scambio $A[2]$ con $A[5]$
+  - Ricorsione su posizione 5: è una foglia, termina
+
+  Array dopo i=2: $[7, bold(9), 6, 8, bold(4), 3]$
+
+  *Iterazione 3: Max-Heapify(A, 1)*
+  - Nodo: $A[1] = 7$
+  - Figlio sinistro: $A[2] = 9$
+  - Figlio destro: $A[3] = 6$
+  - Massimo: $9 > 7$, scambio $A[1]$ con $A[2]$
+
+  Array intermedio: $[bold(9), bold(7), 6, 8, 4, 3]$
+
+  - Ricorsione su posizione 2:
+    - Nodo: $A[2] = 7$
+    - Figlio sinistro: $A[4] = 8$
+    - Figlio destro: $A[5] = 4$
+    - Massimo: $8 > 7$, scambio $A[2]$ con $A[4]$
+
+  Array dopo i=1: $[9, bold(8), 6, bold(7), 4, 3]$
+
+  - Ricorsione su posizione 4: è una foglia, termina
+
+  *Risultato finale*: $[9, 8, 6, 7, 4, 3]$
+
+  #align(center)[
+    #table(
+      columns: 4,
+      align: center,
+      [*Iterazione*], [*i*], [*Operazione*], [*Array*],
+      [Iniziale], [-], [-], [$[7, 4, 3, 8, 9, 6]$],
+      [1], [3], [scambio 3 $arrow.l.r$ 6], [$[7, 4, 6, 8, 9, 3]$],
+      [2], [2], [scambio 4 $arrow.l.r$ 9], [$[7, 9, 6, 8, 4, 3]$],
+      [3], [1], [scambio 7 $arrow.l.r$ 9, poi 7 $arrow.l.r$ 8], [$[9, 8, 6, 7, 4, 3]$],
+    )
+  ]
 ]
 
 === Complessità
@@ -200,6 +294,74 @@ $ T(n) = underbrace(O(n), "Build-Max-Heap") + underbrace((n-1) dot O(log n), "ci
   - Ha complessità $O(n log n)$ in *tutti* i casi
   - È *in-place* (non richiede memoria aggiuntiva)
   - Non è stabile (può cambiare l'ordine relativo di elementi uguali)
+]
+
+#example(title: "HeapSort passo-passo")[
+  Ordiniamo l'array $A = [7, 4, 3, 8, 9, 6]$ usando HeapSort.
+
+  *Fase 1: Build-Max-Heap*
+
+  Come visto nell'esempio precedente, dopo `Build-Max-Heap` otteniamo:
+  #align(center)[
+    $A = [9, 8, 6, 7, 4, 3]$ con $"heapsize" = 6$
+  ]
+
+  *Fase 2: Estrazione iterativa del massimo*
+
+  #align(center)[
+    #table(
+      columns: 5,
+      align: center,
+      [*Iter.*], [*heapsize*], [*Scambio*], [*Dopo scambio*], [*Dopo Max-Heapify*],
+      [1], [6], [$A[1] arrow.l.r A[6]$], [$[3, 8, 6, 7, 4 | 9]$], [$[8, 7, 6, 3, 4 | 9]$],
+      [2], [5], [$A[1] arrow.l.r A[5]$], [$[4, 7, 6, 3 | 8, 9]$], [$[7, 4, 6, 3 | 8, 9]$],
+      [3], [4], [$A[1] arrow.l.r A[4]$], [$[3, 4, 6 | 7, 8, 9]$], [$[6, 4, 3 | 7, 8, 9]$],
+      [4], [3], [$A[1] arrow.l.r A[3]$], [$[3, 4 | 6, 7, 8, 9]$], [$[4, 3 | 6, 7, 8, 9]$],
+      [5], [2], [$A[1] arrow.l.r A[2]$], [$[3 | 4, 6, 7, 8, 9]$], [$[3 | 4, 6, 7, 8, 9]$],
+    )
+  ]
+
+  La barra verticale "|" separa la parte heap (sinistra) dalla parte ordinata (destra).
+
+  *Dettaglio iterazione 1*:
+  - Scambio $A[1]=9$ con $A[6]=3$: array $= [3, 8, 6, 7, 4, 9]$
+  - Riduco heapsize a 5 (il 9 è "fuori" dall'heap, nella sua posizione finale)
+  - `Max-Heapify(A, 1, 5)`:
+    - $A[1]=3$, figli: $A[2]=8$, $A[3]=6$
+    - Massimo: 8, scambio $A[1]$ con $A[2]$: $[8, 3, 6, 7, 4, 9]$
+    - Ricorsione su posizione 2: $A[2]=3$, figli: $A[4]=7$, $A[5]=4$
+    - Massimo: 7, scambio $A[2]$ con $A[4]$: $[8, 7, 6, 3, 4, 9]$
+
+  *Dettaglio iterazione 2*:
+  - Scambio $A[1]=8$ con $A[5]=4$: array $= [4, 7, 6, 3, 8, 9]$
+  - Riduco heapsize a 4
+  - `Max-Heapify(A, 1, 4)`:
+    - $A[1]=4$, figli: $A[2]=7$, $A[3]=6$
+    - Massimo: 7, scambio $A[1]$ con $A[2]$: $[7, 4, 6, 3, 8, 9]$
+    - Ricorsione su posizione 2: $A[2]=4$, figli: $A[4]=3$, nessun figlio destro
+    - $4 > 3$: nessuno scambio, termina
+
+  *Dettaglio iterazione 3*:
+  - Scambio $A[1]=7$ con $A[4]=3$: array $= [3, 4, 6, 7, 8, 9]$
+  - Riduco heapsize a 3
+  - `Max-Heapify(A, 1, 3)`:
+    - $A[1]=3$, figli: $A[2]=4$, $A[3]=6$
+    - Massimo: 6, scambio $A[1]$ con $A[3]$: $[6, 4, 3, 7, 8, 9]$
+    - Ricorsione su posizione 3: è una foglia, termina
+
+  *Dettaglio iterazione 4*:
+  - Scambio $A[1]=6$ con $A[3]=3$: array $= [3, 4, 6, 7, 8, 9]$
+  - Riduco heapsize a 2
+  - `Max-Heapify(A, 1, 2)`:
+    - $A[1]=3$, figlio sinistro: $A[2]=4$
+    - Massimo: 4, scambio $A[1]$ con $A[2]$: $[4, 3, 6, 7, 8, 9]$
+
+  *Dettaglio iterazione 5*:
+  - Scambio $A[1]=4$ con $A[2]=3$: array $= [3, 4, 6, 7, 8, 9]$
+  - Riduco heapsize a 1
+  - `Max-Heapify(A, 1, 1)`: un solo elemento, nulla da fare
+
+  *Risultato finale*: $[3, 4, 6, 7, 8, 9]$ (array ordinato in ordine crescente)
 ]
 
 === Code di Priorità

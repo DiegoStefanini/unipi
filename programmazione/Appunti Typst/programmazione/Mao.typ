@@ -433,6 +433,306 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   Il programma è *mal tipato* e il compilatore segnala errore ✗
 ]
 
+=== Esempi completi di derivazioni di type checking
+
+#example(title: "Type checking di un programma con while")[
+  Verifichiamo il type checking del seguente programma:
+  ```
+  int x = 5;
+  int y = 6;
+  while (x != y) {
+    if (x < y) { x := x + 2; }
+    else { y := y + 1; }
+  }
+  ```
+
+  *Passo 1*: Partiamo dall'ambiente vuoto $Gamma_0 = emptyset$
+
+  *Passo 2*: Type checking di `int x = 5;`
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$5 in bb(Z)$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_0 tack 5 : "int"$] \
+    $Gamma_0 tack "int" space x = 5; : {x : "int"}$ #h(0.5cm) (T-Decl)
+  ]
+  Dopo questa dichiarazione: $Gamma_1 = Gamma_0 union {x : "int"} = {x : "int"}$
+
+  *Passo 3*: Type checking di `int y = 6;` nell'ambiente $Gamma_1$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$6 in bb(Z)$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_1 tack 6 : "int"$] \
+    $Gamma_1 tack "int" space y = 6; : {y : "int"}$ #h(0.5cm) (T-Decl)
+  ]
+  Dopo questa dichiarazione: $Gamma_2 = Gamma_1 union {y : "int"} = {x : "int", y : "int"}$
+
+  *Passo 4*: Verifica della condizione `x != y` nell'ambiente $Gamma_2$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(x) = "int"$ #h(0.5cm) $Gamma_2(y) = "int"$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x : "int"$ #h(0.5cm) $Gamma_2 tack y : "int"$] \
+    $Gamma_2 tack x != y : "bool"$ #h(0.5cm) (T-Cop)
+  ]
+
+  *Passo 5*: Verifica del ramo then `{ x := x + 2; }`
+
+  Prima verifichiamo l'espressione `x + 2`:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(x) = "int"$ #h(0.5cm) $2 in bb(Z)$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x : "int"$ #h(0.5cm) $Gamma_2 tack 2 : "int"$] \
+    $Gamma_2 tack x + 2 : "int"$ #h(0.5cm) (T-Aop)
+  ]
+
+  Poi l'assegnamento:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(x) = "int"$ #h(0.3cm) $Gamma_2 tack x + 2 : "int"$] \
+    $Gamma_2 tack x := x + 2; : emptyset$ #h(0.5cm) (T-Assign)
+  ]
+
+  E il blocco:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x := x + 2; : emptyset$] \
+    $Gamma_2 tack {x := x + 2;} : emptyset$ #h(0.5cm) (T-Block)
+  ]
+
+  *Passo 6*: Verifica del ramo else `{ y := y + 1; }` (analogamente)
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(y) = "int"$ #h(0.3cm) $Gamma_2 tack y + 1 : "int"$] \
+    $Gamma_2 tack y := y + 1; : emptyset$ #h(0.5cm) (T-Assign)
+  ]
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack y := y + 1; : emptyset$] \
+    $Gamma_2 tack {y := y + 1;} : emptyset$ #h(0.5cm) (T-Block)
+  ]
+
+  *Passo 7*: Verifica della guardia `x < y`:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x : "int"$ #h(0.3cm) $Gamma_2 tack y : "int"$] \
+    $Gamma_2 tack x < y : "bool"$ #h(0.5cm) (T-Cop)
+  ]
+
+  *Passo 8*: Verifica del condizionale completo:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x < y : "bool"$ #h(0.2cm) $Gamma_2 tack {x := x + 2;} : emptyset$ #h(0.2cm) $Gamma_2 tack {y := y + 1;} : emptyset$] \
+    $Gamma_2 tack "if"(x < y){x := x + 2;}"else"{y := y + 1;} : emptyset$ #h(0.3cm) (T-If)
+  ]
+
+  *Passo 9*: Verifica del while completo:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x != y : "bool"$ #h(0.3cm) $Gamma_2 tack "if"(x < y){...}"else"{...} : emptyset$] \
+    $Gamma_2 tack "while"(x != y){"if"(x < y){x := x + 2;}"else"{y := y + 1;}} : emptyset$ #h(0.3cm) (T-While)
+  ]
+
+  *Passo 10*: Verifica della sequenza completa usando (T-Seq):
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_0 tack "int" x = 5; : {x : "int"}$ #h(0.2cm) $Gamma_1 tack "int" y = 6; "while"... : {y : "int"}$] \
+    $Gamma_0 tack "int" x = 5; "int" y = 6; "while"... : {x : "int", y : "int"}$ #h(0.3cm) (T-Seq)
+  ]
+
+  Il programma è *ben tipato*.
+]
+
+#example(title: "Type checking della funzione abs")[
+  Verifichiamo che la funzione `abs` sia ben tipata:
+  ```
+  int abs(int n) {
+    int m = n;
+    if (m < 0) { m := -m; }
+    return m;
+  }
+  ```
+
+  Vogliamo dimostrare che $Gamma tack "abs" : ("int") arrow.r "int"$
+
+  *Passo 1*: Costruiamo l'ambiente per il corpo della funzione.
+
+  Secondo la regola (T-Fun), dobbiamo verificare il corpo nell'ambiente:
+  $ Gamma' = Gamma union {n : "int"} $
+
+  *Passo 2*: Type checking di `int m = n;` in $Gamma'$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'(n) = "int"$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma' tack n : "int"$] \
+    $Gamma' tack "int" space m = n; : {m : "int"}$ #h(0.5cm) (T-Decl)
+  ]
+
+  Aggiorniamo l'ambiente: $Gamma'' = Gamma' union {m : "int"} = Gamma union {n : "int", m : "int"}$
+
+  *Passo 3*: Type checking della condizione `m < 0` in $Gamma''$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(m) = "int"$ #h(0.5cm) $0 in bb(Z)$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m : "int"$ #h(0.5cm) $Gamma'' tack 0 : "int"$] \
+    $Gamma'' tack m < 0 : "bool"$ #h(0.5cm) (T-Cop)
+  ]
+
+  *Passo 4*: Type checking dell'espressione `-m` in $Gamma''$
+
+  L'operatore unario meno (negazione) richiede un operando intero:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m : "int"$] \
+    $Gamma'' tack -m : "int"$ #h(0.5cm) (T-Neg)
+  ]
+
+  *Passo 5*: Type checking dell'assegnamento `m := -m;` in $Gamma''$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(m) = "int"$ #h(0.3cm) $Gamma'' tack -m : "int"$] \
+    $Gamma'' tack m := -m; : emptyset$ #h(0.5cm) (T-Assign)
+  ]
+
+  *Passo 6*: Type checking del blocco `{ m := -m; }` in $Gamma''$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m := -m; : emptyset$] \
+    $Gamma'' tack {m := -m;} : emptyset$ #h(0.5cm) (T-Block)
+  ]
+
+  *Passo 7*: Type checking del condizionale (con else implicito = skip)
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m < 0 : "bool"$ #h(0.2cm) $Gamma'' tack {m := -m;} : emptyset$ #h(0.2cm) $Gamma'' tack "skip"; : emptyset$] \
+    $Gamma'' tack "if"(m < 0){m := -m;} : emptyset$ #h(0.3cm) (T-If)
+  ]
+
+  *Passo 8*: Type checking di `return m;` in $Gamma''$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(m) = "int"$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m : "int"$] \
+    $Gamma'' tack "return" m; : emptyset$ #h(0.5cm) (T-Return)
+  ]
+
+  Il tipo restituito (`int`) corrisponde al tipo di ritorno dichiarato.
+
+  *Passo 9*: Type checking della sequenza del corpo della funzione
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma' tack "int" m = n; : {m : "int"}$ #h(0.2cm) $Gamma'' tack "if"(...){...} "return" m; : emptyset$] \
+    $Gamma' tack "int" m = n; "if"(m < 0){m := -m;} "return" m; : {m : "int"}$ #h(0.2cm) (T-Seq)
+  ]
+
+  *Passo 10*: Applicazione della regola (T-Fun)
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {n : "int"} tack "int" m = n; "if"(m < 0){m := -m;} "return" m; : {m : "int"}$] \
+    $Gamma tack "int" space "abs"("int" space n){...} : {"abs" : ("int") arrow.r "int"}$ #h(0.3cm) (T-Fun)
+  ]
+
+  Quindi $Gamma tack "abs" : ("int") arrow.r "int"$ come richiesto.
+]
+
+#example(title: "Type checking di funzione ricorsiva su array")[
+  Verifichiamo il type checking della funzione ricorsiva:
+  ```
+  bool azzera(int[] a, int k, int p) {
+    bool res = false;
+    if ((p >= 0) && (p < a.length)) {
+      if (a[p] == k) { a[p] := 0; res := true; }
+      res := azzera(a, k, p+1);
+    }
+    return res;
+  }
+  ```
+
+  Questa funzione cerca l'elemento `k` nell'array `a` a partire dalla posizione `p`, e se lo trova lo azzera.
+
+  *Passo 1*: Poiché la funzione è ricorsiva, usiamo la regola (T-RecFun).
+
+  L'ambiente per il corpo deve includere il tipo della funzione stessa:
+  $ Gamma' = Gamma union {"azzera" : ("int"[], "int", "int") arrow.r "bool"} union {a : "int"[], k : "int", p : "int"} $
+
+  *Passo 2*: Type checking di `bool res = false;` in $Gamma'$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma' tack "false" : "bool"$] \
+    $Gamma' tack "bool" space "res" = "false"; : {"res" : "bool"}$ #h(0.5cm) (T-Decl)
+  ]
+
+  Aggiorniamo: $Gamma'' = Gamma' union {"res" : "bool"}$
+
+  *Passo 3*: Type checking della condizione `(p >= 0) && (p < a.length)` in $Gamma''$
+
+  Prima verifichiamo `p >= 0`:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(p) = "int"$ #h(0.3cm) $0 in bb(Z)$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p : "int"$ #h(0.3cm) $Gamma'' tack 0 : "int"$] \
+    $Gamma'' tack p >= 0 : "bool"$ #h(0.5cm) (T-Cop)
+  ]
+
+  Poi verifichiamo `a.length`:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(a) = "int"[]$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack a : "int"[]$] \
+    $Gamma'' tack a."length" : "int"$ #h(0.5cm) (T-Length)
+  ]
+
+  Poi `p < a.length`:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p : "int"$ #h(0.3cm) $Gamma'' tack a."length" : "int"$] \
+    $Gamma'' tack p < a."length" : "bool"$ #h(0.5cm) (T-Cop)
+  ]
+
+  Infine la congiunzione:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p >= 0 : "bool"$ #h(0.3cm) $Gamma'' tack p < a."length" : "bool"$] \
+    $Gamma'' tack (p >= 0) and (p < a."length") : "bool"$ #h(0.5cm) (T-Lop)
+  ]
+
+  *Passo 4*: Type checking dell'accesso `a[p]` in $Gamma''$
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack a : "int"[]$ #h(0.3cm) $Gamma'' tack p : "int"$] \
+    $Gamma'' tack a[p] : "int"$ #h(0.5cm) (T-ArrayAccess)
+  ]
+
+  *Passo 5*: Type checking della condizione `a[p] == k`
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack a[p] : "int"$ #h(0.3cm) $Gamma'' tack k : "int"$] \
+    $Gamma'' tack a[p] == k : "bool"$ #h(0.5cm) (T-Cop)
+  ]
+
+  *Passo 6*: Type checking dell'assegnamento `a[p] := 0;`
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack a : "int"[]$ #h(0.3cm) $Gamma'' tack p : "int"$ #h(0.3cm) $Gamma'' tack 0 : "int"$] \
+    $Gamma'' tack a[p] := 0; : emptyset$ #h(0.5cm) (T-ArrayAssign)
+  ]
+
+  *Passo 7*: Type checking dell'assegnamento `res := true;`
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''("res") = "bool"$ #h(0.3cm) $Gamma'' tack "true" : "bool"$] \
+    $Gamma'' tack "res" := "true"; : emptyset$ #h(0.5cm) (T-Assign)
+  ]
+
+  *Passo 8*: Type checking della chiamata ricorsiva `azzera(a, k, p+1)`
+
+  Prima verifichiamo `p+1`:
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p : "int"$ #h(0.3cm) $Gamma'' tack 1 : "int"$] \
+    $Gamma'' tack p + 1 : "int"$ #h(0.5cm) (T-Aop)
+  ]
+
+  Poi la chiamata (usando il tipo di `azzera` presente in $Gamma''$):
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''("azzera") = ("int"[], "int", "int") arrow.r "bool"$ #h(0.2cm) $Gamma'' tack a : "int"[]$ #h(0.2cm) $Gamma'' tack k : "int"$ #h(0.2cm) $Gamma'' tack p+1 : "int"$] \
+    $Gamma'' tack "azzera"(a, k, p+1) : "bool"$ #h(0.3cm) (T-Call)
+  ]
+
+  *Passo 9*: Type checking dell'assegnamento `res := azzera(a, k, p+1);`
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''("res") = "bool"$ #h(0.3cm) $Gamma'' tack "azzera"(a, k, p+1) : "bool"$] \
+    $Gamma'' tack "res" := "azzera"(a, k, p+1); : emptyset$ #h(0.5cm) (T-Assign)
+  ]
+
+  *Passo 10*: Type checking di `return res;`
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack "res" : "bool"$] \
+    $Gamma'' tack "return" "res"; : emptyset$ #h(0.5cm) (T-Return)
+  ]
+
+  Il tipo restituito (`bool`) corrisponde al tipo di ritorno dichiarato.
+
+  *Passo 11*: Applicazione della regola (T-RecFun)
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {"azzera" : ("int"[], "int", "int") arrow.r "bool"} union {a : "int"[], k : "int", p : "int"} tack C : Gamma'''$] \
+    $Gamma tack "bool" space "azzera"("int"[] space a, "int" space k, "int" space p){C} : {"azzera" : ("int"[], "int", "int") arrow.r "bool"}$
+  ]
+  dove $C$ rappresenta il corpo della funzione.
+
+  Quindi $Gamma tack "azzera" : ("int"[], "int", "int") arrow.r "bool"$
+
+  La funzione è *ben tipata* e ha tipo $("int"[], "int", "int") arrow.r "bool"$.
+]
+
 === Controllo di tipi vs inferenza di tipo
 
 Il sistema di tipi di Mao è progettato per controllare che i tipi dichiarati dal programmatore per le variabili corrispondano all'uso che viene fatto di esse. Molti linguaggi di programmazione non richiedono di dichiarare il tipo di variabile al momento della sua dichiarazione:

@@ -567,6 +567,232 @@ $E$ è un'espressione booleana, se vera viene eseguito $C$ e si controlla la con
   *Stato finale*: $n = 0$, $s = 6$ (somma dei primi 3 naturali: $3 + 2 + 1 = 6$) ✓
 ]
 
+#example(title: "Sviluppo sequenziale: calcolo del fattoriale")[
+  Consideriamo il programma che calcola il fattoriale di 4:
+  ```
+  int n = 4;
+  int f = 1;
+  while (n > 0) {
+    f := f * n;
+    n := n - 1;
+  }
+  ```
+
+  *Stato iniziale* dopo le dichiarazioni:
+  - $rho = [n |-> l_n, f |-> l_f]$
+  - $sigma_0 = [l_n |-> 4, l_f |-> 1]$
+
+  *Iterazione 1*:
+  - Guardia: $chevron.l n > 0, rho, sigma_0 chevron.r arrow.b.double 4 > 0 = "true"$ ✓
+  - `f := f * n`: $chevron.l f * n, rho, sigma_0 chevron.r arrow.b.double 1 times 4 = 4$
+    - $sigma_0' = sigma_0[l_f |-> 4] = [l_n |-> 4, l_f |-> 4]$
+  - `n := n - 1`: $chevron.l n - 1, rho, sigma_0' chevron.r arrow.b.double 4 - 1 = 3$
+    - $sigma_1 = sigma_0'[l_n |-> 3] = [l_n |-> 3, l_f |-> 4]$
+
+  *Iterazione 2*:
+  - Guardia: $chevron.l n > 0, rho, sigma_1 chevron.r arrow.b.double 3 > 0 = "true"$ ✓
+  - `f := f * n`: $chevron.l f * n, rho, sigma_1 chevron.r arrow.b.double 4 times 3 = 12$
+    - $sigma_1' = sigma_1[l_f |-> 12] = [l_n |-> 3, l_f |-> 12]$
+  - `n := n - 1`: $chevron.l n - 1, rho, sigma_1' chevron.r arrow.b.double 3 - 1 = 2$
+    - $sigma_2 = sigma_1'[l_n |-> 2] = [l_n |-> 2, l_f |-> 12]$
+
+  *Iterazione 3*:
+  - Guardia: $chevron.l n > 0, rho, sigma_2 chevron.r arrow.b.double 2 > 0 = "true"$ ✓
+  - `f := f * n`: $chevron.l f * n, rho, sigma_2 chevron.r arrow.b.double 12 times 2 = 24$
+    - $sigma_2' = sigma_2[l_f |-> 24] = [l_n |-> 2, l_f |-> 24]$
+  - `n := n - 1`: $chevron.l n - 1, rho, sigma_2' chevron.r arrow.b.double 2 - 1 = 1$
+    - $sigma_3 = sigma_2'[l_n |-> 1] = [l_n |-> 1, l_f |-> 24]$
+
+  *Iterazione 4*:
+  - Guardia: $chevron.l n > 0, rho, sigma_3 chevron.r arrow.b.double 1 > 0 = "true"$ ✓
+  - `f := f * n`: $chevron.l f * n, rho, sigma_3 chevron.r arrow.b.double 24 times 1 = 24$
+    - $sigma_3' = sigma_3[l_f |-> 24] = [l_n |-> 1, l_f |-> 24]$
+  - `n := n - 1`: $chevron.l n - 1, rho, sigma_3' chevron.r arrow.b.double 1 - 1 = 0$
+    - $sigma_4 = sigma_3'[l_n |-> 0] = [l_n |-> 0, l_f |-> 24]$
+
+  *Iterazione 5*:
+  - Guardia: $chevron.l n > 0, rho, sigma_4 chevron.r arrow.b.double 0 > 0 = "false"$ ✗ → ciclo termina
+
+  *Riepilogo delle iterazioni*:
+  #figure(
+    table(
+      columns: 4,
+      [*Iterazione*], [*n*], [*f*], [*Guardia*],
+      [Inizio], [4], [1], [-],
+      [1], [3], [4], [true],
+      [2], [2], [12], [true],
+      [3], [1], [24], [true],
+      [4], [0], [24], [true],
+      [Fine], [0], [24], [false],
+    ),
+    caption: [Evoluzione dello stato nel calcolo di 4!]
+  )
+
+  *Stato finale*: $n = 0$, $f = 24$ (infatti $4! = 4 times 3 times 2 times 1 = 24$) ✓
+]
+
+#example(title: "Sviluppo sequenziale: blocchi e shadowing")[
+  Consideriamo il programma che illustra lo shadowing delle variabili:
+  ```
+  int x = 10;
+  {
+    int x = 5;
+    x := x + 1;
+  }
+  x := x * 2;
+  ```
+
+  *Stato iniziale*: $rho_0 = emptyset$, $sigma_0 = emptyset$
+
+  *Passo 1*: `int x = 10;` (dichiarazione esterna)
+  - Valuto: $chevron.l 10, rho_0, sigma_0 chevron.r arrow.b.double 10$
+  - Alloco nuova locazione: $l_1 in.not "dom"(sigma_0)$
+  - $rho_1 = [x |-> l_1]$
+  - $sigma_1 = [l_1 |-> 10]$
+
+  *Passo 2*: Ingresso nel blocco `{ ... }`
+  - L'ambiente corrente e: $rho_1 = [x |-> l_1]$
+  - La memoria corrente e: $sigma_1 = [l_1 |-> 10]$
+
+  *Passo 2a*: `int x = 5;` (dichiarazione interna - shadowing)
+  - Valuto: $chevron.l 5, rho_1, sigma_1 chevron.r arrow.b.double 5$
+  - Alloco *nuova* locazione: $l_2 in.not "dom"(sigma_1)$
+  - $rho_2 = rho_1[x |-> l_2] = [x |-> l_2]$ (la nuova $x$ *nasconde* quella esterna)
+  - $sigma_2 = sigma_1[l_2 |-> 5] = [l_1 |-> 10, l_2 |-> 5]$
+
+  #note[
+    Ora esistono *due* locazioni: $l_1$ (la $x$ esterna, valore 10) e $l_2$ (la $x$ interna, valore 5). L'ambiente $rho_2$ "vede" solo $l_2$ perche il binding $x |-> l_2$ ha sostituito $x |-> l_1$.
+  ]
+
+  *Passo 2b*: `x := x + 1;` (assegnamento alla $x$ interna)
+  - Valuto $x + 1$: $chevron.l x + 1, rho_2, sigma_2 chevron.r$
+    - $rho_2(x) = l_2$, $sigma_2(l_2) = 5$
+    - $5 + 1 = 6$
+  - Aggiorno: $sigma_3 = sigma_2[l_2 |-> 6] = [l_1 |-> 10, l_2 |-> 6]$
+
+  *Passo 3*: Uscita dal blocco
+  - Applichiamo la regola (Cmd-Block): l'ambiente torna a $rho_1 = [x |-> l_1]$
+  - La memoria *rimane* $sigma_3 = [l_1 |-> 10, l_2 |-> 6]$
+
+  #note[
+    Dopo l'uscita dal blocco, la variabile $x$ si riferisce di nuovo a $l_1$ (che contiene ancora 10). La locazione $l_2$ esiste ancora in memoria ma non e piu accessibile.
+  ]
+
+  *Passo 4*: `x := x * 2;` (assegnamento alla $x$ esterna)
+  - Valuto $x * 2$: $chevron.l x * 2, rho_1, sigma_3 chevron.r$
+    - $rho_1(x) = l_1$, $sigma_3(l_1) = 10$
+    - $10 times 2 = 20$
+  - Aggiorno: $sigma_4 = sigma_3[l_1 |-> 20] = [l_1 |-> 20, l_2 |-> 6]$
+
+  *Stato finale*:
+  - $rho_"fin" = [x |-> l_1]$
+  - $sigma_"fin" = [l_1 |-> 20, l_2 |-> 6]$
+  - La variabile $x$ (esterna) vale 20
+
+  *Riepilogo dell'evoluzione degli ambienti*:
+  #figure(
+    table(
+      columns: 3,
+      [*Punto*], [*Ambiente* $rho$], [*$x$ punta a*],
+      [Dopo `int x = 10;`], [$[x |-> l_1]$], [$l_1$ (valore 10)],
+      [Dentro blocco, dopo `int x = 5;`], [$[x |-> l_2]$], [$l_2$ (valore 5)],
+      [Dentro blocco, dopo `x := x + 1;`], [$[x |-> l_2]$], [$l_2$ (valore 6)],
+      [Dopo uscita dal blocco], [$[x |-> l_1]$], [$l_1$ (valore 10)],
+      [Dopo `x := x * 2;`], [$[x |-> l_1]$], [$l_1$ (valore 20)],
+    ),
+    caption: [Evoluzione dell'ambiente con shadowing]
+  )
+]
+
+#example(title: "Sviluppo sequenziale: condizionali annidati (calcolo del massimo)")[
+  Consideriamo il programma che trova il massimo tra tre numeri:
+  ```
+  int a = 7;
+  int b = 3;
+  int c = 5;
+  int max = a;
+  if (b > max) { max := b; }
+  if (c > max) { max := c; }
+  ```
+
+  *Stato iniziale*: $rho_0 = emptyset$, $sigma_0 = emptyset$
+
+  *Passo 1-4*: Dichiarazioni
+  - `int a = 7;`: alloco $l_a$, $rho_1 = [a |-> l_a]$, $sigma_1 = [l_a |-> 7]$
+  - `int b = 3;`: alloco $l_b$, $rho_2 = [a |-> l_a, b |-> l_b]$, $sigma_2 = [l_a |-> 7, l_b |-> 3]$
+  - `int c = 5;`: alloco $l_c$, $rho_3 = [a |-> l_a, b |-> l_b, c |-> l_c]$, $sigma_3 = [l_a |-> 7, l_b |-> 3, l_c |-> 5]$
+  - `int max = a;`: valuto $a$ (= 7), alloco $l_m$
+    - $rho_4 = [a |-> l_a, b |-> l_b, c |-> l_c, "max" |-> l_m]$
+    - $sigma_4 = [l_a |-> 7, l_b |-> 3, l_c |-> 5, l_m |-> 7]$
+
+  *Stato dopo le dichiarazioni*:
+  #align(center)[
+    ${a |-> 7, b |-> 3, c |-> 5, "max" |-> 7}$
+  ]
+
+  *Passo 5*: Primo condizionale `if (b > max) { max := b; }`
+  - Valuto la guardia: $chevron.l b > "max", rho_4, sigma_4 chevron.r$
+    - $sigma_4(rho_4(b)) = sigma_4(l_b) = 3$
+    - $sigma_4(rho_4("max")) = sigma_4(l_m) = 7$
+    - $3 > 7 = "false"$
+  - Poiche la guardia e falsa, applichiamo (Cmd-IfFalse) con il ramo else implicito `skip;`
+  - Lo stato *non cambia*: $sigma_5 = sigma_4$
+
+  #align(center)[
+    ${a |-> 7, b |-> 3, c |-> 5, "max" |-> 7}$ (invariato)
+  ]
+
+  *Passo 6*: Secondo condizionale `if (c > max) { max := c; }`
+  - Valuto la guardia: $chevron.l c > "max", rho_4, sigma_5 chevron.r$
+    - $sigma_5(rho_4(c)) = sigma_5(l_c) = 5$
+    - $sigma_5(rho_4("max")) = sigma_5(l_m) = 7$
+    - $5 > 7 = "false"$
+  - Poiche la guardia e falsa, applichiamo (Cmd-IfFalse)
+  - Lo stato *non cambia*: $sigma_6 = sigma_5$
+
+  *Stato finale*:
+  #align(center)[
+    ${a |-> 7, b |-> 3, c |-> 5, "max" |-> 7}$
+  ]
+
+  Il risultato e corretto: $"max" = 7 = max(7, 3, 5)$ ✓
+
+  ---
+
+  *Variante*: Consideriamo lo stesso programma con valori diversi: $a = 2$, $b = 8$, $c = 5$
+
+  Dopo le dichiarazioni: ${a |-> 2, b |-> 8, c |-> 5, "max" |-> 2}$
+
+  *Primo condizionale* `if (b > max) { max := b; }`:
+  - Guardia: $8 > 2 = "true"$ ✓
+  - Eseguo `max := b;`: $"max" = 8$
+  - Stato: ${a |-> 2, b |-> 8, c |-> 5, "max" |-> 8}$
+
+  *Secondo condizionale* `if (c > max) { max := c; }`:
+  - Guardia: $5 > 8 = "false"$
+  - Stato invariato: ${a |-> 2, b |-> 8, c |-> 5, "max" |-> 8}$
+
+  Risultato: $"max" = 8 = max(2, 8, 5)$ ✓
+
+  ---
+
+  *Altra variante*: $a = 2$, $b = 3$, $c = 9$
+
+  Dopo le dichiarazioni: ${a |-> 2, b |-> 3, c |-> 9, "max" |-> 2}$
+
+  *Primo condizionale*:
+  - Guardia: $3 > 2 = "true"$ ✓
+  - Eseguo `max := b;`: $"max" = 3$
+  - Stato: ${a |-> 2, b |-> 3, c |-> 9, "max" |-> 3}$
+
+  *Secondo condizionale*:
+  - Guardia: $9 > 3 = "true"$ ✓
+  - Eseguo `max := c;`: $"max" = 9$
+  - Stato: ${a |-> 2, b |-> 3, c |-> 9, "max" |-> 9}$
+
+  Risultato: $"max" = 9 = max(2, 3, 9)$ ✓
+]
+
 === Terminazione vs Divergenza
 
 Con l'introduzione dei cicli adesso i programmi possono divergere, senza che essi producano un risultato finale.

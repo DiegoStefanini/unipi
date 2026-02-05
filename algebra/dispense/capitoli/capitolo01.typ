@@ -371,6 +371,18 @@ Per passare dalla forma ridotta per righe alla forma completamente ridotta, si p
   La forma completamente ridotta di una matrice è *unica*: indipendentemente dalla sequenza di operazioni elementari scelta, si ottiene sempre la stessa matrice.
 ]
 
+#dimostrazione[
+  Sia $A in M_(m times n)(KK)$ e supponiamo che esistano due forme completamente ridotte $R$ e $R'$ ottenute da $A$ con sequenze diverse di operazioni elementari.
+
+  Consideriamo il sistema omogeneo $A x = 0$. Le operazioni elementari non alterano le soluzioni, quindi $R x = 0$ e $R' x = 0$ hanno lo stesso insieme di soluzioni $S$.
+
+  Sia $j$ una colonna che contiene un pivot in $R$, diciamo nella riga $i$. Allora dalla forma completamente ridotta, la variabile $x_j$ è determinata univocamente dalle variabili libere. In particolare, esiste una soluzione in cui $x_j$ assume un certo valore fissato una volta assegnate le variabili libere.
+
+  Poiché $S$ è lo stesso per $R$ e $R'$, le colonne pivot devono essere le stesse in entrambe le forme. Inoltre, i coefficienti che esprimono le variabili pivot in funzione delle variabili libere sono determinati univocamente dall'insieme $S$ delle soluzioni.
+
+  Questo si estende al caso non omogeneo considerando che la forma completamente ridotta è determinata dalla struttura dello spazio delle soluzioni di $A x = b$ per ogni possibile $b$. Ne segue che $R = R'$.
+]
+
 #esempio[
   Riprendiamo l'esempio del sistema $cases(x + y = 7, 4x + 2y = 8)$.
 
@@ -409,6 +421,16 @@ Il numero di pivot che compaiono nella forma ridotta di una matrice è un invari
   Il rango di una matrice non dipende dalla particolare sequenza di operazioni elementari utilizzata per la riduzione: qualunque percorso di riduzione produce lo stesso numero di pivot.
 ]
 
+#dimostrazione[
+  L'invarianza del rango segue dall'unicità della forma completamente ridotta. Infatti:
+
+  + Ogni matrice $A$ può essere ridotta a un'unica forma completamente ridotta $R$ (per il teorema precedente)
+  + Il numero di pivot in $R$ è univocamente determinato: è il numero di righe non nulle
+  + Qualunque sequenza di operazioni elementari che riduca $A$ a forma a scala produrrà una matrice con lo stesso numero di righe non nulle
+
+  Per vedere quest'ultimo punto, osserviamo che se $R'$ è una qualsiasi forma a scala di $A$, possiamo proseguire la riduzione fino alla forma completamente ridotta $R$. Il numero di pivot non cambia quando passiamo dalla forma a scala alla forma completamente ridotta (le operazioni di "pulizia" verso l'alto non eliminano né creano pivot). Dunque $R'$ ha lo stesso numero di pivot di $R$.
+]
+
 #esempio[
   Calcoliamo il rango di $A in M_(3 times 5)(RR)$:
   $
@@ -445,6 +467,22 @@ Il numero di pivot che compaiono nella forma ridotta di una matrice è un invari
   Per ogni matrice $A$:
   $ r(A) = r(""^t A) $
   Il rango di una matrice è uguale al rango della sua trasposta.
+]
+
+#dimostrazione[
+  Dimostriamo che il rango per righe (numero di righe linearmente indipendenti) coincide con il rango per colonne (numero di colonne linearmente indipendenti).
+
+  Sia $A in M_(m times n)(KK)$ e sia $r = r(A)$ il numero di pivot nella forma ridotta per righe.
+
+  *Rango per righe $<=$ Rango per colonne:*
+  Nella forma ridotta $R$ di $A$, le $r$ righe non nulle sono linearmente indipendenti (ogni riga ha un pivot in una posizione dove le righe precedenti hanno zero). Poiché le operazioni elementari sono combinazioni lineari delle righe, le righe di $A$ generano lo stesso spazio delle righe di $R$. Dunque $A$ ha esattamente $r$ righe linearmente indipendenti.
+
+  Ora, le $r$ colonne che contengono i pivot in $R$ sono linearmente indipendenti: infatti, se $c_(j_1), dots, c_(j_r)$ sono le colonne dei pivot, una loro combinazione lineare nulla imporrebbe coefficienti nulli riga per riga, partendo dalla prima (dove solo $c_(j_1)$ ha elemento non nullo).
+
+  *Rango per colonne $<=$ Rango per righe:*
+  Applichiamo lo stesso ragionamento alla matrice $""^t A$: il suo rango per righe (che è il rango per colonne di $A$) non può superare il suo rango per colonne (che è il rango per righe di $A$).
+
+  Combinando le due disuguaglianze, si ottiene l'uguaglianza: il numero di righe linearmente indipendenti coincide con il numero di colonne linearmente indipendenti. Quindi $r(A) = r(""^t A)$.
 ]
 
 == Risoluzione di Sistemi Lineari
@@ -601,6 +639,79 @@ La matrice inversa è importante perché fornisce una formula diretta per la sol
 
 #nota[
   L'inversione dell'ordine nella proprietà $(A B)^(-1) = B^(-1) A^(-1)$ è analoga a quanto accade per la trasposizione: $""^t(A B) = ""^t B dot ""^t A$. In entrambi i casi, l'ordine dei fattori si inverte.
+]
+
+=== Calcolo della Matrice Inversa
+
+Come si calcola concretamente l'inversa di una matrice? Il metodo più efficiente utilizza l'algoritmo di Gauss-Jordan applicato a una matrice aumentata particolare.
+
+#proposizione("Metodo di Gauss-Jordan per l'Inversa")[
+  Per calcolare l'inversa di una matrice $A in M_(n times n)(KK)$:
+  + Costruire la matrice aumentata $(A | I_n)$, affiancando ad $A$ la matrice identità
+  + Applicare operazioni elementari per righe fino a ridurre la parte sinistra alla forma completamente ridotta
+  + Se la parte sinistra diventa $I_n$, allora la parte destra è $A^(-1)$:
+  $
+  (A | I_n) arrow.r^"operazioni elementari" (I_n | A^(-1))
+  $
+  + Se invece nella parte sinistra compare una riga nulla, la matrice $A$ *non è invertibile*
+]
+
+#dimostrazione[
+  L'idea chiave è che ogni operazione elementare per righe equivale a moltiplicare a sinistra per una opportuna *matrice elementare*. Se una sequenza di operazioni elementari trasforma $A$ in $I_n$, allora esiste un prodotto di matrici elementari $E_k dots E_2 E_1$ tale che:
+  $
+  E_k dots E_2 E_1 dot A = I_n
+  $
+  Ma allora $E_k dots E_2 E_1 = A^(-1)$. Applicando le stesse operazioni alla matrice identità:
+  $
+  E_k dots E_2 E_1 dot I_n = A^(-1)
+  $
+  Poiché operiamo simultaneamente su $(A | I_n)$, quando la parte sinistra diventa $I_n$, la parte destra diventa proprio $A^(-1)$.
+]
+
+#esempio[
+  Calcoliamo l'inversa di $A = mat(1, 2; 3, 7)$.
+
+  *Matrice aumentata:*
+  $
+  (A | I_2) = mat(1, 2, |, 1, 0; 3, 7, |, 0, 1)
+  $
+
+  *Passo 1:* $R_2 arrow.r R_2 - 3 R_1$
+  $
+  mat(1, 2, |, 1, 0; 0, 1, |, -3, 1)
+  $
+
+  *Passo 2:* $R_1 arrow.r R_1 - 2 R_2$
+  $
+  mat(1, 0, |, 7, -2; 0, 1, |, -3, 1)
+  $
+
+  La parte sinistra è $I_2$, quindi:
+  $
+  A^(-1) = mat(7, -2; -3, 1)
+  $
+
+  *Verifica:* $A A^(-1) = mat(1, 2; 3, 7) mat(7, -2; -3, 1) = mat(7 - 6, -2 + 2; 21 - 21, -6 + 7) = mat(1, 0; 0, 1) = I_2$ #h(0.5em) $checkmark$
+]
+
+#esempio[
+  Verifichiamo che $A = mat(1, 2; 2, 4)$ non è invertibile.
+
+  $
+  mat(1, 2, |, 1, 0; 2, 4, |, 0, 1) arrow.r^(R_2 - 2 R_1) mat(1, 2, |, 1, 0; 0, 0, |, -2, 1)
+  $
+
+  La seconda riga della parte sinistra è nulla: la matrice $A$ *non è invertibile*.
+]
+
+#teorema("Criterio di Invertibilità")[
+  Una matrice quadrata $A in M_(n times n)(KK)$ è invertibile se e solo se $r(A) = n$, cioè se e solo se la sua forma ridotta per righe è la matrice identità $I_n$.
+]
+
+#dimostrazione[
+  ($arrow.r.double$) Se $A$ è invertibile, il sistema $A x = b$ ha soluzione unica $x = A^(-1) b$ per ogni $b$. In particolare, per ogni vettore della base canonica $e_i$, esiste un unico $x$ tale che $A x = e_i$. Questo implica che il sistema ha sempre soluzione unica, dunque $r(A) = n$ (nessuna variabile libera).
+
+  ($arrow.l.double$) Se $r(A) = n$, allora la forma ridotta per righe di $A$ è $I_n$ (tutti i pivot presenti, uno per colonna). Applicando il metodo di Gauss-Jordan alla matrice $(A | I_n)$, si ottiene $(I_n | A^(-1))$, dunque $A$ è invertibile.
 ]
 
 == Esercizi

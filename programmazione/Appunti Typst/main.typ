@@ -32,9 +32,10 @@
 #set par(justify: true, leading: 0.65em)
 #set heading(numbering: "1.1")
 
-// Pagebreak solo per capitoli principali (level 1)
+// Pagebreak e reset contatori per capitoli principali (level 1)
 #show heading.where(level: 1): it => {
   pagebreak(weak: true)
+  reset-counters()
   v(0.5em)
   text(size: 16pt, weight: "bold")[#it]
   v(0.3em)
@@ -48,19 +49,76 @@
 }
 
 // ========================================
-// Pagina titolo
+// Pagina titolo (design migliorato)
 // ========================================
 
-#align(center)[
-  #v(4cm)
-  #text(size: 24pt, weight: "bold")[Programmazione ed Algoritmica]
-  #v(2cm)
-  #text(size: 12pt)[Diego Stefanini]
-  #v(0.5cm)
-  #text(size: 11pt)[A.A 2025-2026]
-]
+#page(
+  margin: (top: 0cm, bottom: 0cm, left: 0cm, right: 0cm),
+  header: none,
+  footer: none,
+)[
+  // Banda superiore colorata
+  #place(top + left)[
+    #rect(width: 100%, height: 4cm, fill: rgb("#1e3a5f"))
+  ]
 
-#pagebreak()
+  // Contenuto centrato
+  #align(center)[
+    #v(5cm)
+
+    // Titolo principale
+    #block(
+      width: 80%,
+      inset: 1.5em,
+    )[
+      #text(size: 32pt, weight: "bold", fill: rgb("#1e3a5f"))[
+        Programmazione ed Algoritmica
+      ]
+    ]
+
+    #v(0.5cm)
+
+    // Linea decorativa
+    #line(length: 40%, stroke: 2pt + rgb("#1a5c3a"))
+
+    #v(1cm)
+
+    // Sottotitolo
+    #text(size: 14pt, fill: luma(80))[
+      Appunti del corso di Laurea in Informatica
+    ]
+
+    #v(3cm)
+
+    // Autore
+    #text(size: 14pt, weight: "medium")[Diego Stefanini]
+
+    #v(0.8cm)
+
+    // Anno accademico
+    #block(
+      inset: (x: 1.5em, y: 0.8em),
+      radius: 4pt,
+      stroke: 1pt + luma(200),
+    )[
+      #text(size: 11pt)[Anno Accademico 2025-2026]
+    ]
+
+    #v(1fr)
+
+    // Footer con universita
+    #text(size: 10pt, fill: luma(120))[
+      Universita degli Studi di Firenze
+    ]
+
+    #v(2cm)
+  ]
+
+  // Banda inferiore
+  #place(bottom + left)[
+    #rect(width: 100%, height: 1cm, fill: rgb("#1a5c3a"))
+  ]
+]
 
 // ========================================
 // Indice
@@ -107,10 +165,10 @@
 #include "programmazione/Mao.typ"
 
 // ========================================
-// PARTE IV - COMPLESSITÀ COMPUTAZIONALE
+// PARTE IV - COMPLESSITA COMPUTAZIONALE
 // ========================================
 
-= Complessità Computazionale
+= Complessita Computazionale
 
 #include "algoritmica/complessita_in_tempo.typ"
 
