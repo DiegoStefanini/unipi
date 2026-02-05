@@ -142,7 +142,7 @@
 = Introduzione
 
 #include "algoritmica/introduzione.typ"
-#include "programmazione/introduzione_bruni.typ"
+#include "programmazione/introduzione.typ"
 
 // ========================================
 // PARTE II - LINGUAGGI FORMALI E GRAMMATICHE
