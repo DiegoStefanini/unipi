@@ -1,20 +1,18 @@
 #import "../template.typ": *
 
-== Regole di Inferenza e Sistemi Logici
-
-Le grammatiche formali, introdotte nel capitolo precedente, possono essere lette in due modi complementari. Questa doppia lettura e' alla base della semantica formale dei linguaggi di programmazione.
+Le grammatiche formali, introdotte nel capitolo precedente, possono essere lette in due modi complementari. Questa doppia lettura è alla base della semantica formale dei linguaggi di programmazione.
 
 #definition(title: "Lettura generativa e lettura induttiva")[
   Data una produzione come $S ::= a b | a S b$, possiamo interpretarla in due modi:
-  - *Lettura generativa (produttiva)*: la grammatica e' vista come un insieme di regole di riscrittura. La produzione si legge da sinistra verso destra: ogni volta che incontro il simbolo $S$, posso rimpiazzarlo con $a b$ oppure con $a S b$. Questa lettura descrive come _generare_ stringhe.
-  - *Lettura induttiva (costruttiva)*: la grammatica e' una definizione induttiva. La produzione si legge da destra verso sinistra: la clausola $S ::= a b$ afferma che $a b in L(S)$ (caso base), mentre $S ::= a S b$ afferma che se $w in L(S)$ allora anche $a w b in L(S)$ (passo induttivo). Questa lettura descrive come _costruire_ l'insieme delle stringhe valide.
+  - *Lettura generativa (produttiva)*: la grammatica è vista come un insieme di regole di riscrittura. La produzione si legge da sinistra verso destra: ogni volta che incontro il simbolo $S$, posso rimpiazzarlo con $a b$ oppure con $a S b$. Questa lettura descrive come _generare_ stringhe.
+  - *Lettura induttiva (costruttiva)*: la grammatica è una definizione induttiva. La produzione si legge da destra verso sinistra: la clausola $S ::= a b$ afferma che $a b in L(S)$ (caso base), mentre $S ::= a S b$ afferma che se $w in L(S)$ allora anche $a w b in L(S)$ (passo induttivo). Questa lettura descrive come _costruire_ l'insieme delle stringhe valide.
 ]
 
-La lettura induttiva e' particolarmente importante perche' ci permette di utilizzare le *regole di inferenza* per definire la semantica di un linguaggio di programmazione in modo rigoroso.
+La lettura induttiva è particolarmente importante perché ci permette di utilizzare le *regole di inferenza* per definire la semantica di un linguaggio di programmazione in modo rigoroso.
 
 == Regole di inferenza
 
-Per definire la semantica del linguaggio MAO utilizzeremo le regole di inferenza, uno strumento formale che permette di derivare nuovi giudizi (conclusioni) a partire da giudizi gia' noti (premesse).
+Per definire la semantica del linguaggio MAO utilizzeremo le regole di inferenza, uno strumento formale che permette di derivare nuovi giudizi (conclusioni) a partire da giudizi già noti (premesse).
 
 #definition(title: "Regola di inferenza")[
   Una regola di inferenza ha la seguente forma: date premesse $p_1, ..., p_n$ e una conclusione $q$, scriviamo:
@@ -24,20 +22,20 @@ Per definire la semantica del linguaggio MAO utilizzeremo le regole di inferenza
     $q$ #h(1cm) (Nome-Regola)
   ]
 
-  La regola si legge: "se tutte le premesse $p_1, ..., p_n$ sono vere, allora si puo' trarre la conclusione $q$".
+  La regola si legge: "se tutte le premesse $p_1, ..., p_n$ sono vere, allora si può trarre la conclusione $q$".
 ]
 
-Quando le premesse sono vuote, la regola si chiama #underline[assioma]: una verita' che vale senza bisogno di giustificazione.
+Quando le premesse sono vuote, la regola si chiama #underline[assioma]: una verità che vale senza bisogno di giustificazione.
 
 #definition(title: "Assioma")[
-  Un assioma e' una regola di inferenza senza premesse:
+  Un assioma è una regola di inferenza senza premesse:
 
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 5pt)[$ $] \
     $q$ #h(1cm) (Nome-Assioma)
   ]
 
-  L'assioma afferma che $q$ e' vero incondizionatamente.
+  L'assioma afferma che $q$ è vero incondizionatamente.
 ]
 
 === Produzioni come regole di inferenza
@@ -66,16 +64,16 @@ Ogni produzione corrisponde a una regola di inferenza letta induttivamente:
   $5 in L("Cifra")$ #h(0.5cm) (Cifra-5)
 ]
 
-Ad esempio, la regola (Exp-Sum) si legge: "se $y$ e' un'espressione e $z$ e' un prodotto, allora $y + z$ e' un'espressione". La regola (Cifra-5) e' un assioma: 5 e' una cifra senza bisogno di ulteriori giustificazioni.
+Ad esempio, la regola (Exp-Sum) si legge: "se $y$ è un'espressione e $z$ è un prodotto, allora $y + z$ è un'espressione". La regola (Cifra-5) è un assioma: 5 è una cifra senza bisogno di ulteriori giustificazioni.
 
 == Sistemi logici
 
 #definition(title: "Sistema logico")[
-  Un *sistema logico* e' un insieme di regole di inferenza (e assiomi) che possono essere applicate per dimostrare la validita' di formule, dette _giudizi_. Fissato un sistema logico, diciamo che un giudizio $q$ e' *derivabile* se esiste una sequenza di applicazioni di regole che lo dimostra.
+  Un *sistema logico* è un insieme di regole di inferenza (e assiomi) che possono essere applicate per dimostrare la validità di formule, dette _giudizi_. Fissato un sistema logico, diciamo che un giudizio $q$ è *derivabile* se esiste una sequenza di applicazioni di regole che lo dimostra.
 ]
 
 #example(title: "Derivazione in un sistema logico")[
-  Consideriamo il sistema logico associato alla grammatica delle espressioni aritmetiche mostrata sopra. Vogliamo mostrare che $2 times 3$ e' un'espressione valida, cioe' che $2 times 3 in L("Exp")$.
+  Consideriamo il sistema logico associato alla grammatica delle espressioni aritmetiche mostrata sopra. Vogliamo mostrare che $2 times 3$ è un'espressione valida, cioè che $2 times 3 in L("Exp")$.
 
   Per farlo, costruiamo una derivazione applicando le regole dal basso verso l'alto:
   + $2 in L("Cifra")$ per l'assioma (Cifra-2), e quindi $2 in L("Pro")$ per (Pro-Cifra)
@@ -87,11 +85,11 @@ Ad esempio, la regola (Exp-Sum) si legge: "se $y$ e' un'espressione e $z$ e' un 
 === Derivazione
 
 #definition(title: "Derivazione")[
-  Una *derivazione* nel sistema logico e' una sequenza di passaggi che, partendo dagli assiomi e applicando le regole di inferenza, giustifica una certa conclusione. Si scrive $d tack q$ e si legge "la derivazione $d$ dimostra il giudizio $q$", oppure "$d$ e' una derivazione per $q$".
+  Una *derivazione* nel sistema logico è una sequenza di passaggi che, partendo dagli assiomi e applicando le regole di inferenza, giustifica una certa conclusione. Si scrive $d tack q$ e si legge "la derivazione $d$ dimostra il giudizio $q$", oppure "$d$ è una derivazione per $q$".
 ]
 
 Le derivazioni sono definite ricorsivamente:
-- *Caso base*: ogni assioma del sistema logico e' una derivazione per la sua conclusione $q$.
+- *Caso base*: ogni assioma del sistema logico è una derivazione per la sua conclusione $q$.
 - *Passo induttivo*: se esiste una regola
 
   #align(center)[
@@ -99,7 +97,7 @@ Le derivazioni sono definite ricorsivamente:
     $q$
   ]
 
-  del sistema logico, e le premesse sono derivabili ($d_1 tack p_1, ..., d_n tack p_n$), allora la composizione delle sotto-derivazioni e' una derivazione per $q$.
+  del sistema logico, e le premesse sono derivabili ($d_1 tack p_1, ..., d_n tack p_n$), allora la composizione delle sotto-derivazioni è una derivazione per $q$.
 
 #example(title: "Derivazione per $2 times 3 in L(\"Exp\")$")[
   Rappresentiamo la derivazione come albero di regole applicate (le foglie sono assiomi):
@@ -123,7 +121,7 @@ Le derivazioni sono definite ricorsivamente:
 
 === Alberi di derivazione
 
-Le derivazioni formano naturalmente una *struttura ad albero*, anche se in questo caso la radice (la conclusione finale) e' posta verso il basso, e le foglie (gli assiomi) sono in alto. Ogni nodo interno corrisponde all'applicazione di una regola, e i suoi figli sono le sotto-derivazioni delle premesse.
+Le derivazioni formano naturalmente una *struttura ad albero*, anche se in questo caso la radice (la conclusione finale) è posta verso il basso, e le foglie (gli assiomi) sono in alto. Ogni nodo interno corrisponde all'applicazione di una regola, e i suoi figli sono le sotto-derivazioni delle premesse.
 
 #note[
   Non confondere gli alberi di derivazione della semantica (che crescono verso il basso con la conclusione in fondo) con gli alberi di derivazione delle grammatiche (capitolo 2), che hanno la radice in alto.
@@ -202,29 +200,29 @@ Per le operazioni abbiamo regole con premesse:
   La derivazione procede come segue:
   + Per l'assioma (Val-1): $1 arrow.b.double 1$
   + Per l'assioma (Val-3): $3 arrow.b.double 3$ e per (Val-2): $2 arrow.b.double 2$
-  + Per la regola (Val-Mul): poiche' $3 arrow.b.double 3$ e $2 arrow.b.double 2$ e $6 = 3 times 2$, concludiamo $3 times 2 arrow.b.double 6$
-  + Per la regola (Val-Sum): poiche' $1 arrow.b.double 1$ e $3 times 2 arrow.b.double 6$ e $7 = 1 + 6$, concludiamo $1 + (3 times 2) arrow.b.double 7$
+  + Per la regola (Val-Mul): poiché $3 arrow.b.double 3$ e $2 arrow.b.double 2$ e $6 = 3 times 2$, concludiamo $3 times 2 arrow.b.double 6$
+  + Per la regola (Val-Sum): poiché $1 arrow.b.double 1$ e $3 times 2 arrow.b.double 6$ e $7 = 1 + 6$, concludiamo $1 + (3 times 2) arrow.b.double 7$
 ]
 
 == Induzione
 
 #definition[
-  L'*induzione* e' un principio fondamentale che permette di trattare insiemi infiniti di oggetti attraverso un numero finito di regole o casi.
+  L'*induzione* è un principio fondamentale che permette di trattare insiemi infiniti di oggetti attraverso un numero finito di regole o casi.
 ]
 
 Il principio di induzione ha tre aspetti fondamentali:
-- *Costruzione*: permette di costruire un insieme infinito di oggetti mediante un numero finito di regole (ad esempio, l'insieme dei numeri naturali si definisce con due regole: 0 e' un naturale, e se $n$ e' un naturale allora $n+1$ e' un naturale).
+- *Costruzione*: permette di costruire un insieme infinito di oggetti mediante un numero finito di regole (ad esempio, l'insieme dei numeri naturali si definisce con due regole: 0 è un naturale, e se $n$ è un naturale allora $n+1$ è un naturale).
 - *Definizione di funzioni*: permette di definire il comportamento di una funzione su un insieme infinito, descrivendo solo un numero finito di casi.
-- *Dimostrazione*: permette di dimostrare che una proprieta' vale per tutti gli elementi di un insieme infinito, esaminando un numero finito di casi.
+- *Dimostrazione*: permette di dimostrare che una proprietà vale per tutti gli elementi di un insieme infinito, esaminando un numero finito di casi.
 
 === Induzione matematica
 
-L'induzione matematica permette di dimostrare che una proprieta' $P(n)$ vale per tutti i numeri naturali $n >= n_0$.
+L'induzione matematica permette di dimostrare che una proprietà $P(n)$ vale per tutti i numeri naturali $n >= n_0$.
 
 #definition(title: "Principio di induzione matematica")[
   Per dimostrare $P(n)$ per ogni $n >= n_0$:
   - *Caso base*: dimostrare che $P(n_0)$ vale.
-  - *Passo induttivo*: preso un generico $n >= n_0$, assumendo che $P(n)$ sia vera (*ipotesi induttiva*), dimostrare che $P(n+1)$ e' vera.
+  - *Passo induttivo*: preso un generico $n >= n_0$, assumendo che $P(n)$ sia vera (*ipotesi induttiva*), dimostrare che $P(n+1)$ è vera.
 ]
 
 #example(title: "Somma dei primi $n$ naturali positivi")[
@@ -237,7 +235,7 @@ L'induzione matematica permette di dimostrare che una proprieta' $P(n)$ vale per
   $ 1 + 2 + 3 + ... + n = frac(n(n + 1), 2) $
   Dimostriamo che vale per $n + 1$:
   $ 1 + 2 + ... + n + (n + 1) = frac(n(n + 1), 2) + (n + 1) = frac(n(n + 1) + 2(n + 1), 2) = frac((n + 1)(n + 2), 2) $
-  L'ultimo passaggio si ottiene raccogliendo $(n + 1)$ a fattor comune. La formula e' quindi dimostrata per $n + 1$.
+  L'ultimo passaggio si ottiene raccogliendo $(n + 1)$ a fattor comune. La formula è quindi dimostrata per $n + 1$.
 ]
 
 === Induzione strutturale
@@ -245,17 +243,17 @@ L'induzione matematica permette di dimostrare che una proprieta' $P(n)$ vale per
 L'induzione strutturale estende il principio di induzione matematica alle stringhe di un linguaggio generato da una grammatica. Invece di indurre sui numeri naturali, si induce sulla struttura delle stringhe.
 
 #definition(title: "Principio di induzione strutturale")[
-  Per dimostrare una proprieta' $P(w)$ per tutte le stringhe $w in L(S)$ generate da una grammatica:
-  - *Casi base*: dimostrare $P(omega)$ per le stringhe $omega in T^*$ che compaiono nella parte destra delle produzioni _atomiche_ (cioe' produzioni della forma $X ::= omega$ senza non-terminali a destra).
+  Per dimostrare una proprietà $P(w)$ per tutte le stringhe $w in L(S)$ generate da una grammatica:
+  - *Casi base*: dimostrare $P(omega)$ per le stringhe $omega in T^*$ che compaiono nella parte destra delle produzioni _atomiche_ (cioè produzioni della forma $X ::= omega$ senza non-terminali a destra).
   - *Casi induttivi*: per ogni produzione non atomica della forma $X ::= omega_0 Y_1 omega_1 ... Y_n omega_n$, assumendo che $P(s_1), ..., P(s_n)$ valgano per le stringhe $s_i$ generate dai non-terminali $Y_i$ (ipotesi induttiva), dimostrare che $P(omega_0 s_1 omega_1 ... s_n omega_n)$ vale.
 ]
 
 === Induzione sulle derivazioni
 
-L'induzione sulle derivazioni permette di dimostrare proprieta' valide per tutti i giudizi derivabili in un sistema logico. A differenza dell'induzione strutturale (che lavora sulla struttura delle stringhe), qui si lavora sulla *struttura delle derivazioni* stesse.
+L'induzione sulle derivazioni permette di dimostrare proprietà valide per tutti i giudizi derivabili in un sistema logico. A differenza dell'induzione strutturale (che lavora sulla struttura delle stringhe), qui si lavora sulla *struttura delle derivazioni* stesse.
 
 #definition(title: "Principio di induzione sulle derivazioni")[
-  Sia $cal(S)$ un sistema logico e $P$ una proprieta' sui giudizi. Per dimostrare che $P(J)$ vale per ogni giudizio $J$ derivabile in $cal(S)$:
+  Sia $cal(S)$ un sistema logico e $P$ una proprietà sui giudizi. Per dimostrare che $P(J)$ vale per ogni giudizio $J$ derivabile in $cal(S)$:
 
   *Casi base (assiomi):* Per ogni assioma
   #align(center)[
@@ -273,7 +271,7 @@ L'induzione sulle derivazioni permette di dimostrare proprieta' valide per tutti
 ]
 
 #note(title: "Intuizione")[
-  L'induzione sulle derivazioni riflette il modo in cui i giudizi vengono costruiti: partendo dagli assiomi (verita' di base) e applicando regole di inferenza. Se una proprieta' vale per le "fondamenta" (assiomi) e si "propaga" attraverso le regole, allora vale per tutto cio' che e' derivabile.
+  L'induzione sulle derivazioni riflette il modo in cui i giudizi vengono costruiti: partendo dagli assiomi (verità di base) e applicando regole di inferenza. Se una proprietà vale per le "fondamenta" (assiomi) e si "propaga" attraverso le regole, allora vale per tutto ciò che è derivabile.
 ]
 
 #example(title: "Applicazione: correttezza della valutazione")[
@@ -287,11 +285,11 @@ L'induzione sulle derivazioni permette di dimostrare proprieta' valide per tutti
     $e_1 + e_2 arrow.b.double v_1 + v_2$ #h(0.5cm) (Val-Sum)
   ]
 
-  Vogliamo dimostrare: "Se $e arrow.b.double v$ e' derivabile, allora $v$ e' un numero intero".
+  Vogliamo dimostrare: "Se $e arrow.b.double v$ è derivabile, allora $v$ è un numero intero".
 
-  *Caso base (Val-Num):* $n arrow.b.double n$. Il valore $n$ e' un numero intero per definizione.
+  *Caso base (Val-Num):* $n arrow.b.double n$. Il valore $n$ è un numero intero per definizione.
 
-  *Caso induttivo (Val-Sum):* Assumiamo (ipotesi induttiva) che $v_1$ e $v_2$ siano interi. Allora $v_1 + v_2$ e' la somma di due interi, quindi e' un intero.
+  *Caso induttivo (Val-Sum):* Assumiamo (ipotesi induttiva) che $v_1$ e $v_2$ siano interi. Allora $v_1 + v_2$ è la somma di due interi, quindi è un intero.
 ]
 
 #example(title: "Confronto dei tre tipi di induzione")[
@@ -318,17 +316,17 @@ L'induzione sulle derivazioni permette di dimostrare proprieta' valide per tutti
   )
 ]
 
-Questa tecnica sara' fondamentale per dimostrare proprieta' della semantica di MAO, come ad esempio:
+Questa tecnica sarà fondamentale per dimostrare proprietà della semantica di MAO, come ad esempio:
 - *Determinismo*: se $chevron.l e, rho, sigma chevron.r arrow.b.double v_1$ e $chevron.l e, rho, sigma chevron.r arrow.b.double v_2$, allora $v_1 = v_2$
-- *Type soundness*: se un'espressione e' ben tipata, la sua valutazione non produce errori di tipo
+- *Type soundness*: se un'espressione è ben tipata, la sua valutazione non produce errori di tipo
 
 #note(title: "Anticipazione: regole di tipo per gli operatori di confronto")[
-  Il sistema di tipi formale di MAO (presentato nel capitolo dedicato al linguaggio MAO completo) include una regola *T-Cop* per gli operatori di confronto ($<, <=, >, >=, ==, !=$). In tale regola, gli operandi sono vincolati ad avere tipo `int`. Si osservi tuttavia che, a livello semantico, gli operatori di uguaglianza `==` e disuguaglianza `!=` sono definiti anche su operandi booleani (come indicato nella tabella degli operatori di MiniMao). Questa discrepanza e' una scelta progettuale comune nei linguaggi didattici: il type checker puo' essere reso piu' permissivo estendendo T-Cop con una seconda variante che ammetta operandi di tipo `bool` per `==` e `!=`. Per i dettagli completi si rimanda alla sezione sulle regole di type checking nel capitolo su MAO.
+  Il sistema di tipi formale di MAO (presentato nel capitolo dedicato al linguaggio MAO completo) include una regola *T-Cop* per gli operatori di confronto ($<, <=, >, >=, ==, !=$). In tale regola, gli operandi sono vincolati ad avere tipo `int`. Si osservi tuttavia che, a livello semantico, gli operatori di uguaglianza `==` e disuguaglianza `!=` sono definiti anche su operandi booleani (come indicato nella tabella degli operatori di MiniMao). Questa discrepanza è una scelta progettuale comune nei linguaggi didattici: il type checker può essere reso più permissivo estendendo T-Cop con una seconda variante che ammetta operandi di tipo `bool` per `==` e `!=`. Per i dettagli completi si rimanda alla sezione sulle regole di type checking nel capitolo su MAO.
 ]
 
 == Esercizi: Dimostrazioni Induttive su Grammatiche
 
-In questa sezione vengono presentati esercizi di dimostrazione per induzione strutturale su grammatiche context-free. Per ogni esercizio si richiede di dimostrare una proprieta' valida per tutte le stringhe del linguaggio generato.
+In questa sezione vengono presentati esercizi di dimostrazione per induzione strutturale su grammatiche context-free. Per ogni esercizio si richiede di dimostrare una proprietà valida per tutte le stringhe del linguaggio generato.
 
 === Esercizio 1: Bilanciamento di $a$ e $b$
 
@@ -344,7 +342,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 
   *Caso base:* $S arrow.r a b$
 
-  La stringa generata e' $w = a b$. Contiamo le occorrenze:
+  La stringa generata è $w = a b$. Contiamo le occorrenze:
   - $\#_a (a b) = 1$
   - $\#_b (a b) = 1$
 
@@ -354,7 +352,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 
   Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_a (w') = \#_b (w') = k$ per qualche $k >= 1$.
 
-  La nuova stringa e' $w = a w' b$. Contiamo le occorrenze:
+  La nuova stringa è $w = a w' b$. Contiamo le occorrenze:
   - $\#_a (a w' b) = 1 + \#_a (w') = 1 + k$
   - $\#_b (a w' b) = \#_b (w') + 1 = k + 1$
 
@@ -393,7 +391,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 ]
 
 #note[
-  Il linguaggio $L(S) = \{a^n b^n | n >= 1\}$ e' l'esempio classico di linguaggio context-free non regolare. La proprieta' dimostrata ($\#_a = \#_b$) e' necessaria ma non sufficiente per caratterizzare il linguaggio (ad esempio $a b a b$ ha lo stesso numero di $a$ e $b$ ma non appartiene a $L(S)$).
+  Il linguaggio $L(S) = \{a^n b^n | n >= 1\}$ è l'esempio classico di linguaggio context-free non regolare. La proprietà dimostrata ($\#_a = \#_b$) è necessaria ma non sufficiente per caratterizzare il linguaggio (ad esempio $a b a b$ ha lo stesso numero di $a$ e $b$ ma non appartiene a $L(S)$).
 ]
 
 === Esercizio 2: Stringhe con esattamente una $c$
@@ -412,7 +410,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 
   *Caso base:* $S arrow.r c$
 
-  La stringa generata e' $w = c$. Verifichiamo:
+  La stringa generata è $w = c$. Verifichiamo:
   - $\#_c (c) = 1$ #sym.checkmark
   - $\#_a (c) = 0 = \#_b (c)$ #sym.checkmark
 
@@ -420,7 +418,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 
   Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_c (w') = 1$ e $\#_a (w') = \#_b (w') = k$ per qualche $k >= 0$.
 
-  La nuova stringa e' $w = b w' a$. Verifichiamo:
+  La nuova stringa è $w = b w' a$. Verifichiamo:
   - $\#_c (b w' a) = \#_c (w') = 1$ #sym.checkmark
   - $\#_a (b w' a) = \#_a (w') + 1 = k + 1$
   - $\#_b (b w' a) = 1 + \#_b (w') = 1 + k = k + 1$
@@ -431,7 +429,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 
   Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_c (w') = 1$ e $\#_a (w') = \#_b (w') = k$ per qualche $k >= 0$.
 
-  La nuova stringa e' $w = a w' b$. Verifichiamo:
+  La nuova stringa è $w = a w' b$. Verifichiamo:
   - $\#_c (a w' b) = \#_c (w') = 1$ #sym.checkmark
   - $\#_a (a w' b) = 1 + \#_a (w') = 1 + k$
   - $\#_b (a w' b) = \#_b (w') + 1 = k + 1$
@@ -481,7 +479,7 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 ]
 
 #note[
-  Questa grammatica genera il linguaggio delle stringhe palindrome? No! Ad esempio $a b c b a$ non e' generabile. La grammatica genera stringhe dove $c$ e' sempre al centro, ma le $a$ e $b$ a sinistra e destra di $c$ non sono necessariamente simmetriche.
+  Questa grammatica genera il linguaggio delle stringhe palindrome? No! Ad esempio $a b c b a$ non è generabile. La grammatica genera stringhe dove $c$ è sempre al centro, ma le $a$ e $b$ a sinistra e destra di $c$ non sono necessariamente simmetriche.
 ]
 
 === Esercizio 3: Almeno una $a$
@@ -498,21 +496,21 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 
   *Caso base:* $S arrow.r a$
 
-  La stringa generata e' $w = a$. Verifichiamo:
+  La stringa generata è $w = a$. Verifichiamo:
   - $\#_a (a) = 1 >= 1$ #sym.checkmark
 
   *Caso induttivo 1:* $S arrow.r S a$
 
   Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_a (w') >= 1$.
 
-  La nuova stringa e' $w = w' a$. Verifichiamo:
+  La nuova stringa è $w = w' a$. Verifichiamo:
   - $\#_a (w' a) = \#_a (w') + 1 >= 1 + 1 = 2 >= 1$ #sym.checkmark
 
   *Caso induttivo 2:* $S arrow.r S b$
 
   Assumiamo per ipotesi induttiva che la stringa $w'$ generata da $S$ soddisfi $\#_a (w') >= 1$.
 
-  La nuova stringa e' $w = w' b$. Verifichiamo:
+  La nuova stringa è $w = w' b$. Verifichiamo:
   - $\#_a (w' b) = \#_a (w') >= 1$ #sym.checkmark
 
   (Aggiungere una $b$ non cambia il numero di $a$, che rimane almeno 1.)
@@ -562,13 +560,13 @@ In questa sezione vengono presentati esercizi di dimostrazione per induzione str
 ]
 
 #note[
-  Questa grammatica genera il linguaggio $L(S) = \{a\} dot (a | b)^*$, cioe' tutte le stringhe su $\{a, b\}$ che iniziano con $a$. La proprieta' dimostrata ($\#_a >= 1$) e' una conseguenza immediata di questa caratterizzazione: ogni stringa inizia con almeno una $a$.
+  Questa grammatica genera il linguaggio $L(S) = \{a\} dot (a | b)^*$, cioè tutte le stringhe su $\{a, b\}$ che iniziano con $a$. La proprietà dimostrata ($\#_a >= 1$) è una conseguenza immediata di questa caratterizzazione: ogni stringa inizia con almeno una $a$.
 ]
 
 === Osservazioni metodologiche
 
 #note(title: "Schema generale per l'induzione strutturale")[
-  Per dimostrare una proprieta' $P(w)$ per tutte le stringhe $w in L(S)$:
+  Per dimostrare una proprietà $P(w)$ per tutte le stringhe $w in L(S)$:
 
   + *Identificare i casi base*: produzioni della forma $X ::= omega$ dove $omega in T^*$ (solo terminali)
 

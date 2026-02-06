@@ -1,10 +1,10 @@
 #import "../template.typ": *
 
-== Il linguaggio MAO (Modello Astratto Operazionale)
+== Il linguaggio MAO e gli array
 
 Il linguaggio MAO estende MiniMao con costrutti fondamentali per la programmazione reale: gli *array*, le *funzioni*, la *ricorsione* e un *sistema di tipi* formale. In questo capitolo si presenta ciascuno di questi aspetti, a partire dalla loro sintassi formale fino alla semantica operazionale e al type checking.
 
-== Array
+=== Array
 
 #definition(title: "Array -- definizione informale")[
   Un *array* e una struttura dati che permette di trattare in modo efficiente un insieme finito di dati omogenei, cioe tutti dello stesso tipo. Gli elementi sono memorizzati in celle contigue di memoria e sono accessibili tramite un indice posizionale intero.
@@ -18,7 +18,7 @@ In MAO, gli array si dichiarano specificando il tipo degli elementi seguito da `
 
 alloca in memoria un blocco contiguo di celle. La prima cella, situata all'_indirizzo base_ $l_b$, contiene la lunghezza dell'array. Le celle successive $l_b + 1, l_b + 2, ...$ contengono i singoli elementi. Per accedere all'elemento in posizione $i$ si usa la notazione $l_b [i]$, che corrisponde all'indirizzo $l_b + 1 + i$.
 
-=== Rappresentazione in memoria
+==== Rappresentazione in memoria
 
 Nella struttura memoria-ambiente di MAO, un array viene rappresentato tramite una catena di indirezione. L'ambiente $rho$ associa il nome della variabile a una locazione $l_x$, e la memoria $sigma$ associa $l_x$ all'indirizzo base $l_b$ dell'array:
 
@@ -42,7 +42,7 @@ Un array permette di trattare come entita atomiche intere collezioni di dati e, 
 
 cioe da $0$ (incluso) a "lunghezza" $- 1$ (incluso). Un accesso con indice fuori da questo intervallo costituisce un errore a tempo di esecuzione.
 
-== Sintassi degli array
+=== Sintassi degli array
 
 Per ottenere la lunghezza di un array si utilizza il costrutto `.length`, che restituisce un valore intero.
 
@@ -71,7 +71,7 @@ Dove ciascuna produzione ha il seguente significato:
 - $E "[" E "]"$: *accesso* a un singolo elemento dell'array, dove la prima espressione denota l'array e la seconda l'indice
 - $E "[" E "]" := E$: *assegnamento* a un elemento dell'array
 
-== Valori e riferimenti
+=== Valori e riferimenti
 
 In MiniMao le celle di memoria contenevano solamente valori interi e booleani. L'ambiente e la memoria erano definiti come:
 
@@ -87,7 +87,7 @@ Con l'introduzione degli array in MAO, il dominio dei valori viene esteso per in
 
 Le locazioni che compaiono come valori prendono il nome di *riferimenti*. Un riferimento non e un dato del programma, ma un indirizzo di memoria che permette di accedere indirettamente a una struttura dati.
 
-== Espressioni pure e con effetti collaterali
+=== Espressioni pure e con effetti collaterali
 
 #definition(title: "Espressione pura")[
   Un'espressione si dice *pura* se la sua valutazione non modifica lo stato della memoria. Il risultato dipende solo dai valori correnti delle variabili, senza effetti collaterali.
@@ -128,11 +128,11 @@ La distinzione tra espressioni pure e non pure ha importanti implicazioni pratic
 - *Ottimizzazioni del compilatore*: il compilatore puo riordinare o eliminare espressioni pure senza alterare la semantica del programma, ma non puo fare altrettanto con espressioni che hanno effetti collaterali
 - *Ragionamento formale*: le espressioni pure sono piu semplici da analizzare perche il loro comportamento e completamente determinato dai valori correnti delle variabili
 
-== Semantica operazionale degli array
+=== Semantica operazionale degli array
 
 Le regole seguenti definiscono la semantica operazionale degli array in stile _big-step_. In ciascuna regola, le premesse (sopra la linea) stabiliscono le condizioni necessarie, e la conclusione (sotto la linea) descrive il risultato della valutazione.
 
-=== Allocazione di un array letterale
+==== Allocazione di un array letterale
 
 Quando si valuta un letterale array $[E_1, ..., E_n]$, si valutano in ordine le $n$ espressioni, ottenendo i valori $v_1, ..., v_n$. Si allocano poi $n+1$ celle consecutive a partire dall'indirizzo base $l_b$: la prima cella memorizza la lunghezza $n$, le successive i valori degli elementi.
 
@@ -145,7 +145,7 @@ Quando si valuta un letterale array $[E_1, ..., E_n]$, si valutano in ordine le 
   Si osservi che il valore restituito e l'indirizzo base $l_b$, non l'array stesso. Cio riflette il fatto che in MAO gli array sono gestiti per riferimento. Inoltre, ogni espressione $E_i$ viene valutata nella memoria $sigma_(i-1)$ risultante dalla valutazione precedente, garantendo la corretta propagazione degli effetti collaterali.
 ]
 
-=== Allocazione con new
+==== Allocazione con new
 
 L'espressione `new T[E]` valuta prima $E$ per ottenere la dimensione $n$, poi alloca $n+1$ celle consecutive: la prima per la lunghezza, le restanti inizializzate al valore di default del tipo $T$ (tipicamente $0$ per `int`, `false` per `bool`).
 
@@ -154,7 +154,7 @@ L'espressione `new T[E]` valuta prima $E$ per ottenere la dimensione $n$, poi al
   $chevron.l "new" T[E], rho, sigma chevron.r arrow.b.double (l_b, sigma'[l_b |-> n][l_b+1 |-> "default"]...[l_b+n |-> "default"])$ #h(0.2cm) (Array-New)
 ]
 
-=== Lunghezza
+==== Lunghezza
 
 L'espressione `E.length` valuta $E$ ottenendo l'indirizzo base $l_b$, quindi legge il valore memorizzato in $l_b$, che per costruzione e la lunghezza dell'array.
 
@@ -163,7 +163,7 @@ L'espressione `E.length` valuta $E$ ottenendo l'indirizzo base $l_b$, quindi leg
   $chevron.l E."length", rho, sigma chevron.r arrow.b.double (n, sigma')$ #h(0.5cm) (Array-Length)
 ]
 
-=== Accesso a un elemento
+==== Accesso a un elemento
 
 L'espressione $E_1[E_2]$ valuta prima $E_1$ per ottenere l'indirizzo base $l_b$, poi $E_2$ per ottenere l'indice $i$. La premessa $0 <= i < sigma_2(l_b)$ garantisce che l'indice sia nell'intervallo valido. L'elemento cercato si trova all'indirizzo $l_b + 1 + i$ (si aggiunge 1 perche la prima cella contiene la lunghezza).
 
@@ -172,7 +172,7 @@ L'espressione $E_1[E_2]$ valuta prima $E_1$ per ottenere l'indirizzo base $l_b$,
   $chevron.l E_1[E_2], rho, sigma chevron.r arrow.b.double (sigma_2(l_b + 1 + i), sigma_2)$ #h(0.3cm) (Array-Access)
 ]
 
-=== Assegnamento in array
+==== Assegnamento in array
 
 Il comando $E_1[E_2] := E_3$ valuta le tre espressioni in ordine: $E_1$ per l'indirizzo base, $E_2$ per l'indice, $E_3$ per il nuovo valore. La cella all'indirizzo $l_b + 1 + i$ viene aggiornata con il valore $v$.
 
@@ -181,7 +181,7 @@ Il comando $E_1[E_2] := E_3$ valuta le tre espressioni in ordine: $E_1$ per l'in
   $chevron.l E_1[E_2] := E_3;, rho, sigma chevron.r arrow.r chevron.l rho, sigma_3[l_b + 1 + i |-> v] chevron.r$ #h(0.2cm) (Array-Assign)
 ]
 
-== Aliasing
+=== Aliasing
 
 #definition(title: "Aliasing")[
   Si ha *aliasing* quando due o piu variabili distinte fanno riferimento alla stessa zona di memoria. Poiche in MAO gli array sono gestiti tramite riferimenti (indirizzi base), l'assegnamento di un array a un'altra variabile copia il _riferimento_, non i dati. Di conseguenza, entrambe le variabili puntano allo stesso blocco di memoria.
@@ -206,7 +206,7 @@ Il comando $E_1[E_2] := E_3$ valuta le tre espressioni in ordine: $E_1$ per l'in
   L'aliasing ha implicazioni dirette sul passaggio di parametri alle funzioni. Quando si passa un array come argomento a una funzione, si passa il suo *riferimento* (indirizzo base). Di conseguenza, eventuali modifiche agli elementi dell'array effettuate nel corpo della funzione si riflettono sull'array originale del chiamante. Questo comportamento e equivalente a un passaggio per _riferimento implicito_.
 ]
 
-== Analisi statica e controllo di tipi
+== Analisi statica e sistema di tipi
 
 In un linguaggio di programmazione, le grammatiche definiscono in modo rigoroso le categorie sintattiche delle espressioni e dei comandi. Tuttavia, molti programmi sintatticamente validi possono contenere errori che si manifestano solo a tempo di esecuzione: ad esempio, sommare un intero con un booleano, oppure accedere a un array con un indice di tipo booleano. Per prevenire questa classe di errori si ricorre all'*analisi statica*.
 
@@ -216,11 +216,11 @@ In un linguaggio di programmazione, le grammatiche definiscono in modo rigoroso 
 
 La maggior parte dei linguaggi di programmazione moderni prevede diversi controlli di analisi statica (ad esempio, il controllo di raggiungibilita del codice, l'analisi di variabili non inizializzate, e altri). In MAO ci si limita al #underline[controllo dei tipi (type checking)], che verifica la coerenza tra i tipi dichiarati per le variabili e l'uso che ne viene fatto nelle espressioni e nei comandi.
 
-== Sistemi di tipi
+=== Sistemi di tipi
 
 In MAO il controllo dei tipi avviene in modo formale attraverso #underline[regole di tipo] che stabiliscono le condizioni necessarie affinche un'espressione o un comando vengano considerati #underline[ben tipati]. Il controllo e *composizionale*: le regole di tipo per un costrutto composito sono definite in funzione dei giudizi di tipo sulle sue sottocomponenti. Per poter effettuare questo controllo e necessario conoscere i tipi associati alle variabili che occorrono nelle espressioni e nei comandi; a tal fine si introduce l'_ambiente di tipo_.
 
-== Ambiente di tipo
+=== Ambiente di tipo
 
 #definition(title: "Ambiente di tipo")[
   L'*ambiente di tipo* $Gamma: bb(I) arrow.r.hook bb(T)$ e una funzione parziale che associa a ciascun identificatore nel suo dominio un tipo. La scrittura $Gamma(x) = "int"$ si legge: "nell'ambiente $Gamma$ si assume che la variabile $x$ abbia tipo `int`".
@@ -240,11 +240,11 @@ L'ambiente di tipo e un concetto esclusivamente statico: esiste solo a tempo di 
   L'ambiente di tipo risultante e $Gamma = {"temp" : "int", y : "bool"}$.
 ]
 
-== Variabili libere
+=== Variabili libere
 
 Le variabili libere di un'espressione o di un comando sono quelle variabili che vi occorrono senza essere state dichiarate localmente. La loro definizione formale e necessaria per garantire che il type checking possa procedere: ogni variabile libera deve essere presente nell'ambiente di tipo $Gamma$.
 
-=== Variabili libere in un'espressione
+==== Variabili libere in un'espressione
 
 Data un'espressione $E in bb(E)$, la funzione $"fv"(.): bb(E) arrow.r cal(P)_("fin")(bb(I))$ restituisce l'insieme finito di tutte le variabili che occorrono in $E$, dette #underline[variabili libere]. La funzione e definita per induzione sulla struttura dell'espressione:
 
@@ -275,7 +275,7 @@ Le costanti (numeriche e booleane) non contengono variabili libere. Un identific
   $"fv"($`x%7 == z*x`$) = "fv"($`x%7`$) union "fv"($`z*x`$) = {$`x`$} union {$`z, x`$} = {$`x, z`$}$
 ]
 
-=== Variabili libere in un comando
+==== Variabili libere in un comando
 
 Dato un comando $C in bb(C)$, la funzione $"fv"(.): bb(C) arrow.r cal(P)_("fin")(bb(I))$ restituisce l'insieme di tutte le variabili che occorrono in $C$ senza essere state dichiarate all'interno di $C$ stesso. La definizione per induzione richiede una funzione ausiliaria $"dv"(.): bb(C) arrow.r cal(P)_("fin")(bb(I))$, che restituisce l'insieme delle variabili _introdotte_ da dichiarazioni.
 
@@ -301,11 +301,11 @@ La funzione $"dv"(C)$ e definita come segue:
   $"dv"("altri comandi") &= emptyset$
 ]
 
-== Giudizi di tipo
+=== Giudizi di tipo
 
 I giudizi di tipo sono le asserzioni fondamentali del sistema di tipi. Ve ne sono di due forme, una per le espressioni e una per i comandi.
 
-=== Giudizi di tipo per le espressioni
+==== Giudizi di tipo per le espressioni
 
 Dato un ambiente di tipo $Gamma$ e un'espressione $E$ tale che $"fv"(E) subset.eq "dom"(Gamma)$, possiamo derivare un #underline[giudizio di tipo] della forma
 
@@ -315,7 +315,7 @@ Dato un ambiente di tipo $Gamma$ e un'espressione $E$ tale che $"fv"(E) subset.e
 
 che si legge: "nell'ambiente $Gamma$, l'espressione $E$ e ben tipata e ha tipo $T$". La condizione $"fv"(E) subset.eq "dom"(Gamma)$ garantisce che tutte le variabili che compaiono in $E$ abbiano un tipo noto.
 
-=== Giudizi di tipo per i comandi
+==== Giudizi di tipo per i comandi
 
 Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "dom"(Gamma)$, possiamo derivare un giudizio della forma
 
@@ -325,11 +325,11 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
 
 che si legge: "nell'ambiente $Gamma$, il comando $C$ e ben tipato e produce l'ambiente locale $Gamma'$". L'ambiente $Gamma'$ contiene le associazioni introdotte dalle eventuali dichiarazioni presenti in $C$; per i comandi che non dichiarano variabili (come l'assegnamento, il condizionale o il ciclo), si ha $Gamma' = emptyset$.
 
-== Regole di type checking per le espressioni
+=== Regole di type checking per le espressioni
 
 Le regole seguenti definiscono come derivare i giudizi di tipo per le espressioni. Ogni regola e presentata in stile _regola di inferenza_: le premesse si trovano sopra la linea orizzontale, la conclusione sotto.
 
-=== Costanti
+==== Costanti
 
 Una costante intera $n$ ha sempre tipo `int`, indipendentemente dall'ambiente. Le costanti booleane `true` e `false` hanno tipo `bool`. Queste sono regole _assiomatiche_ (senza premesse sostanziali).
 
@@ -346,7 +346,7 @@ Una costante intera $n$ ha sempre tipo `int`, indipendentemente dall'ambiente. L
   $Gamma tack "false" : "bool"$ #h(1cm) (T-False)
 ]
 
-=== Variabili
+==== Variabili
 
 Il tipo di un identificatore e quello assegnato dall'ambiente $Gamma$. La premessa richiede che l'identificatore sia presente nel dominio di $Gamma$.
 
@@ -355,7 +355,7 @@ Il tipo di un identificatore e quello assegnato dall'ambiente $Gamma$. La premes
   $Gamma tack "Id" : T$ #h(1cm) (T-Var)
 ]
 
-=== Operatori aritmetici
+==== Operatori aritmetici
 
 Gli operatori aritmetici ($+, -, times, div, mod$) richiedono che entrambi gli operandi abbiano tipo `int` e producono un risultato di tipo `int`.
 
@@ -364,7 +364,7 @@ Gli operatori aritmetici ($+, -, times, div, mod$) richiedono che entrambi gli o
   $Gamma tack E_1 "aop" E_2 : "int"$ #h(0.5cm) (T-Aop) dove $"aop" in {+, -, times, div, mod}$
 ]
 
-=== Operatori di confronto
+==== Operatori di confronto
 
 Gli operatori di confronto di ordinamento ($<, <=, >, >=$) confrontano due espressioni intere e producono un risultato booleano:
 
@@ -384,7 +384,7 @@ Gli operatori di uguaglianza e disuguaglianza ($==$, $!=$) accettano operandi de
   La distinzione tra (T-Cop) e (T-Eop) riflette il fatto che gli operatori di ordinamento hanno senso solo su valori interi (non ha significato confrontare `true < false`), mentre l'uguaglianza e la disuguaglianza sono definite anche per i booleani. Ad esempio, l'espressione `(x > 0) == (y > 0)` e ben tipata: entrambi i lati hanno tipo `bool` e l'operatore `==` accetta operandi booleani.
 ]
 
-=== Operatori logici
+==== Operatori logici
 
 Gli operatori logici binari ($and$, $or$) richiedono operandi booleani e producono un booleano. L'operatore unario $not$ nega un'espressione booleana.
 
@@ -398,7 +398,7 @@ Gli operatori logici binari ($and$, $or$) richiedono operandi booleani e produco
   $Gamma tack not E : "bool"$ #h(1cm) (T-Not)
 ]
 
-=== Regole di tipo per gli array
+==== Regole di tipo per gli array
 
 Le seguenti regole gestiscono il type checking dei costrutti relativi agli array.
 
@@ -428,11 +428,11 @@ Un letterale array $[E_1, ..., E_n]$ e ben tipato se tutte le espressioni hanno 
   $Gamma tack E_1[E_2] : T$ #h(0.5cm) (T-ArrayAccess)
 ]
 
-== Regole di type checking per i comandi
+=== Regole di type checking per i comandi
 
 Le regole per i comandi stabiliscono quando un comando e ben tipato e quale ambiente locale $Gamma'$ esso produce.
 
-=== Skip
+==== Skip
 
 Il comando `skip` e sempre ben tipato e non introduce nuove variabili.
 
@@ -441,7 +441,7 @@ Il comando `skip` e sempre ben tipato e non introduce nuove variabili.
   $Gamma tack "skip"; : emptyset$ #h(1cm) (T-Skip)
 ]
 
-=== Dichiarazione
+==== Dichiarazione
 
 Una dichiarazione `T Id = E;` e ben tipata se l'espressione $E$ ha tipo $T$. La dichiarazione introduce l'associazione $"Id" : T$ nell'ambiente locale.
 
@@ -450,7 +450,7 @@ Una dichiarazione `T Id = E;` e ben tipata se l'espressione $E$ ha tipo $T$. La 
   $Gamma tack T space "Id" = E; : {"Id" : T}$ #h(1cm) (T-Decl)
 ]
 
-=== Assegnamento
+==== Assegnamento
 
 Un assegnamento `Id := E;` e ben tipato se la variabile `Id` e gia presente nell'ambiente con tipo $T$ e l'espressione $E$ ha lo stesso tipo $T$. L'assegnamento non introduce nuove variabili.
 
@@ -459,7 +459,7 @@ Un assegnamento `Id := E;` e ben tipato se la variabile `Id` e gia presente nell
   $Gamma tack "Id" := E; : emptyset$ #h(1cm) (T-Assign)
 ]
 
-=== Assegnamento in array
+==== Assegnamento in array
 
 L'assegnamento a un elemento di array richiede che $E_1$ abbia tipo $T[]$, che $E_2$ abbia tipo `int` (l'indice) e che $E_3$ abbia tipo $T$ (coerente con il tipo degli elementi).
 
@@ -468,7 +468,7 @@ L'assegnamento a un elemento di array richiede che $E_1$ abbia tipo $T[]$, che $
   $Gamma tack E_1[E_2] := E_3; : emptyset$ #h(0.5cm) (T-ArrayAssign)
 ]
 
-=== Sequenza
+==== Sequenza
 
 La composizione sequenziale $C_1 C_2$ verifica prima $C_1$ nell'ambiente $Gamma$, ottenendo l'ambiente locale $Gamma_1$. Poi verifica $C_2$ nell'ambiente esteso $Gamma union Gamma_1$, ottenendo $Gamma_2$. L'ambiente locale complessivo e l'unione $Gamma_1 union Gamma_2$.
 
@@ -477,7 +477,7 @@ La composizione sequenziale $C_1 C_2$ verifica prima $C_1$ nell'ambiente $Gamma$
   $Gamma tack C_1 C_2 : Gamma_1 union Gamma_2$ #h(0.5cm) (T-Seq)
 ]
 
-=== Blocco
+==== Blocco
 
 Un blocco `{C}` incapsula un comando: le dichiarazioni all'interno del blocco sono _locali_ e non visibili all'esterno. Per questo motivo la regola restituisce l'ambiente vuoto $emptyset$.
 
@@ -486,7 +486,7 @@ Un blocco `{C}` incapsula un comando: le dichiarazioni all'interno del blocco so
   $Gamma tack {C} : emptyset$ #h(1cm) (T-Block)
 ]
 
-=== Condizionale
+==== Condizionale
 
 Il condizionale richiede che la guardia $E$ sia di tipo `bool` e che entrambi i rami $C_1$ e $C_2$ siano ben tipati. Non introduce nuove variabili nell'ambiente esterno, perche i rami sono racchiusi in blocchi.
 
@@ -495,7 +495,7 @@ Il condizionale richiede che la guardia $E$ sia di tipo `bool` e che entrambi i 
   $Gamma tack "if"(E){C_1}"else"{C_2} : emptyset$ #h(0.3cm) (T-If)
 ]
 
-=== Ciclo while
+==== Ciclo while
 
 Il ciclo `while` richiede che la guardia $E$ abbia tipo `bool` e che il corpo $C$ sia ben tipato. Come il condizionale, non introduce nuove variabili nell'ambiente esterno.
 
@@ -504,7 +504,7 @@ Il ciclo `while` richiede che la guardia $E$ abbia tipo `bool` e che il corpo $C
   $Gamma tack "while"(E){C} : emptyset$ #h(0.5cm) (T-While)
 ]
 
-== Esempi di derivazioni di tipo
+=== Esempi di derivazioni di tipo
 
 I seguenti esempi illustrano come le regole di type checking vengano applicate per costruire _alberi di derivazione_ che dimostrano la correttezza dei tipi in un programma.
 
@@ -682,7 +682,7 @@ I seguenti esempi illustrano come le regole di type checking vengano applicate p
   Il programma e *ben tipato*.
 ]
 
-== Controllo di tipi e inferenza di tipo
+=== Controllo di tipi e inferenza di tipo
 
 Il sistema di tipi di MAO e un sistema a *controllo di tipi* (type checking): il programmatore dichiara esplicitamente il tipo di ogni variabile e il type checker verifica che l'uso sia coerente con le dichiarazioni. Questa non e l'unica strategia possibile.
 
@@ -698,9 +698,11 @@ Molti linguaggi moderni adottano approcci diversi:
   permette al compilatore di dedurre che `x` ha tipo `int` dal fatto che `5 + 3` e un'espressione aritmetica il cui risultato e un intero.
 ]
 
-== Tipi base aggiuntivi: char e stringhe
+== Estensioni del linguaggio
 
-=== Caratteri
+=== Tipi base aggiuntivi: char e stringhe
+
+==== Caratteri
 
 Il tipo `char` rappresenta singoli simboli, lettere e altri caratteri alfanumerici. In MAO i caratteri possono essere codificati secondo lo standard `ASCII` o `Unicode`. I caratteri _speciali_ (come il ritorno a capo o la tabulazione) vengono rappresentati tramite _sequenze di escape_, cioe combinazioni di caratteri che iniziano con il backslash.
 
@@ -712,7 +714,7 @@ Il tipo `char` rappresenta singoli simboli, lettere e altri caratteri alfanumeri
   Il valore `'\n'` e la sequenza di escape che rappresenta il carattere di ritorno a capo (_newline_).
 ]
 
-=== Stringhe
+==== Stringhe
 
 Le stringhe in MAO sono trattate come array di caratteri, ovvero hanno tipo `char[]`. Questa scelta semplifica la semantica: tutte le operazioni sugli array (accesso per indice, `.length`, assegnamento) si applicano direttamente alle stringhe.
 
@@ -724,7 +726,7 @@ Le stringhe in MAO sono trattate come array di caratteri, ovvero hanno tipo `cha
   Pertanto `saluto.length` restituisce $4$ e `saluto[0]` restituisce `'C'`.
 ]
 
-== Assegnamento multiplo
+=== Assegnamento multiplo
 
 Molti linguaggi di programmazione permettono di dichiarare o assegnare piu variabili contemporaneamente in un unico comando. Questa funzionalita, detta *assegnamento multiplo*, consente di scrivere codice piu compatto e, in alcuni casi, di realizzare operazioni altrimenti impossibili con assegnamenti singoli.
 
@@ -744,7 +746,7 @@ L'assegnamento multiplo e particolarmente utile per lo *scambio di variabili* (s
   Tutte le espressioni a destra vengono valutate _prima_ che qualsiasi assegnamento abbia luogo. Cio significa che i valori originali di `x` e `y` vengono letti, e solo successivamente scritti nelle posizioni scambiate.
 ]
 
-=== Sintassi dell'assegnamento multiplo
+==== Sintassi dell'assegnamento multiplo
 
 Si introducono due nuove categorie sintattiche, LHS (_Left-Hand Side_) e RHS (_Right-Hand Side_):
 
@@ -759,7 +761,7 @@ I comandi atomici vengono generalizzati per includere la forma multipla:
   $C &::= ... | T space "LHS" = "RHS"; | "LHS" := "RHS";$
 ]
 
-=== Type checking per l'assegnamento multiplo
+==== Type checking per l'assegnamento multiplo
 
 Le variabili libere di LHS e RHS sono definite come:
 #align(center)[
@@ -778,7 +780,7 @@ La regola di tipo per l'assegnamento multiplo richiede che ogni espressione $E_i
   La regola (T-MultiAssign) si applica all'assegnamento di variabili semplici. Per l'assegnamento a elementi di array all'interno di un assegnamento multiplo (ad esempio `a[0], b[1] := 5, 10;`) si applicano le stesse verifiche di tipo della regola (T-ArrayAssign) per ciascuna posizione del lato sinistro che sia un accesso ad array.
 ]
 
-=== Semantica operazionale dell'assegnamento multiplo
+==== Semantica operazionale dell'assegnamento multiplo
 
 La semantica della dichiarazione multipla prevede la valutazione sequenziale di tutte le espressioni, seguita dall'allocazione simultanea delle variabili:
 
@@ -798,7 +800,7 @@ La semantica della dichiarazione multipla prevede la valutazione sequenziale di 
   Nell'assegnamento multiplo `x, y := y, x`, la semantica garantisce che tutte le espressioni del lato destro vengano valutate _prima_ di effettuare gli assegnamenti. Questo significa che `y` e `x` vengono letti con i loro valori originali, e solo dopo i risultati vengono scritti nelle locazioni di `x` e `y` rispettivamente. Lo swap avviene correttamente senza bisogno di variabili temporanee.
 ]
 
-== Direttiva return
+=== Direttiva return
 
 La direttiva `return` permette a un blocco di codice (tipicamente il corpo di una funzione) di restituire un valore al chiamante. Il valore restituito e il risultato della valutazione dell'espressione che segue la parola chiave `return`.
 
@@ -809,7 +811,7 @@ La direttiva `return` permette a un blocco di codice (tipicamente il corpo di un
   Questo blocco incrementa la variabile `count` e restituisce il suo nuovo valore.
 ]
 
-=== Sintassi
+==== Sintassi
 
 La grammatica dei comandi viene estesa con la produzione:
 
@@ -817,7 +819,7 @@ La grammatica dei comandi viene estesa con la produzione:
   $C ::= ... | "return" E;$
 ]
 
-=== Variabili libere
+==== Variabili libere
 
 Le variabili libere di un comando `return` sono quelle dell'espressione restituita:
 
@@ -825,7 +827,7 @@ Le variabili libere di un comando `return` sono quelle dell'espressione restitui
   $"fv"("return" E;) = "fv"(E)$
 ]
 
-=== Type checking
+==== Type checking
 
 La regola di tipo verifica che l'espressione restituita sia ben tipata. Il comando `return` non introduce nuove variabili.
 
@@ -838,7 +840,7 @@ La regola di tipo verifica che l'espressione restituita sia ben tipata. Il coman
   In un sistema di tipi completo, il tipo $T$ dell'espressione restituita dovrebbe essere confrontato con il tipo di ritorno dichiarato nella firma della funzione. In MAO questo controllo viene effettuato dalla regola (T-Fun) o (T-RecFun).
 ]
 
-=== Semantica operazionale
+==== Semantica operazionale
 
 L'esecuzione di `return E;` valuta l'espressione $E$ nello stato corrente e produce una terna $(v, rho, sigma')$ che segnala la terminazione con il valore $v$:
 
@@ -847,7 +849,7 @@ L'esecuzione di `return E;` valuta l'espressione $E$ nello stato corrente e prod
   $chevron.l "return" E;, rho, sigma chevron.r arrow.r (v, rho, sigma')$ #h(1cm) (Return)
 ]
 
-=== Propagazione del return nei comandi composti
+==== Propagazione del return nei comandi composti
 
 Quando un comando `return` viene eseguito all'interno di un comando composto (sequenza, condizionale o ciclo), il valore restituito deve *propagarsi verso l'alto* fino al contesto della funzione chiamante. In pratica, l'esecuzione di un `return` interrompe immediatamente l'esecuzione del corpo della funzione e restituisce il valore al chiamante.
 
@@ -904,9 +906,9 @@ Quando un array viene passato come parametro attuale, il valore copiato nel para
   Questa e una conseguenza diretta del meccanismo di aliasing descritto in precedenza. Poiche la variabile di tipo array contiene un riferimento e non i dati stessi, copiare la variabile equivale a creare un alias.
 ]
 
-== Sintassi delle funzioni
+=== Sintassi delle funzioni
 
-=== Dichiarazione
+==== Dichiarazione
 
 La sintassi della dichiarazione di funzione e la seguente:
 
@@ -916,7 +918,7 @@ La sintassi della dichiarazione di funzione e la seguente:
 
 dove $T_R$ e il *tipo di ritorno* (puo essere `void` per funzioni che non restituiscono un valore), $"Id"$ e il nome della funzione, $T_i space "Id"_i$ sono le coppie tipo-nome dei parametri formali, e $C$ e il corpo della funzione.
 
-=== Invocazione
+==== Invocazione
 
 La sintassi della chiamata di funzione e:
 
@@ -926,7 +928,7 @@ La sintassi della chiamata di funzione e:
 
 dove le espressioni $E_1, ..., E_n$ sono i parametri attuali.
 
-=== Tipo di una funzione
+==== Tipo di una funzione
 
 Il tipo di una funzione viene rappresentato come un tipo freccia:
 
@@ -936,7 +938,7 @@ Il tipo di una funzione viene rappresentato come un tipo freccia:
 
 dove $(T_1, ..., T_n)$ sono i tipi dei parametri formali e $T_R$ e il tipo di ritorno.
 
-=== Variabili libere di una funzione
+==== Variabili libere di una funzione
 
 Le variabili libere nel corpo di una funzione escludono i parametri formali, che sono dichiarati nell'intestazione:
 
@@ -944,9 +946,9 @@ Le variabili libere nel corpo di una funzione escludono i parametri formali, che
   $"fv"(T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}) = "fv"(C) backslash {"Id"_1, ..., "Id"_n}$
 ]
 
-== Type checking delle funzioni
+=== Type checking delle funzioni
 
-=== Dichiarazione di funzione
+==== Dichiarazione di funzione
 
 La regola di tipo per la dichiarazione di una funzione verifica che il corpo $C$ sia ben tipato in un ambiente esteso con i parametri formali. La dichiarazione introduce nell'ambiente l'associazione tra il nome della funzione e il suo tipo freccia.
 
@@ -959,7 +961,7 @@ La regola di tipo per la dichiarazione di una funzione verifica che il corpo $C$
   Si osservi che il corpo della funzione viene verificato nell'ambiente $Gamma union {"Id"_1 : T_1, ..., "Id"_n : T_n}$, in cui i parametri formali sono disponibili con i loro tipi dichiarati. L'ambiente $Gamma$ del chiamante resta invariato tranne per l'aggiunta del tipo della funzione.
 ]
 
-=== Invocazione di funzione
+==== Invocazione di funzione
 
 La regola per l'invocazione verifica che la funzione sia presente nell'ambiente con un tipo freccia compatibile e che i tipi dei parametri attuali corrispondano (posizionalmente) ai tipi dei parametri formali.
 
@@ -968,9 +970,9 @@ La regola per l'invocazione verifica che la funzione sia presente nell'ambiente 
   $Gamma tack "Id"(E_1, ..., E_n) : T_R$ #h(0.5cm) (T-Call)
 ]
 
-== Semantica operazionale delle funzioni
+=== Semantica operazionale delle funzioni
 
-=== Dichiarazione di funzione
+==== Dichiarazione di funzione
 
 La dichiarazione di una funzione non esegue il corpo, ma memorizza nell'ambiente una *chiusura* (_closure_), ovvero una terna composta dai nomi dei parametri formali, dal corpo della funzione e dall'ambiente al momento della dichiarazione:
 
@@ -983,7 +985,7 @@ La dichiarazione di una funzione non esegue il corpo, ma memorizza nell'ambiente
   La chiusura cattura l'ambiente $rho$ al momento della dichiarazione. Questo e essenziale per lo *scoping statico* (o _lessicale_): quando la funzione verra invocata, le variabili libere nel corpo saranno risolte nell'ambiente della dichiarazione, non in quello della chiamata. Senza la chiusura, una funzione definita in un certo contesto e chiamata in un altro potrebbe accedere a variabili diverse da quelle previste dal programmatore.
 ]
 
-=== Chiamata di funzione
+==== Chiamata di funzione
 
 La chiamata di funzione si articola nei seguenti passi:
 1. Si recupera la chiusura della funzione dall'ambiente del chiamante
@@ -1055,7 +1057,7 @@ dove $rho' = rho["Id" |-> ("Id"_1, ..., "Id"_n, C, rho')]$
   Si osservi la natura circolare della definizione: l'ambiente $rho'$ contenuto nella chiusura include il binding di $"Id"$ alla chiusura stessa. Questa autoreferenza e cio che rende possibile la ricorsione a livello semantico. Quando il corpo $C$ viene eseguito durante una chiamata, il nome della funzione e presente nell'ambiente $rho'$ e punta alla stessa chiusura, permettendo di effettuare chiamate ricorsive. Senza questo meccanismo, il corpo della funzione non troverebbe il binding per $"Id"$ nell'ambiente e la chiamata ricorsiva fallirebbe. La regola (Call) non necessita di modifiche: funziona identicamente per funzioni ricorsive e non ricorsive, perche la ricorsione e interamente gestita dalla struttura della chiusura.
 ]
 
-== Esempi completi di derivazioni di tipo per funzioni
+=== Esempi completi
 
 #example(title: "Type checking della funzione abs")[
   Verifichiamo che la funzione `abs` (valore assoluto) sia ben tipata:

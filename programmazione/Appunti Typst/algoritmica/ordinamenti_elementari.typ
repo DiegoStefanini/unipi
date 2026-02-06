@@ -2,7 +2,7 @@
 
 == Insertion Sort
 
-L'Insertion Sort e' un algoritmo di ordinamento iterativo. L'idea e' quella di mantenere una porzione iniziale dell'array già ordinata e, ad ogni passo, inserire il prossimo elemento nella posizione corretta all'interno di tale porzione.
+L'Insertion Sort è un algoritmo di ordinamento iterativo. L'idea è quella di mantenere una porzione iniziale dell'array già ordinata e, ad ogni passo, inserire il prossimo elemento nella posizione corretta all'interno di tale porzione.
 
 *Input*: array $A[1..n]$ di interi. \
 *Output*: $A$ ordinato in modo non decrescente: $A[1] <= A[2] <= dots <= A[n]$.
@@ -50,42 +50,42 @@ Per dimostrare che l'Insertion Sort produce effettivamente un array ordinato, ut
 
 #demonstration[
   *Inizializzazione* ($j = 2$): \
-  Prima della prima iterazione, il sottoarray $A[1..1]$ contiene un solo elemento. Un singolo elemento e' banalmente ordinato, e coincide con l'elemento originale. L'invariante e' verificato.
+  Prima della prima iterazione, il sottoarray $A[1..1]$ contiene un solo elemento. Un singolo elemento è banalmente ordinato, e coincide con l'elemento originale. L'invariante è verificato.
 
-  *Mantenimento*: Supponiamo che l'invariante sia vero all'inizio dell'iterazione $j$-esima, ovvero $A[1..j-1]$ e' ordinato e contiene gli elementi originali. Il corpo del ciclo:
+  *Mantenimento*: Supponiamo che l'invariante sia vero all'inizio dell'iterazione $j$-esima, ovvero $A[1..j-1]$ è ordinato e contiene gli elementi originali. Il corpo del ciclo:
   + Salva $A[j]$ nella variabile $k$.
   + Il ciclo interno sposta a destra gli elementi di $A[1..j-1]$ che sono maggiori di $k$, preservando il loro ordine relativo.
   + Inserisce $k$ nella posizione corretta, cioè immediatamente dopo l'ultimo elemento $<= k$.
 
-  Al termine, $A[1..j]$ contiene tutti gli elementi originali di $A[1..j]$ ed e' ordinato. L'invariante vale quindi per $j + 1$.
+  Al termine, $A[1..j]$ contiene tutti gli elementi originali di $A[1..j]$ ed è ordinato. L'invariante vale quindi per $j + 1$.
 
   *Terminazione* ($j = n + 1$): \
-  Il ciclo termina quando $j = n + 1$. Per l'invariante, $A[1..n]$ contiene gli elementi originali in ordine non decrescente. Questo e' esattamente la specifica dell'output desiderato.
+  Il ciclo termina quando $j = n + 1$. Per l'invariante, $A[1..n]$ contiene gli elementi originali in ordine non decrescente. Questo è esattamente la specifica dell'output desiderato.
 ]
 
 === Analisi della complessità
 
-Sia $d_j$ il numero di volte in cui il ciclo interno viene eseguito (con guardia vera) per un dato valore di $j$. Al variare di $j$ da 2 a $n$, il numero totale di confronti e':
+Sia $d_j$ il numero di volte in cui il ciclo interno viene eseguito (con guardia vera) per un dato valore di $j$. Al variare di $j$ da 2 a $n$, il numero totale di confronti è:
 
 $ C(n) = sum_(j=2)^n d_j $
 
-- *Caso ottimo*: l'array e' già ordinato. Per ogni $j$, la condizione $A[i] > k$ e' subito falsa, dunque $d_j = 0$ spostamenti vengono effettuati. Tuttavia, anche quando $d_j = 0$, si esegue comunque un confronto: il test di guardia del ciclo interno ($A[i] > k$) che risulta immediatamente falso. Per questo il costo per ogni $j$ e' di 1 confronto. Il numero totale di confronti e':
+- *Caso ottimo*: l'array è già ordinato. Per ogni $j$, la condizione $A[i] > k$ è subito falsa, dunque $d_j = 0$ spostamenti vengono effettuati. Tuttavia, anche quando $d_j = 0$, si esegue comunque un confronto: il test di guardia del ciclo interno ($A[i] > k$) che risulta immediatamente falso. Per questo il costo per ogni $j$ è di 1 confronto. Il numero totale di confronti è:
   $ C(n) = sum_(j=2)^n 1 = n - 1 = Theta(n) $
-  La complessità e' *lineare*.
+  La complessità è *lineare*.
 
-- *Caso pessimo*: l'array e' ordinato in ordine decrescente. Per ogni $j$, tutti gli elementi di $A[1..j-1]$ sono maggiori della chiave, e il ciclo interno esegue $j - 1$ spostamenti. Il numero totale di confronti e':
+- *Caso pessimo*: l'array è ordinato in ordine decrescente. Per ogni $j$, tutti gli elementi di $A[1..j-1]$ sono maggiori della chiave, e il ciclo interno esegue $j - 1$ spostamenti. Il numero totale di confronti è:
   $ C(n) = sum_(j=2)^n (j - 1) = sum_(k=1)^(n-1) k = frac(n(n-1), 2) = Theta(n^2) $
-  La complessità e' *quadratica*.
+  La complessità è *quadratica*.
 
 In sintesi:
 - *Caso ottimo*: $T(n) = Theta(n)$ -- lineare
 - *Caso pessimo*: $T(n) = Theta(n^2)$ -- quadratico
 
-L'Insertion Sort e' dunque un algoritmo efficiente su array quasi ordinati, ma inadeguato per array in ordine inverso o casuale di grandi dimensioni.
+L'Insertion Sort è dunque un algoritmo efficiente su array quasi ordinati, ma inadeguato per array in ordine inverso o casuale di grandi dimensioni.
 
 == Selection Sort
 
-Il Selection Sort e' un algoritmo di ordinamento iterativo basato su un'idea diversa dall'Insertion Sort: ad ogni passo, si seleziona il minimo tra gli elementi non ancora ordinati e lo si colloca nella posizione corretta tramite uno scambio.
+Il Selection Sort è un algoritmo di ordinamento iterativo basato su un'idea diversa dall'Insertion Sort: ad ogni passo, si seleziona il minimo tra gli elementi non ancora ordinati e lo si colloca nella posizione corretta tramite uno scambio.
 
 *Input*: array $A[1..n]$ di interi. \
 *Output*: $A$ ordinato in modo non decrescente: $A[1] <= A[2] <= dots <= A[n]$.
@@ -131,34 +131,34 @@ Il Selection Sort e' un algoritmo di ordinamento iterativo basato su un'idea div
 ]
 
 #note(title: "Invariante del ciclo interno del Selection Sort")[
-  Il ciclo interno del Selection Sort mantiene la seguente invariante: all'inizio dell'iterazione $j$-esima del ciclo interno, $A["min"]$ e' il minimo di $A[i..j-1]$. Questo garantisce che, al termine del ciclo interno (quando $j = n + 1$), $A["min"]$ sia effettivamente il minimo dell'intero sottoarray $A[i..n]$.
+  Il ciclo interno del Selection Sort mantiene la seguente invariante: all'inizio dell'iterazione $j$-esima del ciclo interno, $A["min"]$ è il minimo di $A[i..j-1]$. Questo garantisce che, al termine del ciclo interno (quando $j = n + 1$), $A["min"]$ sia effettivamente il minimo dell'intero sottoarray $A[i..n]$.
 ]
 
 === Dimostrazione di correttezza con invariante di ciclo
 
 *Invariante*: All'inizio dell'iterazione $i$-esima del ciclo esterno:
-+ Il sottoarray $A[1..i-1]$ e' ordinato in modo non decrescente.
-+ Ogni elemento di $A[1..i-1]$ e' minore o uguale ad ogni elemento di $A[i..n]$.
++ Il sottoarray $A[1..i-1]$ è ordinato in modo non decrescente.
++ Ogni elemento di $A[1..i-1]$ è minore o uguale ad ogni elemento di $A[i..n]$.
 
 #demonstration[
   *Inizializzazione* ($i = 1$): \
-  Il sottoarray $A[1..0]$ e' vuoto. Entrambe le condizioni dell'invariante sono banalmente verificate (proprietà dell'insieme vuoto).
+  Il sottoarray $A[1..0]$ è vuoto. Entrambe le condizioni dell'invariante sono banalmente verificate (proprietà dell'insieme vuoto).
 
   *Mantenimento*: Supponiamo l'invariante vero per $i$. Dimostriamo che vale per $i + 1$.
   - Il ciclo interno esamina $A[i], A[i+1], ..., A[n]$ e individua l'indice $"min"$ dell'elemento minimo in questo sottoarray.
   - Lo scambio tra $A[i]$ e $A["min"]$ colloca in posizione $i$ il più piccolo elemento di $A[i..n]$.
   - Per l'ipotesi induttiva (condizione 2), tutti gli elementi di $A[1..i-1]$ sono $<=$ ad ogni elemento di $A[i..n]$, e in particolare $<= A[i]$ dopo lo scambio.
-  - Dunque $A[1..i]$ e' ordinato e contiene gli $i$ elementi più piccoli dell'array.
-  - Ogni elemento di $A[i+1..n]$ e' $>= A[i]$ (perché $A[i]$ era il minimo di $A[i..n]$).
+  - Dunque $A[1..i]$ è ordinato e contiene gli $i$ elementi più piccoli dell'array.
+  - Ogni elemento di $A[i+1..n]$ è $>= A[i]$ (perché $A[i]$ era il minimo di $A[i..n]$).
   L'invariante vale per $i + 1$.
 
   *Terminazione* ($i = n$): \
-  Per l'invariante, $A[1..n-1]$ e' ordinato e contiene gli $n - 1$ elementi più piccoli. L'unico elemento rimasto, $A[n]$, e' necessariamente il più grande. L'intero array e' ordinato.
+  Per l'invariante, $A[1..n-1]$ è ordinato e contiene gli $n - 1$ elementi più piccoli. L'unico elemento rimasto, $A[n]$, è necessariamente il più grande. L'intero array è ordinato.
 ]
 
 === Analisi della complessità
 
-Il ciclo interno, per un dato valore di $i$, esegue esattamente $n - i$ confronti. Il numero totale di confronti e':
+Il ciclo interno, per un dato valore di $i$, esegue esattamente $n - i$ confronti. Il numero totale di confronti è:
 
 $ C(n) = sum_(i=1)^(n-1) (n - i) = (n-1) + (n-2) + dots + 1 = sum_(k=1)^(n-1) k = frac(n(n-1), 2) = Theta(n^2) $
 
@@ -169,25 +169,25 @@ $ T(n) = Theta(n^2) $
 #note(title: "Confronto tra Insertion Sort e Selection Sort")[
   - L'Insertion Sort ha complessità $Theta(n)$ nel caso ottimo (array ordinato) e $Theta(n^2)$ nel caso pessimo.
   - Il Selection Sort ha complessità $Theta(n^2)$ in tutti i casi.
-  - L'Insertion Sort e' quindi preferibile quando l'input può essere parzialmente ordinato.
+  - L'Insertion Sort è quindi preferibile quando l'input può essere parzialmente ordinato.
   - Il Selection Sort ha il vantaggio di eseguire al più $n - 1$ scambi (utile quando le operazioni di scrittura sono costose).
 ]
 
 #note(title: "Stabilità degli algoritmi di ordinamento")[
   Un algoritmo di ordinamento si dice *stabile* se preserva l'ordine relativo degli elementi con la stessa chiave.
 
-  - *Insertion Sort e' stabile*: il ciclo interno si arresta quando incontra un elemento $<= k$ (la condizione e' $A[i] > k$, strettamente maggiore). Pertanto, elementi uguali alla chiave non vengono spostati e mantengono la loro posizione relativa originale.
-  - *Selection Sort non e' stabile*: lo scambio tra $A[i]$ e $A["min"]$ può alterare l'ordine relativo di elementi uguali. Ad esempio, con $A = [2_a, 2_b, 1]$, alla prima iterazione si scambia $2_a$ con $1$, ottenendo $[1, 2_b, 2_a]$: l'ordine relativo di $2_a$ e $2_b$ e' invertito.
+  - *Insertion Sort è stabile*: il ciclo interno si arresta quando incontra un elemento $<= k$ (la condizione è $A[i] > k$, strettamente maggiore). Pertanto, elementi uguali alla chiave non vengono spostati e mantengono la loro posizione relativa originale.
+  - *Selection Sort non è stabile*: lo scambio tra $A[i]$ e $A["min"]$ può alterare l'ordine relativo di elementi uguali. Ad esempio, con $A = [2_a, 2_b, 1]$, alla prima iterazione si scambia $2_a$ con $1$, ottenendo $[1, 2_b, 2_a]$: l'ordine relativo di $2_a$ e $2_b$ è invertito.
 ]
 
 == Invariante di ciclo: schema generale
 
-La tecnica dell'invariante di ciclo e' uno strumento fondamentale per dimostrare la *correttezza* degli algoritmi iterativi. Formalizziamo la sua struttura.
+La tecnica dell'invariante di ciclo è uno strumento fondamentale per dimostrare la *correttezza* degli algoritmi iterativi. Formalizziamo la sua struttura.
 
 #definition(title: "Invariante di ciclo")[
-  Un *invariante di ciclo* e' una proprietà logica $P$ tale che:
-  + *Inizializzazione*: $P$ e' vera prima della prima iterazione del ciclo.
-  + *Mantenimento*: se $P$ e' vera all'inizio di un'iterazione, allora e' vera anche all'inizio dell'iterazione successiva.
+  Un *invariante di ciclo* è una proprietà logica $P$ tale che:
+  + *Inizializzazione*: $P$ è vera prima della prima iterazione del ciclo.
+  + *Mantenimento*: se $P$ è vera all'inizio di un'iterazione, allora è vera anche all'inizio dell'iterazione successiva.
   + *Terminazione*: quando il ciclo termina, l'invariante $P$, combinata con la condizione di uscita dal ciclo, implica la correttezza dell'algoritmo.
 ]
 

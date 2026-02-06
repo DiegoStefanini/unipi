@@ -2,37 +2,37 @@
 
 == MiniMao
 
-In questo capitolo introduciamo *MiniMao*, una versione ristretta del linguaggio MAO. L'obiettivo e' definire formalmente la _sintassi_ (quali programmi sono corretti) e la _semantica operazionale_ (come i programmi vengono eseguiti) utilizzando i sistemi logici introdotti nella sezione precedente.
+In questo capitolo introduciamo *MiniMao*, una versione ristretta del linguaggio MAO. L'obiettivo è definire formalmente la _sintassi_ (quali programmi sono corretti) e la _semantica operazionale_ (come i programmi vengono eseguiti) utilizzando i sistemi logici introdotti nella sezione precedente.
 
-== Variabili, ambiente e memoria
+=== Variabili, ambiente e memoria
 
-La programmazione consiste nell'ideare uno o piu' algoritmi che risolvano un problema, valutarne l'efficacia e codificarli in un linguaggio eseguibile da un calcolatore. Un programma e' una sequenza di istruzioni che indicano al calcolatore le operazioni da eseguire. Come istruzione elementare consideriamo la possibilita' di memorizzare il risultato di un calcolo. Per riferirsi a questi valori si utilizzano nomi simbolici detti #underline[nomi di variabile].
+La programmazione consiste nell'ideare uno o più algoritmi che risolvano un problema, valutarne l'efficacia e codificarli in un linguaggio eseguibile da un calcolatore. Un programma è una sequenza di istruzioni che indicano al calcolatore le operazioni da eseguire. Come istruzione elementare consideriamo la possibilità di memorizzare il risultato di un calcolo. Per riferirsi a questi valori si utilizzano nomi simbolici detti #underline[nomi di variabile].
 
 #note(title: "Equazioni vs assegnamenti")[
   Equazioni matematiche e assegnamenti sono due concetti profondamente diversi. Consideriamo $n = n^2 - 2$:
   - Se interpretato come *equazione matematica*, cerchiamo il valore di $n$ che verifica l'uguaglianza: le soluzioni sono $n in {2, -1}$.
-  - Se interpretato come *assegnamento*, il significato e' operazionale: se $n$ attualmente vale 5, dopo l'assegnamento $n$ assume il valore $5^2 - 2 = 23$.
+  - Se interpretato come *assegnamento*, il significato è operazionale: se $n$ attualmente vale 5, dopo l'assegnamento $n$ assume il valore $5^2 - 2 = 23$.
 
-  Per evitare ambiguita', MAO usa simboli diversi: `=` per la dichiarazione e `:=` per l'assegnamento.
+  Per evitare ambiguità, MAO usa simboli diversi: `=` per la dichiarazione e `:=` per l'assegnamento.
 ]
 
-=== Concetto di variabile
+==== Concetto di variabile
 
-Una variabile in MAO e' modellata come una "scatola" dotata di un *nome* (l'identificatore), un *tipo* (che determina quali valori puo' contenere) e un *valore corrente* (il contenuto della scatola). La dichiarazione crea la variabile e le assegna un valore iniziale:
+Una variabile in MAO è modellata come una "scatola" dotata di un *nome* (l'identificatore), un *tipo* (che determina quali valori può contenere) e un *valore corrente* (il contenuto della scatola). La dichiarazione crea la variabile e le assegna un valore iniziale:
 
 ```
 int eta = 15;
 ```
 
-Successivamente, il valore puo' cambiare tramite assegnamento (si noti l'uso di `:=`):
+Successivamente, il valore può cambiare tramite assegnamento (si noti l'uso di `:=`):
 
 ```
 eta := 16;
 ```
 
-=== Stato del programma
+==== Stato del programma
 
-Durante l'esecuzione di un programma possono esistere molte variabili, ciascuna con il proprio valore. Lo #underline[stato] del programma e' l'insieme di tutte le variabili e dei loro valori in un dato istante dell'esecuzione.
+Durante l'esecuzione di un programma possono esistere molte variabili, ciascuna con il proprio valore. Lo #underline[stato] del programma è l'insieme di tutte le variabili e dei loro valori in un dato istante dell'esecuzione.
 
 #example[
   Uno stato con tre variabili:
@@ -41,7 +41,7 @@ Durante l'esecuzione di un programma possono esistere molte variabili, ciascuna 
   ```
 ]
 
-== Sintassi di MiniMao
+=== Sintassi di MiniMao
 
 Introduciamo ora la sintassi di MiniMao, la versione ristretta del linguaggio MAO. Prima definiamo la sintassi usando grammatiche formali; in un secondo momento definiremo la semantica utilizzando sistemi logici.
 
@@ -124,7 +124,7 @@ Le *categorie sintattiche* di MiniMao sono:
 )
 
 #definition(title: "Tipi T")[
-  Un tipo puo' essere un tipo base o un tipo composto. Per ogni tipo base assumiamo un valore di default (0 per interi e `false` per booleani): \
+  Un tipo può essere un tipo base o un tipo composto. Per ogni tipo base assumiamo un valore di default (0 per interi e `false` per booleani): \
   $T ::= T_b | T_c$ \
   dove $T_b in {"int", "bool"}$ sono tipi base.
 ]
@@ -157,21 +157,21 @@ Le *categorie sintattiche* di MiniMao sono:
 
 == Semantica di MiniMao
 
-La sintassi ci dice _quali_ programmi sono corretti; la *semantica* ci dice _cosa fanno_. La semantica e' lo strumento che ci permette di ragionare formalmente sul comportamento di un programma e quindi di studiare proprieta' come correttezza, equivalenza, terminazione e divergenza.
+La sintassi ci dice _quali_ programmi sono corretti; la *semantica* ci dice _cosa fanno_. La semantica è lo strumento che ci permette di ragionare formalmente sul comportamento di un programma e quindi di studiare proprietà come correttezza, equivalenza, terminazione e divergenza.
 
 #definition(title: "Semantica operazionale")[
   La *semantica operazionale* descrive il comportamento di un programma in termini dei passi che un'opportuna #underline[macchina astratta] compie per eseguirlo.
 ]
 
 #definition(title: "Macchina astratta")[
-  Una *macchina astratta* e' una macchina semplificata ideale il cui stato e' dato da due componenti: l'*ambiente* $rho$ e la *memoria* $sigma$.
+  Una *macchina astratta* è una macchina semplificata ideale il cui stato è dato da due componenti: l'*ambiente* $rho$ e la *memoria* $sigma$.
 ]
 
 === Ambiente e memoria
 
-L'*ambiente* $rho: bb(I) arrow.r.hook bb(L)$ e' una funzione parziale che associa identificatori a locazioni di memoria. Risponde alla domanda: "dove si trova la variabile $x$?"
+L'*ambiente* $rho: bb(I) arrow.r.hook bb(L)$ è una funzione parziale che associa identificatori a locazioni di memoria. Risponde alla domanda: "dove si trova la variabile $x$?"
 
-La *memoria* $sigma: bb(L) arrow.r.hook bb(V)$ e' una funzione parziale che associa locazioni a valori. Risponde alla domanda: "che valore contiene la locazione $l$?"
+La *memoria* $sigma: bb(L) arrow.r.hook bb(V)$ è una funzione parziale che associa locazioni a valori. Risponde alla domanda: "che valore contiene la locazione $l$?"
 
 Per leggere il valore di una variabile $x$ servono due passi: prima si cerca la locazione $l = rho(x)$, poi si legge il valore $v = sigma(l)$.
 
@@ -184,12 +184,12 @@ Per leggere il valore di una variabile $x$ servono due passi: prima si cerca la 
 ]
 
 #note[
-  Una funzione e' _parziale_ quando potrebbe non essere definita per tutti gli argomenti del dominio. Ad esempio, $rho("z")$ non e' definita se la variabile `z` non e' stata dichiarata.
+  Una funzione è _parziale_ quando potrebbe non essere definita per tutti gli argomenti del dominio. Ad esempio, $rho("z")$ non è definita se la variabile `z` non è stata dichiarata.
 ]
 
 === Stato del programma
 
-Uno *stato* della macchina astratta e' una coppia ambiente-memoria $s = (rho, sigma)$.
+Uno *stato* della macchina astratta è una coppia ambiente-memoria $s = (rho, sigma)$.
 
 Quando le funzioni parziali sono definite su un numero finito di argomenti, le rappresentiamo elencando tutte le associazioni argomento-valore:
 $ rho = [x |-> l_1, y |-> l_2], space sigma = [l_1 |-> 15, l_2 |-> "true"] $
@@ -209,22 +209,22 @@ Per definire la semantica dei programmi abbiamo bisogno di specificare formalmen
 #definition(title: "Giudizio di esecuzione dei comandi")[
   $chevron.l C, rho, sigma chevron.r arrow.r chevron.l rho', sigma' chevron.r$
 
-  Si legge: "l'esecuzione del comando $C$ nello stato iniziale $(rho, sigma)$ termina producendo lo stato finale $(rho', sigma')$". Il comando puo' modificare sia l'ambiente (aggiungendo nuove variabili) che la memoria (cambiando valori).
+  Si legge: "l'esecuzione del comando $C$ nello stato iniziale $(rho, sigma)$ termina producendo lo stato finale $(rho', sigma')$". Il comando può modificare sia l'ambiente (aggiungendo nuove variabili) che la memoria (cambiando valori).
 ]
 
 === Espressioni pure e con effetti collaterali
 
-Le espressioni #underline[con effetti collaterali] sono espressioni la cui valutazione puo' comportare modifiche alla memoria (come allocazione o modifica di celle). In tal caso la valutazione si esprime come $chevron.l E, rho, sigma chevron.r arrow.b.double chevron.l v, sigma' chevron.r$.
+Le espressioni #underline[con effetti collaterali] sono espressioni la cui valutazione può comportare modifiche alla memoria (come allocazione o modifica di celle). In tal caso la valutazione si esprime come $chevron.l E, rho, sigma chevron.r arrow.b.double chevron.l v, sigma' chevron.r$.
 
 Le espressioni *pure* non alterano lo stato: la valutazione produce un valore ma lascia ambiente e memoria invariati. MiniMao ammette solo espressioni pure, il che semplifica notevolmente le regole semantiche.
 
-== Regole semantiche per le espressioni
+=== Regole semantiche per le espressioni
 
 Le regole seguenti definiscono formalmente come valutare ciascun tipo di espressione. Per ogni regola, le premesse (sopra la linea) specificano le condizioni necessarie, e la conclusione (sotto la linea) specifica il risultato della valutazione.
 
-=== Valori letterali
+==== Valori letterali
 
-I valori letterali (numeri e booleani) si valutano a se stessi. Sono assiomi perche' non richiedono premesse:
+I valori letterali (numeri e booleani) si valutano a se stessi. Sono assiomi perché non richiedono premesse:
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
@@ -243,7 +243,7 @@ I valori letterali (numeri e booleani) si valutano a se stessi. Sono assiomi per
   Nelle regole (Val-Int), (Val-True), (Val-False), l'ambiente $rho$ e la memoria $sigma$ compaiono ma non vengono utilizzati. Il valore di un letterale non dipende dallo stato.
 ]
 
-=== Variabili
+==== Variabili
 
 Per valutare una variabile si effettua una doppia ricerca: prima nell'ambiente (per trovare la locazione), poi nella memoria (per trovare il valore):
 
@@ -252,9 +252,9 @@ Per valutare una variabile si effettua una doppia ricerca: prima nell'ambiente (
   $chevron.l "Id", rho, sigma chevron.r arrow.b.double v$ #h(1cm) (Val-Var)
 ]
 
-La regola (Val-Var) ha due premesse: $rho("Id") = l$ (l'identificatore e' associato alla locazione $l$ nell'ambiente) e $sigma(l) = v$ (la locazione $l$ contiene il valore $v$ nella memoria).
+La regola (Val-Var) ha due premesse: $rho("Id") = l$ (l'identificatore è associato alla locazione $l$ nell'ambiente) e $sigma(l) = v$ (la locazione $l$ contiene il valore $v$ nella memoria).
 
-=== Operatori binari e unari
+==== Operatori binari e unari
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_1, rho, sigma chevron.r arrow.b.double v_1$ #h(0.3cm) $chevron.l E_2, rho, sigma chevron.r arrow.b.double v_2$ #h(0.3cm) $v = v_1 "bop" v_2$] \
@@ -268,15 +268,15 @@ La regola (Val-Bop) si legge: "per valutare $E_1 "bop" E_2$, si valutano prima $
   $chevron.l "uop" E, rho, sigma chevron.r arrow.b.double v$ #h(1cm) (Val-Uop)
 ]
 
-La regola (Val-Uop) e' analoga ma con un solo operando.
+La regola (Val-Uop) è analoga ma con un solo operando.
 
-=== Espressioni parentesizzate
+==== Espressioni parentesizzate
 
 #note(title: "Parentesi nelle espressioni")[
-  La grammatica delle espressioni include la produzione $(E)$, che permette di racchiudere un'espressione tra parentesi tonde. Tuttavia *non e' necessaria una regola semantica separata* per le espressioni parentesizzate: le parentesi servono esclusivamente a disambiguare l'ordine di valutazione a livello sintattico (ad esempio, per forzare $(a + b) * c$ invece di $a + (b * c)$). Una volta costruito l'albero sintattico, la struttura delle sotto-espressioni e' completamente determinata e le parentesi non influiscono sulla valutazione. In altre parole, valutare $(E)$ equivale esattamente a valutare $E$: le regole (Val-Bop) e (Val-Uop) si applicano direttamente alla struttura dell'espressione contenuta.
+  La grammatica delle espressioni include la produzione $(E)$, che permette di racchiudere un'espressione tra parentesi tonde. Tuttavia *non è necessaria una regola semantica separata* per le espressioni parentesizzate: le parentesi servono esclusivamente a disambiguare l'ordine di valutazione a livello sintattico (ad esempio, per forzare $(a + b) * c$ invece di $a + (b * c)$). Una volta costruito l'albero sintattico, la struttura delle sotto-espressioni è completamente determinata e le parentesi non influiscono sulla valutazione. In altre parole, valutare $(E)$ equivale esattamente a valutare $E$: le regole (Val-Bop) e (Val-Uop) si applicano direttamente alla struttura dell'espressione contenuta.
 ]
 
-== Regole semantiche per i comandi (base)
+== Regole semantiche per i comandi
 
 I comandi, a differenza delle espressioni, *modificano lo stato*. Le regole seguenti descrivono come ciascun tipo di comando trasforma la coppia $(rho, sigma)$.
 
@@ -302,7 +302,7 @@ Per comprendere le regole formali, descriviamo prima informalmente ciascuna oper
 
 === Skip
 
-Il comando `skip;` non modifica lo stato: e' un assioma (nessuna premessa).
+Il comando `skip;` non modifica lo stato: è un assioma (nessuna premessa).
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
@@ -316,7 +316,7 @@ Il comando `skip;` non modifica lo stato: e' un assioma (nessuna premessa).
   $chevron.l T space "Id" = E;, rho, sigma chevron.r arrow.r chevron.l rho["Id" |-> l], sigma[l |-> v] chevron.r$ #h(0.5cm) (Cmd-Decl)
 ]
 
-La regola (Cmd-Decl) modifica *sia* l'ambiente (aggiungendo $"Id" |-> l$) *sia* la memoria (aggiungendo $l |-> v$). La premessa $l in.not "dom"(sigma)$ garantisce che la locazione scelta sia fresca (non gia' in uso).
+La regola (Cmd-Decl) modifica *sia* l'ambiente (aggiungendo $"Id" |-> l$) *sia* la memoria (aggiungendo $l |-> v$). La premessa $l in.not "dom"(sigma)$ garantisce che la locazione scelta sia fresca (non già in uso).
 
 === Assegnamento
 
@@ -336,9 +336,9 @@ La regola (Cmd-Assign) modifica *solo* la memoria (aggiornando il valore nella l
 
 La regola (Cmd-Seq) mostra chiaramente il "passaggio di stato": lo stato prodotto da $C_1$ diventa lo stato iniziale di $C_2$.
 
-== Sviluppo sequenziale
+=== Sviluppo sequenziale
 
-Le derivazioni ad albero possono diventare complesse e difficili da leggere per programmi con molti comandi. Lo *sviluppo sequenziale* e' una notazione alternativa piu' compatta che descrive l'esecuzione come una sequenza di stati, uno per ogni comando eseguito.
+Le derivazioni ad albero possono diventare complesse e difficili da leggere per programmi con molti comandi. Lo *sviluppo sequenziale* è una notazione alternativa più compatta che descrive l'esecuzione come una sequenza di stati, uno per ogni comando eseguito.
 
 #definition(title: "Sviluppo sequenziale")[
   Lo sviluppo sequenziale rappresenta l'esecuzione di un programma come una sequenza verticale che alterna stati e comandi:
@@ -375,7 +375,7 @@ Questa notazione nasconde le locazioni di memoria e si legge: "la variabile $x$ 
     $chevron.l "y:=x; x:=y;", rho, sigma chevron.r arrow.r chevron.l rho, sigma'' chevron.r$
   ]
 
-  *Come sviluppo sequenziale* (lineare): molto piu' leggibile.
+  *Come sviluppo sequenziale* (lineare): molto più leggibile.
   #align(center)[
     ${x |-> 5, y |-> 3}$ \
     $arrow.b$ `y := x;` \
@@ -384,7 +384,7 @@ Questa notazione nasconde le locazioni di memoria e si legge: "la variabile $x$ 
     ${x |-> 5, y |-> 5}$
   ]
 
-  Si noti che il programma *non scambia* i valori di $x$ e $y$: dopo `y := x;`, entrambe le variabili valgono 5, quindi `x := y;` assegna 5 a $x$ (che gia' vale 5).
+  Si noti che il programma *non scambia* i valori di $x$ e $y$: dopo `y := x;`, entrambe le variabili valgono 5, quindi `x := y;` assegna 5 a $x$ (che già vale 5).
 ]
 
 #example(title: "Sviluppo sequenziale completo")[
@@ -426,23 +426,21 @@ Questa notazione nasconde le locazioni di memoria e si legge: "la variabile $x$ 
   Quindi $x = 8$ e $y = 4$.
 ]
 
-== Blocchi e scoping
+=== Blocchi e scoping
 
-=== Il blocco {C}
+==== Il blocco {C}
 
-Un *blocco* e' un comando racchiuso tra parentesi graffe `{C}`. Tutte le variabili dichiarate all'interno del blocco sono visibili solo al suo interno. Lo #underline[scope] (ambito di visibilita') di una variabile definisce la porzione di codice nella quale la variabile puo' essere dichiarata, letta o modificata.
+Un *blocco* è un comando racchiuso tra parentesi graffe `{C}`. Tutte le variabili dichiarate all'interno del blocco sono visibili solo al suo interno. Lo #underline[scope] (ambito di visibilità) di una variabile definisce la porzione di codice nella quale la variabile può essere dichiarata, letta o modificata.
 
-In MAO una variabile dichiarata all'interno di un blocco e' visibile:
+In MAO una variabile dichiarata all'interno di un blocco è visibile:
 - In tutti i comandi successivi alla dichiarazione, nello stesso blocco.
 - All'interno dei blocchi annidati.
 
 All'uscita dal blocco, le variabili dichiarate al suo interno cessano di essere visibili.
 
-=== Shadowing
+==== Shadowing
 
-E' possibile dichiarare una variabile all'interno di un blocco con lo stesso nome di una variabile gia' dichiarata in un blocco esterno. In questo caso la variabile interna *nasconde* (shadow) quella esterna: all'interno del blocco, il nome si riferisce alla nuova variabile; all'uscita dal blocco, il nome torna a riferirsi alla variabile originale.
-
-== Regole semantiche per i comandi (parte 2)
+È possibile dichiarare una variabile all'interno di un blocco con lo stesso nome di una variabile già dichiarata in un blocco esterno. In questo caso la variabile interna *nasconde* (shadow) quella esterna: all'interno del blocco, il nome si riferisce alla nuova variabile; all'uscita dal blocco, il nome torna a riferirsi alla variabile originale.
 
 === Blocco
 
@@ -452,10 +450,10 @@ E' possibile dichiarare una variabile all'interno di un blocco con lo stesso nom
 ]
 
 #note(title: "Semantica del blocco")[
-  La regola (Cmd-Block) e' cruciale: lo stato finale del blocco ha l'*ambiente originale* $rho$ (non $rho'$), ma la *memoria modificata* $sigma'$. Questo significa che:
+  La regola (Cmd-Block) è cruciale: lo stato finale del blocco ha l'*ambiente originale* $rho$ (non $rho'$), ma la *memoria modificata* $sigma'$. Questo significa che:
   - Le variabili dichiarate nel blocco vengono "dimenticate" (l'ambiente torna quello di prima).
   - Le modifiche alla memoria persistono (se il blocco ha modificato il valore di una variabile esterna, la modifica rimane).
-  - Le locazioni allocate nel blocco restano in memoria ma diventano inaccessibili (nessun nome punta piu' ad esse).
+  - Le locazioni allocate nel blocco restano in memoria ma diventano inaccessibili (nessun nome punta più ad esse).
 ]
 
 === Comando condizionale (if-then-else)
@@ -527,26 +525,26 @@ if (E) {C1} else {skip;}
   *Valutazione della guardia*:
   $chevron.l a > b, rho, sigma chevron.r arrow.b.double chevron.l 5 > 3 chevron.r arrow.b.double "true"$
 
-  Poiche' la guardia e' vera, si applica (Cmd-IfTrue) e si esegue il ramo `then`:
+  Poiché la guardia è vera, si applica (Cmd-IfTrue) e si esegue il ramo `then`:
 
   *Esecuzione* `max := a;`:
   - Valuto $a$: $sigma(rho(a)) = sigma(l_1) = 5$
   - Aggiorno: $sigma' = sigma[l_3 |-> 5] = [l_1 |-> 5, l_2 |-> 3, l_3 |-> 5]$
 
-  *Stato finale*: $"max" = 5$, che e' corretto poiche' $max(5, 3) = 5$.
+  *Stato finale*: $"max" = 5$, che è corretto poiché $max(5, 3) = 5$.
 ]
 
-== Cicli
+=== Cicli
 
-=== Comando iterativo (while)
+==== Comando iterativo (while)
 
-Il ciclo `while` ripete l'esecuzione di un corpo di comandi finche' la guardia e' vera. E' l'unico costrutto iterativo presente in MAO.
+Il ciclo `while` ripete l'esecuzione di un corpo di comandi finché la guardia è vera. È l'unico costrutto iterativo presente in MAO.
 
 ```
 while (E) {C}
 ```
 
-L'espressione $E$ e' una guardia booleana: se vale `true`, viene eseguito il corpo $C$ e poi si ripete il controllo della guardia; se vale `false`, il ciclo termina e l'esecuzione prosegue con il comando successivo.
+L'espressione $E$ è una guardia booleana: se vale `true`, viene eseguito il corpo $C$ e poi si ripete il controllo della guardia; se vale `false`, il ciclo termina e l'esecuzione prosegue con il comando successivo.
 
 #example(title: "Comando iterativo in MAO")[
   ```
@@ -556,27 +554,27 @@ L'espressione $E$ e' una guardia booleana: se vale `true`, viene eseguito il cor
   ```
 ]
 
-=== Semantica del while
+==== Semantica del while
 
-Il while richiede due regole: una per il caso in cui la guardia e' falsa (il ciclo termina) e una per il caso in cui e' vera (il ciclo prosegue).
+Il while richiede due regole: una per il caso in cui la guardia è falsa (il ciclo termina) e una per il caso in cui è vera (il ciclo prosegue).
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E, rho, sigma chevron.r arrow.b.double "false"$] \
   $chevron.l "while"(E){C}, rho, sigma chevron.r arrow.r chevron.l rho, sigma chevron.r$ #h(0.5cm) (Cmd-WhileFalse)
 ]
 
-Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
+Se la guardia è falsa, il ciclo termina immediatamente: lo stato non cambia.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E, rho, sigma chevron.r arrow.b.double "true"$ #h(0.2cm) $chevron.l C, rho, sigma chevron.r arrow.r chevron.l rho', sigma' chevron.r$ #h(0.2cm) $chevron.l "while"(E){C}, rho', sigma' chevron.r arrow.r chevron.l rho'', sigma'' chevron.r$] \
   $chevron.l "while"(E){C}, rho, sigma chevron.r arrow.r chevron.l rho'', sigma'' chevron.r$ #h(0.3cm) (Cmd-WhileTrue)
 ]
 
-#note(title: "Ricorsivita' della regola WhileTrue")[
-  La regola (Cmd-WhileTrue) e' *ricorsiva*: tra le premesse compare di nuovo il giudizio `while(E){C}`, ma su uno stato aggiornato $(rho', sigma')$. Il ciclo viene quindi "srotolato" un passo alla volta: si esegue il corpo una volta, e poi si riesegue l'intero while sullo stato risultante.
+#note(title: "Ricorsività della regola WhileTrue")[
+  La regola (Cmd-WhileTrue) è *ricorsiva*: tra le premesse compare di nuovo il giudizio `while(E){C}`, ma su uno stato aggiornato $(rho', sigma')$. Il ciclo viene quindi "srotolato" un passo alla volta: si esegue il corpo una volta, e poi si riesegue l'intero while sullo stato risultante.
 ]
 
-== Riepilogo delle regole semantiche
+== Riepilogo ed esempi
 
 #figure(
   table(
@@ -593,9 +591,9 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   caption: [Riepilogo delle regole semantiche di MiniMao]
 )
 
-== Esempi di sviluppo sequenziale
+=== Esempi di sviluppo sequenziale
 
-=== Ciclo while: somma dei primi $n$
+==== Ciclo while: somma dei primi $n$
 
 #example(title: "Sviluppo sequenziale con ciclo while")[
   Consideriamo:
@@ -631,7 +629,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   *Stato finale*: $n = 0$, $s = 6$ (somma dei primi 3 naturali: $3 + 2 + 1 = 6$).
 ]
 
-=== Ciclo while: calcolo del fattoriale
+==== Ciclo while: calcolo del fattoriale
 
 #example(title: "Sviluppo sequenziale: calcolo del fattoriale")[
   Consideriamo il programma che calcola il fattoriale di 4:
@@ -697,7 +695,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   *Stato finale*: $n = 0$, $f = 24$ (infatti $4! = 4 times 3 times 2 times 1 = 24$).
 ]
 
-=== Blocchi e shadowing
+==== Blocchi e shadowing
 
 #example(title: "Sviluppo sequenziale: blocchi e shadowing")[
   Consideriamo il programma che illustra lo shadowing delle variabili:
@@ -719,8 +717,8 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   - $sigma_1 = [l_1 |-> 10]$
 
   *Passo 2*: Ingresso nel blocco `{ ... }`
-  - L'ambiente corrente e': $rho_1 = [x |-> l_1]$
-  - La memoria corrente e': $sigma_1 = [l_1 |-> 10]$
+  - L'ambiente corrente è: $rho_1 = [x |-> l_1]$
+  - La memoria corrente è: $sigma_1 = [l_1 |-> 10]$
 
   *Passo 2a*: `int x = 5;` (dichiarazione interna --- shadowing)
   - Valuto: $chevron.l 5, rho_1, sigma_1 chevron.r arrow.b.double 5$
@@ -729,7 +727,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   - $sigma_2 = sigma_1[l_2 |-> 5] = [l_1 |-> 10, l_2 |-> 5]$
 
   #note[
-    Ora esistono *due* locazioni: $l_1$ (la $x$ esterna, valore 10) e $l_2$ (la $x$ interna, valore 5). L'ambiente $rho_2$ "vede" solo $l_2$ perche' il binding $x |-> l_2$ ha sostituito $x |-> l_1$.
+    Ora esistono *due* locazioni: $l_1$ (la $x$ esterna, valore 10) e $l_2$ (la $x$ interna, valore 5). L'ambiente $rho_2$ "vede" solo $l_2$ perché il binding $x |-> l_2$ ha sostituito $x |-> l_1$.
   ]
 
   *Passo 2b*: `x := x + 1;` (assegnamento alla $x$ interna)
@@ -743,7 +741,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   - La memoria *rimane* $sigma_3 = [l_1 |-> 10, l_2 |-> 6]$
 
   #note[
-    Dopo l'uscita dal blocco, la variabile $x$ si riferisce di nuovo a $l_1$ (che contiene ancora 10). La locazione $l_2$ esiste ancora in memoria ma non e' piu' accessibile tramite nessun nome.
+    Dopo l'uscita dal blocco, la variabile $x$ si riferisce di nuovo a $l_1$ (che contiene ancora 10). La locazione $l_2$ esiste ancora in memoria ma non è più accessibile tramite nessun nome.
   ]
 
   *Passo 4*: `x := x * 2;` (assegnamento alla $x$ esterna)
@@ -772,7 +770,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
   )
 ]
 
-=== Condizionali: calcolo del massimo
+==== Condizionali: calcolo del massimo
 
 #example(title: "Sviluppo sequenziale: condizionali annidati (calcolo del massimo)")[
   Consideriamo il programma che trova il massimo tra tre numeri:
@@ -805,7 +803,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
     - $sigma_4(rho_4(b)) = sigma_4(l_b) = 3$
     - $sigma_4(rho_4("max")) = sigma_4(l_m) = 7$
     - $3 > 7 = "false"$
-  - Poiche' la guardia e' falsa, applichiamo (Cmd-IfFalse) con il ramo else implicito `skip;`
+  - Poiché la guardia è falsa, applichiamo (Cmd-IfFalse) con il ramo else implicito `skip;`
   - Lo stato *non cambia*: $sigma_5 = sigma_4$
 
   #align(center)[
@@ -817,7 +815,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
     - $sigma_5(rho_4(c)) = sigma_5(l_c) = 5$
     - $sigma_5(rho_4("max")) = sigma_5(l_m) = 7$
     - $5 > 7 = "false"$
-  - Poiche' la guardia e' falsa, applichiamo (Cmd-IfFalse)
+  - Poiché la guardia è falsa, applichiamo (Cmd-IfFalse)
   - Lo stato *non cambia*: $sigma_6 = sigma_5$
 
   *Stato finale*:
@@ -825,7 +823,7 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
     ${a |-> 7, b |-> 3, c |-> 5, "max" |-> 7}$
   ]
 
-  Il risultato e' corretto: $"max" = 7 = max(7, 3, 5)$.
+  Il risultato è corretto: $"max" = 7 = max(7, 3, 5)$.
 
   ---
 
@@ -865,10 +863,10 @@ Se la guardia e' falsa, il ciclo termina immediatamente: lo stato non cambia.
 
 == Terminazione e divergenza
 
-Con l'introduzione dei cicli, i programmi possono non terminare mai. Questa distinzione tra terminazione e divergenza e' fondamentale nello studio dei linguaggi di programmazione.
+Con l'introduzione dei cicli, i programmi possono non terminare mai. Questa distinzione tra terminazione e divergenza è fondamentale nello studio dei linguaggi di programmazione.
 
 #definition(title: "Terminazione")[
-  La *terminazione* e' la proprieta' di un programma che garantisce il completamento della sua esecuzione in tempo finito, producendo uno stato finale.
+  La *terminazione* è la proprietà di un programma che garantisce il completamento della sua esecuzione in tempo finito, producendo uno stato finale.
 
   La terminazione di un ciclo `while(E){C}` richiede che:
   - La guardia $E$ contenga almeno una variabile.
@@ -887,20 +885,20 @@ Con l'introduzione dei cicli, i programmi possono non terminare mai. Questa dist
       x := x + 1;
   }
   ```
-  La guardia $x > 0$ e' sempre vera (poiche' $x$ cresce ad ogni iterazione), quindi il ciclo non termina mai.
+  La guardia $x > 0$ è sempre vera (poiché $x$ cresce ad ogni iterazione), quindi il ciclo non termina mai.
 ]
 
 #note[
-  Non esiste un algoritmo che, dato un programma arbitrario, sia in grado di decidere se esso termina o meno. Questo risultato fondamentale e' noto come *indecidibilita' del problema della terminazione* (Halting Problem, Turing 1936).
+  Non esiste un algoritmo che, dato un programma arbitrario, sia in grado di decidere se esso termina o meno. Questo risultato fondamentale è noto come *indecidibilità del problema della terminazione* (Halting Problem, Turing 1936).
 ]
 
-== Costrutti iterativi alternativi
+=== Costrutti iterativi alternativi
 
-In MAO e' presente solamente il costrutto iterativo `while`, ma i linguaggi di programmazione comuni offrono diversi costrutti iterativi. Tutti questi costrutti possono essere espressi usando un ciclo `while`.
+In MAO è presente solamente il costrutto iterativo `while`, ma i linguaggi di programmazione comuni offrono diversi costrutti iterativi. Tutti questi costrutti possono essere espressi usando un ciclo `while`.
 
-=== Ciclo for
+==== Ciclo for
 
-Il ciclo `for` e' un costrutto particolarmente compatto: in una sola riga e' possibile leggere l'inizializzazione, la condizione di terminazione e l'aggiornamento.
+Il ciclo `for` è un costrutto particolarmente compatto: in una sola riga è possibile leggere l'inizializzazione, la condizione di terminazione e l'aggiornamento.
 
 #example(title: "for in JavaScript")[
   ```javascript
@@ -910,7 +908,7 @@ Il ciclo `for` e' un costrutto particolarmente compatto: in una sola riga e' pos
   }
   ```
 
-  Questo ciclo e' equivalente al seguente codice MAO:
+  Questo ciclo è equivalente al seguente codice MAO:
   ```
   int somma = 0;
   int i = 1;
@@ -921,7 +919,7 @@ Il ciclo `for` e' un costrutto particolarmente compatto: in una sola riga e' pos
   ```
 ]
 
-=== Ciclo do-while
+==== Ciclo do-while
 
 Il ciclo `do-while` si utilizza quando il corpo deve essere eseguito almeno una volta, senza controllare preventivamente la condizione.
 
@@ -933,7 +931,7 @@ Il ciclo `do-while` si utilizza quando il corpo deve essere eseguito almeno una 
   } while(eta < 0);
   ```
 
-  In MAO, il `do-while` puo' essere simulato eseguendo il corpo una volta prima del `while`:
+  In MAO, il `do-while` può essere simulato eseguendo il corpo una volta prima del `while`:
   ```
   int eta = -1;
   eta := /* leggi input */;

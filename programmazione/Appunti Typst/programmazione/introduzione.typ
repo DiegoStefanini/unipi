@@ -154,7 +154,7 @@ Scrivere un programma corretto non è sufficiente: un buon programma deve soddis
   Questi obiettivi possono talvolta entrare in conflitto: ad esempio, un'ottimizzazione aggressiva per l'efficienza può rendere il codice meno leggibile. La buona pratica di programmazione consiste nel trovare il giusto equilibrio tra questi criteri.
 ]
 
-== Verso la formalizzazione
+=== Verso la formalizzazione
 
 Per poter studiare i linguaggi di programmazione con rigore matematico, è necessario formalizzarne sia la sintassi sia la semantica. Nel seguito del corso affronteremo questi temi in modo sistematico:
 

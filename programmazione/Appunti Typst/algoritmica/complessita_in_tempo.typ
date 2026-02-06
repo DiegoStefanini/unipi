@@ -2,7 +2,7 @@
 
 == Modello di calcolo e costo computazionale
 
-In questo capitolo introduciamo gli strumenti fondamentali per analizzare l'efficienza degli algoritmi. Dato un problema computazionale, esistono in generale molteplici algoritmi che lo risolvono: il nostro obiettivo e' confrontarli in modo rigoroso, determinando quale sia il più efficiente in termini di risorse utilizzate. Per fare cio', abbiamo bisogno di un modello di calcolo di riferimento e di un linguaggio matematico per esprimere il costo degli algoritmi.
+In questo capitolo introduciamo gli strumenti fondamentali per analizzare l'efficienza degli algoritmi. Dato un problema computazionale, esistono in generale molteplici algoritmi che lo risolvono: il nostro obiettivo è confrontarli in modo rigoroso, determinando quale sia il più efficiente in termini di risorse utilizzate. Per fare ciò, abbiamo bisogno di un modello di calcolo di riferimento e di un linguaggio matematico per esprimere il costo degli algoritmi.
 
 === Modello di calcolo RAM
 
@@ -15,11 +15,11 @@ Per poter contare le operazioni eseguite da un algoritmo, occorre fissare un mod
   - *Operazioni logiche*: $and, or, not$
   - *Operazioni di trasferimento*: lettura e scrittura in memoria, assegnamento
   - *Operazioni di controllo*: `return`, chiamata a funzione, salto condizionale
-  La memoria e' ad accesso casuale: l'accesso a qualsiasi cella ha costo costante, indipendentemente dal suo indirizzo.
+  La memoria è ad accesso casuale: l'accesso a qualsiasi cella ha costo costante, indipendentemente dal suo indirizzo.
 ]
 
 #note[
-  Il modello RAM a costo unitario e' una semplificazione: in un calcolatore reale, il costo di un'operazione può dipendere dalla dimensione degli operandi (ad esempio, moltiplicare due numeri di 1000 cifre e' più costoso che moltiplicare due numeri di una cifra). Tuttavia, per gli scopi del corso, questa approssimazione e' adeguata e consente di concentrarsi sugli aspetti strutturali degli algoritmi.
+  Il modello RAM a costo unitario è una semplificazione: in un calcolatore reale, il costo di un'operazione può dipendere dalla dimensione degli operandi (ad esempio, moltiplicare due numeri di 1000 cifre è più costoso che moltiplicare due numeri di una cifra). Tuttavia, per gli scopi del corso, questa approssimazione è adeguata e consente di concentrarsi sugli aspetti strutturali degli algoritmi.
 ]
 
 === Costo computazionale di un algoritmo
@@ -27,11 +27,11 @@ Per poter contare le operazioni eseguite da un algoritmo, occorre fissare un mod
 Dato un algoritmo $A$ e un input di dimensione $n$, definiamo il *costo computazionale* come la quantità di risorse richieste dalla sua esecuzione.
 
 #definition(title: "Costo in tempo")[
-  Il *costo in tempo* $T_A (n)$ di un algoritmo $A$ e' il numero di operazioni elementari (passi) che $A$ esegue su un input di dimensione $n$ nel modello RAM.
+  Il *costo in tempo* $T_A (n)$ di un algoritmo $A$ è il numero di operazioni elementari (passi) che $A$ esegue su un input di dimensione $n$ nel modello RAM.
 ]
 
 #definition(title: "Costo in spazio")[
-  Il *costo in spazio* $S_A (n)$ di un algoritmo $A$ e' il numero di celle di memoria utilizzate durante l'esecuzione di $A$ su un input di dimensione $n$, incluse quelle occupate dall'input stesso.
+  Il *costo in spazio* $S_A (n)$ di un algoritmo $A$ è il numero di celle di memoria utilizzate durante l'esecuzione di $A$ su un input di dimensione $n$, incluse quelle occupate dall'input stesso.
 ]
 
 In generale, il costo in tempo di un algoritmo non dipende solo dalla dimensione dell'input, ma anche dalla specifica istanza. Per questo si distinguono tre casi.
@@ -40,10 +40,10 @@ In generale, il costo in tempo di un algoritmo non dipende solo dalla dimensione
   Sia $I_n$ l'insieme di tutte le istanze di dimensione $n$ per un dato problema. Il costo in tempo di un algoritmo $A$ si descrive come:
   - *Caso ottimo*: $T_A^"best" (n) = min_(I in I_n) T_A (I)$ -- il minimo numero di operazioni su tutte le istanze di dimensione $n$.
   - *Caso pessimo*: $T_A^"worst" (n) = max_(I in I_n) T_A (I)$ -- il massimo numero di operazioni su tutte le istanze di dimensione $n$.
-  - *Caso medio*: $T_A^"avg" (n) = sum_(I in I_n) P(I) dot T_A (I)$ -- il costo atteso, dove $P(I)$ e' la probabilità dell'istanza $I$.
+  - *Caso medio*: $T_A^"avg" (n) = sum_(I in I_n) P(I) dot T_A (I)$ -- il costo atteso, dove $P(I)$ è la probabilità dell'istanza $I$.
 ]
 
-Nell'analisi degli algoritmi ci concentreremo principalmente sul *caso pessimo*, poiché fornisce una garanzia sul costo massimo. Il caso medio e' spesso più informativo nella pratica, ma richiede ipotesi sulla distribuzione degli input.
+Nell'analisi degli algoritmi ci concentreremo principalmente sul *caso pessimo*, poiché fornisce una garanzia sul costo massimo. Il caso medio è spesso più informativo nella pratica, ma richiede ipotesi sulla distribuzione degli input.
 
 A parità di complessità in tempo, si cerca di minimizzare anche la complessità in spazio.
 
@@ -70,11 +70,11 @@ Consideriamo il problema di trovare il valore minimo in un array.
   ```
 ]
 
-*Analisi del costo.* Tutte le operazioni nel corpo del ciclo (`if`, confronto, eventuale assegnamento, incremento) hanno costo costante nel modello RAM. Il ciclo `while` viene eseguito esattamente $n - 1$ volte, indipendentemente dai valori contenuti nell'array. Il costo totale e' quindi:
+*Analisi del costo.* Tutte le operazioni nel corpo del ciclo (`if`, confronto, eventuale assegnamento, incremento) hanno costo costante nel modello RAM. Il ciclo `while` viene eseguito esattamente $n - 1$ volte, indipendentemente dai valori contenuti nell'array. Il costo totale è quindi:
 
 $ T(n) = c_1 + (n - 1) dot c_2 + c_3 $
 
-dove $c_1, c_3$ sono costanti per le operazioni fuori dal ciclo e $c_2$ e' il costo costante di ciascuna iterazione. La complessità in tempo e' *lineare* nella dimensione $n$ dell'input. Si noti che in questo caso il costo non dipende dalla specifica istanza: caso ottimo, pessimo e medio coincidono.
+dove $c_1, c_3$ sono costanti per le operazioni fuori dal ciclo e $c_2$ è il costo costante di ciascuna iterazione. La complessità in tempo è *lineare* nella dimensione $n$ dell'input. Si noti che in questo caso il costo non dipende dalla specifica istanza: caso ottimo, pessimo e medio coincidono.
 
 === Esempio: Ricerca di un elemento
 
@@ -106,26 +106,26 @@ Consideriamo il problema della ricerca lineare (o sequenziale).
 
 *Analisi del costo.* A differenza dell'esempio precedente, il numero di iterazioni dipende dalla posizione di $k$ nell'array:
 
-- *Caso ottimo*: $A[1] = k$, il ciclo esegue una sola iterazione. Il costo e' $T^"best"(n) = Theta(1)$ (costante).
-- *Caso pessimo*: $k in.not A$, il ciclo scorre l'intero array senza trovare $k$. Il costo e' $T^"worst"(n) = Theta(n)$ (lineare).
-- *Caso medio*: assumendo che $k$ sia presente e che ciascuna posizione sia equiprobabile, il numero medio di confronti e' $(n+1)/2$, dunque $T^"avg"(n) = Theta(n)$.
+- *Caso ottimo*: $A[1] = k$, il ciclo esegue una sola iterazione. Il costo è $T^"best"(n) = Theta(1)$ (costante).
+- *Caso pessimo*: $k in.not A$, il ciclo scorre l'intero array senza trovare $k$. Il costo è $T^"worst"(n) = Theta(n)$ (lineare).
+- *Caso medio*: assumendo che $k$ sia presente e che ciascuna posizione sia equiprobabile, il numero medio di confronti è $(n+1)/2$, dunque $T^"avg"(n) = Theta(n)$.
 
 Questo esempio mostra come lo stesso algoritmo possa avere costi significativamente diversi a seconda dell'istanza, motivando la distinzione tra caso ottimo e pessimo.
 
 === Complessità asintotica
 
-L'obiettivo dell'analisi di complessità non e' calcolare il numero esatto di operazioni, ma determinare *l'ordine di grandezza* della funzione di costo $T(n)$ al crescere di $n$. Si trascurano:
+L'obiettivo dell'analisi di complessità non è calcolare il numero esatto di operazioni, ma determinare *l'ordine di grandezza* della funzione di costo $T(n)$ al crescere di $n$. Si trascurano:
 - le *costanti moltiplicative*, che dipendono dal modello di calcolo e dall'implementazione;
 - i *termini di ordine inferiore*, che diventano trascurabili per $n$ grande.
 
 #example(title: "Complessità lineare")[
   $ T(n) = 3n + 2 $
-  Il termine dominante e' $3n$. Trascurando la costante moltiplicativa 3 e il termine di ordine inferiore 2, si conclude che $T(n)$ ha ordine di grandezza *lineare*.
+  Il termine dominante è $3n$. Trascurando la costante moltiplicativa 3 e il termine di ordine inferiore 2, si conclude che $T(n)$ ha ordine di grandezza *lineare*.
 ]
 
 #example(title: "Complessità quadratica")[
   $ T(n) = 8n^2 + log n + 4 $
-  Il termine dominante e' $8n^2$. I termini $log n$ e $4$ sono di ordine inferiore e vengono trascurati. La complessità e' *quadratica*.
+  Il termine dominante è $8n^2$. I termini $log n$ e $4$ sono di ordine inferiore e vengono trascurati. La complessità è *quadratica*.
 ]
 
 Per formalizzare queste nozioni, introduciamo la *notazione asintotica*.
@@ -133,17 +133,17 @@ Per formalizzare queste nozioni, introduciamo la *notazione asintotica*.
 === Notazione $Theta$ -- Limite asintotico stretto
 
 #definition(title: [$Theta$ (Theta)])[
-  Sia $g(n)$ una funzione. L'insieme $Theta(g(n))$ e' definito come:
+  Sia $g(n)$ una funzione. L'insieme $Theta(g(n))$ è definito come:
   $ Theta(g(n)) = {f(n) mid(|) exists c_1, c_2, n_0 > 0 : forall n >= n_0, quad 0 <= c_1 dot g(n) <= f(n) <= c_2 dot g(n)} $
 
-  Se $f(n) in Theta(g(n))$, si dice che $g(n)$ e' un *limite asintotico stretto* per $f(n)$.
+  Se $f(n) in Theta(g(n))$, si dice che $g(n)$ è un *limite asintotico stretto* per $f(n)$.
 ]
 
-Si scrive $f(n) = Theta(g(n))$ (con abuso di notazione, poiché $Theta(g(n))$ e' un insieme).
+Si scrive $f(n) = Theta(g(n))$ (con abuso di notazione, poiché $Theta(g(n))$ è un insieme).
 
 #figure(
   image("../images/big_theta.jpg", width: 25%),
-  caption: [Rappresentazione grafica di $Theta(g(n))$: per $n >= n_0$, la funzione $f(n)$ e' compresa tra $c_1 dot g(n)$ e $c_2 dot g(n)$.]
+  caption: [Rappresentazione grafica di $Theta(g(n))$: per $n >= n_0$, la funzione $f(n)$ è compresa tra $c_1 dot g(n)$ e $c_2 dot g(n)$.]
 )
 
 Intuitivamente, $f(n) = Theta(g(n))$ significa che, per $n$ sufficientemente grande, $f(n)$ cresce *allo stesso ritmo* di $g(n)$, a meno di costanti moltiplicative.
@@ -151,10 +151,10 @@ Intuitivamente, $f(n) = Theta(g(n))$ significa che, per $n$ sufficientemente gra
 === Notazione $O$ -- Limite asintotico superiore
 
 #definition(title: [$O$ (O grande)])[
-  Sia $g(n)$ una funzione. L'insieme $O(g(n))$ e' definito come:
+  Sia $g(n)$ una funzione. L'insieme $O(g(n))$ è definito come:
   $ O(g(n)) = {f(n) mid(|) exists c, n_0 > 0 : forall n >= n_0, quad 0 <= f(n) <= c dot g(n)} $
 
-  Se $f(n) in O(g(n))$, si dice che $g(n)$ e' un *limite asintotico superiore* per $f(n)$.
+  Se $f(n) in O(g(n))$, si dice che $g(n)$ è un *limite asintotico superiore* per $f(n)$.
 ]
 
 Si scrive $f(n) = O(g(n))$.
@@ -169,17 +169,17 @@ La notazione $O$ fornisce un *maggiorante* alla crescita di $f(n)$. Si utilizza 
 === Notazione $Omega$ -- Limite asintotico inferiore
 
 #definition(title: [$Omega$ (Omega grande)])[
-  Sia $g(n)$ una funzione. L'insieme $Omega(g(n))$ e' definito come:
+  Sia $g(n)$ una funzione. L'insieme $Omega(g(n))$ è definito come:
   $ Omega(g(n)) = {f(n) mid(|) exists c, n_0 > 0 : forall n >= n_0, quad 0 <= c dot g(n) <= f(n)} $
 
-  Se $f(n) in Omega(g(n))$, si dice che $g(n)$ e' un *limite asintotico inferiore* per $f(n)$.
+  Se $f(n) in Omega(g(n))$, si dice che $g(n)$ è un *limite asintotico inferiore* per $f(n)$.
 ]
 
 Si scrive $f(n) = Omega(g(n))$.
 
 #figure(
   image("../images/big_omega.jpg", width: 25%),
-  caption: [Rappresentazione grafica di $Omega(g(n))$: per $n >= n_0$, la funzione $f(n)$ e' sempre almeno $c dot g(n)$.]
+  caption: [Rappresentazione grafica di $Omega(g(n))$: per $n >= n_0$, la funzione $f(n)$ è sempre almeno $c dot g(n)$.]
 )
 
 La notazione $Omega$ fornisce un *minorante* alla crescita di $f(n)$. Si utilizza tipicamente per esprimere il costo nel caso ottimo o per dimostrare limiti inferiori.
@@ -217,7 +217,7 @@ Le notazioni $Theta$, $O$ e $Omega$ godono di proprietà algebriche che ne facil
   Ponendo $c = c_1 dot c_2$ e $n_0 = max(n_1, n_2)$, si ha $f(n) = O(h(n))$. Le dimostrazioni per $Omega$ e $Theta$ sono analoghe.
 ]
 
-#theorem(title: "Riflessivita'")[
+#theorem(title: "Riflessività")[
   Per ogni funzione $f(n)$:
   $ f(n) = Theta(f(n)) , quad f(n) = O(f(n)) , quad f(n) = Omega(f(n)) $
 ]
@@ -242,7 +242,7 @@ Basta prendere $c_1 = c_2 = c = 1$ e $n_0 = 1$ nelle rispettive definizioni.
   - $f(n) = Omega(g(n))$ corrisponde a $f gt.eq g$
   - $f(n) = Theta(g(n))$ corrisponde a $f approx g$
 
-  Le proprietà di transitivita', riflessivita' e simmetria ricalcano quelle delle relazioni $<=$, $>=$ e $=$.
+  Le proprietà di transitività, riflessività e simmetria ricalcano quelle delle relazioni $<=$, $>=$ e $=$.
 ]
 
 === Esercizi sulla notazione asintotica
@@ -255,7 +255,7 @@ Basta prendere $c_1 = c_2 = c = 1$ e $n_0 = 1$ nelle rispettive definizioni.
 
   Per $n >= 1$: $quad 3n^2 - 2n - 1 <= 3n^2$
 
-  Quindi con $c_2 = 3$ il limite superiore e' verificato per ogni $n >= 1$.
+  Quindi con $c_2 = 3$ il limite superiore è verificato per ogni $n >= 1$.
 
   *Limite inferiore* ($Omega$): Dimostriamo che $c_1 dot n^2 <= 3n^2 - 2n - 1$.
 
@@ -281,11 +281,11 @@ Basta prendere $c_1 = c_2 = c = 1$ e $n_0 = 1$ nelle rispettive definizioni.
 
   Per $n >= 1$: $quad 5n + 3 <= 5n + 3n = 8n$ (poiché $3 <= 3n$ per $n >= 1$).
 
-  Dunque con $c = 8$ e $n_0 = 1$ la disuguaglianza e' verificata. Si ha $5n + 3 in O(n)$.
+  Dunque con $c = 8$ e $n_0 = 1$ la disuguaglianza è verificata. Si ha $5n + 3 in O(n)$.
 ]
 
 #example(title: "Dimostrare che " + $n^2 in.not O(n)$)[
-  Per assurdo, supponiamo $n^2 in O(n)$. Allora esistono $c, n_0 > 0$ tali che $n^2 <= c dot n$ per ogni $n >= n_0$, cioè $n <= c$ per ogni $n >= n_0$. Ma questo e' impossibile, perché $n$ cresce senza limite. Contraddizione.
+  Per assurdo, supponiamo $n^2 in O(n)$. Allora esistono $c, n_0 > 0$ tali che $n^2 <= c dot n$ per ogni $n >= n_0$, cioè $n <= c$ per ogni $n >= n_0$. Ma questo è impossibile, perché $n$ cresce senza limite. Contraddizione.
 ]
 
 #example(title: "Ordinamento per crescita asintotica")[
@@ -310,39 +310,39 @@ Basta prendere $c_1 = c_2 = c = 1$ e $n_0 = 1$ nelle rispettive definizioni.
   - *Fattoriali*: $n!$ (cresce più rapidamente di qualsiasi $c^n$ con $c$ costante)
 
   #note[
-    La notazione $log^2 n$ si intende come $(log n)^2$, non come $log(log n)$. Per evitare ambiguita', in queste dispense si usa sempre la scrittura estesa $(log n)^2$.
+    La notazione $log^2 n$ si intende come $(log n)^2$, non come $log(log n)$. Per evitare ambiguità, in queste dispense si usa sempre la scrittura estesa $(log n)^2$.
   ]
 ]
 
-== Limiti inferiori alla difficolta' di un problema
+== Limiti inferiori alla difficoltà di un problema
 
-La notazione asintotica ci consente di classificare la complessità dei singoli algoritmi. Un'ulteriore domanda fondamentale e': dato un problema, qual e' il minimo costo necessario per risolverlo? Per rispondere, occorre stabilire dei *limiti inferiori*, cioè delle soglie al di sotto delle quali nessun algoritmo può scendere.
+La notazione asintotica ci consente di classificare la complessità dei singoli algoritmi. Un'ulteriore domanda fondamentale è: dato un problema, qual è il minimo costo necessario per risolverlo? Per rispondere, occorre stabilire dei *limiti inferiori*, cioè delle soglie al di sotto delle quali nessun algoritmo può scendere.
 
-#definition(title: "Difficolta' di un problema")[
-  Dato un problema $pi$, la *difficolta'* di $pi$ e' la complessità al caso pessimo del miglior algoritmo che risolve $pi$, espressa in funzione della dimensione dell'input e in termini asintotici. Un algoritmo che risolve $pi$ con complessità $T(n)$ fornisce un *limite superiore* alla difficolta' di $pi$.
+#definition(title: "Difficoltà di un problema")[
+  Dato un problema $pi$, la *difficoltà* di $pi$ è la complessità al caso pessimo del miglior algoritmo che risolve $pi$, espressa in funzione della dimensione dell'input e in termini asintotici. Un algoritmo che risolve $pi$ con complessità $T(n)$ fornisce un *limite superiore* alla difficoltà di $pi$.
 ]
 
 #definition(title: "Limite inferiore")[
-  Una funzione $L(n)$ e' un *limite inferiore* per il problema $pi$ se, per ogni algoritmo $A$ che risolve $pi$, la complessità al caso pessimo di $A$ soddisfa $T_A(n) in Omega(L(n))$.
+  Una funzione $L(n)$ è un *limite inferiore* per il problema $pi$ se, per ogni algoritmo $A$ che risolve $pi$, la complessità al caso pessimo di $A$ soddisfa $T_A(n) in Omega(L(n))$.
 
-  In altre parole, $L(n)$ e' il numero minimo di operazioni necessarie per risolvere $pi$ al caso peggiore.
+  In altre parole, $L(n)$ è il numero minimo di operazioni necessarie per risolvere $pi$ al caso peggiore.
 ]
 
 #note(title: "Algoritmo ottimo")[
-  Un algoritmo e' *ottimo* per il problema $pi$ se la sua complessità al caso pessimo coincide (asintoticamente) con il limite inferiore. In tal caso il limite inferiore e' detto *stretto*.
+  Un algoritmo è *ottimo* per il problema $pi$ se la sua complessità al caso pessimo coincide (asintoticamente) con il limite inferiore. In tal caso il limite inferiore è detto *stretto*.
 ]
 
 Esistono tre criteri principali per stabilire limiti inferiori.
 
 === Criterio della dimensione dell'input
 
-Se la soluzione di un problema richiede necessariamente l'esame di tutti i dati in input, allora la dimensione dell'input $n$ e' un limite inferiore:
+Se la soluzione di un problema richiede necessariamente l'esame di tutti i dati in input, allora la dimensione dell'input $n$ è un limite inferiore:
 $ L(n) = Omega(n) $
 
 #example(title: "Ricerca del massimo")[
   La ricerca del massimo in un vettore non ordinato deve necessariamente esaminare tutti gli $n$ elementi: un elemento non esaminato potrebbe essere il massimo. Dunque $L(n) = Omega(n)$.
 
-  Poiche' l'algoritmo di scansione lineare ha complessità $Theta(n)$, il limite inferiore e' stretto e l'algoritmo e' *ottimo*.
+  Poiché l'algoritmo di scansione lineare ha complessità $Theta(n)$, il limite inferiore è stretto e l'algoritmo è *ottimo*.
 ]
 
 === Criterio dell'albero di decisione
@@ -350,7 +350,7 @@ $ L(n) = Omega(n) $
 Questo criterio si applica a problemi risolvibili attraverso una sequenza di *decisioni binarie* (tipicamente confronti tra valori) che via via riducono lo spazio delle soluzioni possibili.
 
 #definition(title: "Albero di decisione")[
-  Un *albero di decisione* per un problema $pi$ e' un albero binario in cui:
+  Un *albero di decisione* per un problema $pi$ è un albero binario in cui:
   - ogni *nodo interno* rappresenta un confronto (decisione);
   - ogni *foglia* rappresenta una possibile soluzione;
   - ogni *percorso radice-foglia* corrisponde a una possibile esecuzione dell'algoritmo.
@@ -359,11 +359,11 @@ Questo criterio si applica a problemi risolvibili attraverso una sequenza di *de
 Il *caso pessimo* di un algoritmo basato su confronti corrisponde alla lunghezza del percorso più lungo dalla radice a una foglia, ossia all'*altezza* dell'albero di decisione.
 
 #definition(title: "Altezza di un albero")[
-  L'altezza di un albero e' la lunghezza (in numero di archi) del più lungo percorso dalla radice ad una foglia.
+  L'altezza di un albero è la lunghezza (in numero di archi) del più lungo percorso dalla radice ad una foglia.
 ]
 
 #theorem(title: "Limite inferiore dall'albero di decisione")[
-  Se $"SOL"(n)$ e' il numero di soluzioni possibili per un'istanza di dimensione $n$ del problema $pi$, allora ogni albero di decisione per $pi$ ha almeno $"SOL"(n)$ foglie. Poiche' un albero binario con $F$ foglie ha altezza almeno $log_2 F$, si ha:
+  Se $"SOL"(n)$ è il numero di soluzioni possibili per un'istanza di dimensione $n$ del problema $pi$, allora ogni albero di decisione per $pi$ ha almeno $"SOL"(n)$ foglie. Poiché un albero binario con $F$ foglie ha altezza almeno $log_2 F$, si ha:
   $ L(n) = Omega(log_2("SOL"(n))) $
 ]
 
@@ -372,7 +372,7 @@ Il *caso pessimo* di un algoritmo basato su confronti corrisponde alla lunghezza
 ]
 
 #note(title: "Percorsi nell'albero di decisione")[
-  In un albero di decisione, il percorso più breve dalla radice a una foglia corrisponde al *caso ottimo*, mentre il percorso più lungo corrisponde al *caso pessimo*. Un *albero bilanciato* e' un albero in cui il caso ottimo e il caso pessimo differiscono al più di una costante.
+  In un albero di decisione, il percorso più breve dalla radice a una foglia corrisponde al *caso ottimo*, mentre il percorso più lungo corrisponde al *caso pessimo*. Un *albero bilanciato* è un albero in cui il caso ottimo e il caso pessimo differiscono al più di una costante.
 ]
 
 #definition(title: "Albero bilanciato")[
@@ -380,7 +380,7 @@ Il *caso pessimo* di un algoritmo basato su confronti corrisponde alla lunghezza
 ]
 
 #note(title: "Algoritmo ottimo per problemi basati su confronti")[
-  L'algoritmo ottimo al caso pessimo e' quello che minimizza l'altezza dell'albero di decisione. Questo corrisponde a un albero bilanciato, con altezza $Theta(log("SOL"(n)))$.
+  L'algoritmo ottimo al caso pessimo è quello che minimizza l'altezza dell'albero di decisione. Questo corrisponde a un albero bilanciato, con altezza $Theta(log("SOL"(n)))$.
 ]
 
 === Criterio degli eventi contabili
@@ -389,9 +389,9 @@ Se la soluzione di un problema richiede che un certo *evento* si ripeta un numer
 $ L(n) = ("numero minimo di ripetizioni dell'evento") times ("costo per evento") $
 
 #example(title: "Ordinamento per confronti")[
-  Nell'ordinamento per confronti, l'evento elementare e' il *confronto* tra due elementi (costo $Theta(1)$). Le soluzioni possibili sono le $n!$ permutazioni dell'array. Dall'albero di decisione:
+  Nell'ordinamento per confronti, l'evento elementare è il *confronto* tra due elementi (costo $Theta(1)$). Le soluzioni possibili sono le $n!$ permutazioni dell'array. Dall'albero di decisione:
   $ L(n) = Omega(log_2(n!)) = Omega(n log n) $
   dove l'ultima uguaglianza segue dall'approssimazione di Stirling: $log(n!) = Theta(n log n)$.
 
-  Poiche' il Merge Sort ha complessità $Theta(n log n)$, esso e' un algoritmo *ottimo* per l'ordinamento basato su confronti.
+  Poiché il Merge Sort ha complessità $Theta(n log n)$, esso è un algoritmo *ottimo* per l'ordinamento basato su confronti.
 ]

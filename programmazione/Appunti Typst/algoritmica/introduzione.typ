@@ -93,7 +93,7 @@ Un algoritmo è un concetto _astratto_, indipendente dal linguaggio in cui viene
   caption: [Confronto tra algoritmo e programma]
 )
 
-== Computer
+== Computer e problem solving
 
 #definition(title: "Computer")[
   Un *calcolatore* è una macchina in grado di eseguire operazioni elementari con grande *rapidità* e *precisione*, seguendo le istruzioni di un programma.
@@ -101,7 +101,7 @@ Un algoritmo è un concetto _astratto_, indipendente dal linguaggio in cui viene
 
 Un computer riceve in *input* un programma (testo) e un insieme di dati, e produce in *output* il risultato dell'esecuzione del programma sui dati forniti. A differenza di altre macchine automatiche (ad esempio una lavatrice, il cui comportamento è fisso), un computer è *programmabile*: il compito svolto dipende interamente dal programma caricato.
 
-== Problem solving
+=== Problem solving
 
 #definition(title: "Problem solving")[
   Attività sistematica finalizzata all'analisi e alla risoluzione di _problemi computazionali_, ovvero problemi formulabili in termini di input, output e di una relazione tra essi.
