@@ -1,355 +1,248 @@
 #import "../template.typ": *
 
-=== Complessità in tempo
+== Modello di calcolo e costo computazionale
 
-#definition(title: "Algoritmo")[
-  Sequenza finita di operazioni elementari (passi) univocamente determinati (non ambiguo, né operazione né la sequenza) che, se eseguita su un calcolatore, porta alla risoluzione di un problema.
-]
+In questo capitolo introduciamo gli strumenti fondamentali per analizzare l'efficienza degli algoritmi. Dato un problema computazionale, esistono in generale molteplici algoritmi che lo risolvono: il nostro obiettivo e' confrontarli in modo rigoroso, determinando quale sia il più efficiente in termini di risorse utilizzate. Per fare cio', abbiamo bisogno di un modello di calcolo di riferimento e di un linguaggio matematico per esprimere il costo degli algoritmi.
 
-#definition(title: "Modello \"RAM\"")[
-  hanno costo unitario (costante):
-  - operazioni aritmetiche: $+, -, times, div, %$
-  - operazioni di confronto: $<, >, ==, !=, ...$
-  - operazioni logiche: $and, or, not, ...$
-  - operazioni di trasferimento: load, store, read, assegnamento
-  - operazioni di controllo: Return, chiamata di funzione
-]
+=== Modello di calcolo RAM
 
-=== Esempi
+Per poter contare le operazioni eseguite da un algoritmo, occorre fissare un modello di calcolo. Il modello adottato nel corso è il *modello RAM* (Random Access Machine), che formalizza un calcolatore idealizzato.
 
-=== Minimo in vettore
-
-Input: array $A[1..n]$ di interi \
-Output: $i : 1 <= i <= n$ con $A[i]$ che è il valore più piccolo di $A$.
-
-```
-int min(int[] A, int n){
-    int min = A[1];
-    int i = 2;
-    while(i <= n){
-        if(A[i] < min){
-            min := A[i];
-        }
-        i := i + 1;
-    }
-    return min;
-}
-```
-
-Nel codice tutte le operazioni eseguite rientrano nei tipi di tempo di esecuzione costante. L'unica cosa che determina il tempo di esecuzione è il ciclo for, che è determinato dalla lunghezza dell'input. Il costo in tempo viene così definito: costante + (n-1) \* costante + costante. Si dice allora che la complessità è asintotica in tempo in funzione della dimensione dell'input ($n = |A|$)
-
-=== Cerca-K
-
-Input: $A[1..n]$ di interi, $k$ intero. \
-Output: min $i : A[i] = k$ oppure $-1$ se $k in.not A$
-
-```
-int cercaK(int[] A, int n, int k){
-    int i = 1;
-    bool trovato = false;
-    while((!trovato) && (i <= n)){
-        if(A[i] == k){
-            trovato := true;
-        } else {
-            i := i + 1;
-        }
-    }
-    if(trovato){
-        return i;
-    } else {
-        return -1;
-    }
-}
-```
-
-La complessità in tempo dipende da dove si trova $k$ all'interno dell'input. Nel migliore dei casi è costante ($A[1] = k$), nel peggiore dei casi invece è lineare in $n$ ($exists.not k$)
-
-=== Costo computazionale di un algoritmo A
-
-- *Tempo* $T_A (n)$: numero di operazioni elementari (passi) che esegue $A$, dipende dall'istanza di $I$:
-  - Caso pessimo
-  - Caso ottimo
-- *Spazio*: numero di celle di memoria utilizzate durante l'esecuzione di $A$ (anche quelle occupate dall'input)
-- in funzione della *dimensione dell'input*
-
-Ci concentreremo sulla complessità in tempo cercando di minimizzarla e, a parità di costo in tempo, cerchiamo di ridurre anche lo spazio.
-
-Ci interessiamo al caso pessimo perché è un limite superiore al costo.
-
-Ci interessiamo all'ordine di grandezza della funzione $T_A (n)$
-
-#example[
-  $ T(n) = 3n + 2 $
-  costante moltiplicativa + termine di ordine inferiore \
-  $arrow.b$ \
-  $T(n)$ ha ordine di grandezza lineare
-]
-
-#example[
-  $ T(n) = 8n^2 + log n + 4 $
-  termine quadratico + termini di ordine inferiore \
-  $arrow.b$ \
-  $T(n)$ ha complessità quadratica
-]
-
-=== Insertion Sort
-
-L'insertion sort è un algoritmo di ordinamento con risoluzione con metodo iterativo.
-
-Input: Array $A$ di $n$ numeri interi. \
-Output: $A$ ordinato: $A[1] <= A[2] <= ... <= A[n]$
-
-```
-insertionSort(int[] A, int n){
-    int j = 2;
-    while(j <= n){
-        int k = A[j];
-        int i = j - 1;
-        while((i > 0) && (A[i] > k)){
-            A[i + 1] := A[i];
-            i := i - 1;
-        }
-        A[i + 1] := k;
-        j := j + 1;
-    }
-}
-```
-
-=== Dimostrazione di correttezza con invariante di ciclo
-
-L'invariante di ciclo è una proprietà conservata ad ogni iterazione di algoritmo. Ad ogni iterazione $j^("esima")$ del `for`:
-- il sottoarray $A[1..j-1]$ è ordinato
-- il sottoarray (ordinato) $A[1..j-1]$ contiene gli stessi elementi che stavano in $A[1...j-1]$ iniziale.
-
-Con queste due affermazioni possiamo dire che l'insertion sort è corretto.
-
-=== Complessità
-
-$T(n) = (n-1) (C_1 times "numero esecuzioni while con guardia vera + while con guardia falsa" + C_5)$
-
-- *Caso ottimo*: $d_j = 1$ $forall j = 2..n arrow.double c(n) = sum_(j=2)^n 1 = n - 1$ \
-  Array in input già ordinato, il corpo del while non viene mai eseguito, quindi $c(n) = n - 1 arrow.double \#$ confronti lineari.
-
-- *Caso pessimo*: $d_j = j - 1$ $forall j = 2..n arrow.double c(n) = sum_(j=2)^n j - 1 = sum_(j'=1)^(n-1) j' = frac(n(n-1), 2)$ \
-  Array in input ordinato in ordine inverso. $C(n) = frac(n(n-1), 2) = binom(n, 2) arrow.double \#$ confronti quadratico in $n$
-
-Per riassumere:
-- lineare in caso ottimo
-- quadratico in caso pessimo
-
-=== Selection Sort
-
-Il selection sort è un altro algoritmo di ordinamento iterativo al passo $i^("esimo")$ $forall i = 1...n-1$.
-
-```
-selectionSort(int[] A, int n){
-    int i = 1;
-    while(i <= n - 1){
-        int min = i;
-        int j = i + 1;
-        while(j <= n){
-            if(A[j] < A[min]){
-                min := j;
-            }
-            j := j + 1;
-        }
-        // swap(A[i], A[min])
-        int temp = A[i];
-        A[i] := A[min];
-        A[min] := temp;
-        i := i + 1;
-    }
-}
-```
-
-=== Complessità
-
-$T(n) = (n-1)(c_1 + (n-1)c_2)$
-
-$\# "confronti" = c(n) = sum_(i=1)^(n-1) times sum_(j=i+1)^n 1 = sum_(i=1)^(n-1) (n-i) = (n-1) + (n-2) + ... + frac(n(n-1), 2) =$ complessità quadratica.
-
-=== Invariante di ciclo
-
-#definition(title: "Invariante di ciclo")[
-  Un *invariante di ciclo* è una proprietà che:
-  + È vera *prima* della prima iterazione (*inizializzazione*)
-  + Se è vera prima di un'iterazione, rimane vera dopo (*mantenimento*)
-  + Quando il ciclo termina, l'invariante fornisce una proprietà utile (*terminazione*)
-]
-
-==== Dimostrazione completa: Selection Sort
-
-*Invariante*: All'inizio della $i$-esima iterazione:
-- I primi $i - 1$ elementi di $A$ sono ordinati
-- Questi $i - 1$ elementi sono i più piccoli dell'array originale
-
-#demonstration[
-  *Inizializzazione* ($i = 1$):
-  - I "primi $0$ elementi" sono banalmente ordinati (insieme vuoto)
-  - L'invariante è verificato
-
-  *Mantenimento*: Supponiamo l'invariante vero per $i$. Dimostriamo che vale per $i + 1$.
-  - Il ciclo interno trova il minimo tra $A[i], A[i+1], ..., A[n]$
-  - Questo minimo viene scambiato con $A[i]$
-  - Ora $A[1..i]$ contiene gli $i$ elementi più piccoli, ordinati
-  - L'invariante vale per $i + 1$
-
-  *Terminazione* ($i = n$):
-  - I primi $n - 1$ elementi sono i più piccoli e sono ordinati
-  - L'elemento in $A[n]$ è quindi il più grande
-  - L'intero array è ordinato $square$
-]
-
-==== Dimostrazione completa: Insertion Sort
-
-*Invariante*: All'inizio dell'iterazione $j$-esima, il sottoarray $A[1..j-1]$ contiene gli elementi originali di $A[1..j-1]$, in ordine crescente.
-
-#demonstration[
-  *Inizializzazione* ($j = 2$):
-  - $A[1..1]$ contiene un solo elemento
-  - Un singolo elemento è banalmente ordinato $checkmark$
-
-  *Mantenimento*: Supponiamo vero per $j$. Il ciclo interno:
-  - Prende $A[j]$ come chiave
-  - Sposta a destra gli elementi di $A[1..j-1]$ maggiori della chiave
-  - Inserisce la chiave nella posizione corretta
-  - Ora $A[1..j]$ è ordinato, quindi l'invariante vale per $j + 1$
-
-  *Terminazione* ($j = n + 1$):
-  - L'invariante dice che $A[1..n]$ è ordinato
-  - Questo è esattamente quello che volevamo dimostrare $square$
-]
-
-#note(title: "Struttura di una dimostrazione con invariante")[
-  + Identificare l'invariante (cosa rimane vero ad ogni iterazione)
-  + *Inizializzazione*: verificare prima del ciclo
-  + *Mantenimento*: assumere vero all'iterazione $k$, dimostrare per $k+1$
-  + *Terminazione*: usare l'invariante + condizione di uscita per dimostrare la correttezza
-]
-
-=== Notazione Asintotica
-
-La notazione asintotica serve per descrivere come cresce il tempo di esecuzione di un algoritmo quando l'input diventa molto grande.
-
-$T(n)$: la #underline[complessità asintotica] di un algoritmo:
-- per $n$ molto grandi
-- a meno di costanti moltiplicative
-- a meno di termini di ordine inferiore
-
-Il costo sia in tempo che in spazio si descrivono in un ordine di grandezza.
-
-#example[
-  $ T(n) = 3n^2 + 2n + 5 + log n $
-  $T(n)$ è una funzione quadratica in $n$, i termini di ordine inferiore vengono ignorati.
-]
-
-#example[
-  $T(n) = 7n + 24$ è lineare in $n$
-]
-
-#example[
-  $T(n) = 5$ è costante
-]
-
-#example[
-  $T(n) = log_3 n + 2$ è logaritmica in $n$
+#definition(title: "Modello RAM a costo unitario")[
+  Nel modello RAM a costo unitario, le seguenti operazioni hanno ciascuna costo costante (pari a 1):
+  - *Operazioni aritmetiche*: $+, -, times, div, %$
+  - *Operazioni di confronto*: $<, >, <=, >=, ==, !=$
+  - *Operazioni logiche*: $and, or, not$
+  - *Operazioni di trasferimento*: lettura e scrittura in memoria, assegnamento
+  - *Operazioni di controllo*: `return`, chiamata a funzione, salto condizionale
+  La memoria e' ad accesso casuale: l'accesso a qualsiasi cella ha costo costante, indipendentemente dal suo indirizzo.
 ]
 
 #note[
-  Gli ordini di grandezza sono insiemi infiniti che includono tutte le funzioni che, rispetto ad una data funzione $g(n)$, hanno un certo comportamento asintotico.
-  $ mat(delim: "[", f(n), "la \"nostra\" funzione"; g(n), "la funzione di riferimento") $
+  Il modello RAM a costo unitario e' una semplificazione: in un calcolatore reale, il costo di un'operazione può dipendere dalla dimensione degli operandi (ad esempio, moltiplicare due numeri di 1000 cifre e' più costoso che moltiplicare due numeri di una cifra). Tuttavia, per gli scopi del corso, questa approssimazione e' adeguata e consente di concentrarsi sugli aspetti strutturali degli algoritmi.
 ]
 
-=== Notazione $Theta$ - limite asintotico stretto
+=== Costo computazionale di un algoritmo
 
-$ Theta(g(n)) = {f(n) | exists c_1, c_2, n_0 > 0 : forall n >= n_0, 0 <= c_1 g(n) <= f(n) <= c_2 g(n)} $
+Dato un algoritmo $A$ e un input di dimensione $n$, definiamo il *costo computazionale* come la quantità di risorse richieste dalla sua esecuzione.
 
-Si dice che $g(n)$ è un #underline[limite asintotico stretto] per $f(n)$
+#definition(title: "Costo in tempo")[
+  Il *costo in tempo* $T_A (n)$ di un algoritmo $A$ e' il numero di operazioni elementari (passi) che $A$ esegue su un input di dimensione $n$ nel modello RAM.
+]
 
-Si scrive $f(n) in Theta(g(n))$ oppure $f(n) = Theta(g(n))$
+#definition(title: "Costo in spazio")[
+  Il *costo in spazio* $S_A (n)$ di un algoritmo $A$ e' il numero di celle di memoria utilizzate durante l'esecuzione di $A$ su un input di dimensione $n$, incluse quelle occupate dall'input stesso.
+]
 
-Si legge "$f(n)$ è in theta di $g(n)$"
+In generale, il costo in tempo di un algoritmo non dipende solo dalla dimensione dell'input, ma anche dalla specifica istanza. Per questo si distinguono tre casi.
+
+#definition(title: "Caso ottimo, pessimo e medio")[
+  Sia $I_n$ l'insieme di tutte le istanze di dimensione $n$ per un dato problema. Il costo in tempo di un algoritmo $A$ si descrive come:
+  - *Caso ottimo*: $T_A^"best" (n) = min_(I in I_n) T_A (I)$ -- il minimo numero di operazioni su tutte le istanze di dimensione $n$.
+  - *Caso pessimo*: $T_A^"worst" (n) = max_(I in I_n) T_A (I)$ -- il massimo numero di operazioni su tutte le istanze di dimensione $n$.
+  - *Caso medio*: $T_A^"avg" (n) = sum_(I in I_n) P(I) dot T_A (I)$ -- il costo atteso, dove $P(I)$ e' la probabilità dell'istanza $I$.
+]
+
+Nell'analisi degli algoritmi ci concentreremo principalmente sul *caso pessimo*, poiché fornisce una garanzia sul costo massimo. Il caso medio e' spesso più informativo nella pratica, ma richiede ipotesi sulla distribuzione degli input.
+
+A parità di complessità in tempo, si cerca di minimizzare anche la complessità in spazio.
+
+=== Esempio: Minimo in un vettore
+
+Consideriamo il problema di trovare il valore minimo in un array.
+
+*Input*: array $A[1..n]$ di interi. \
+*Output*: il valore minimo $m$ tale che $m = A[i]$ per qualche $i in {1, ..., n}$ e $m <= A[j]$ per ogni $j in {1, ..., n}$.
+
+#algorithm(title: "Minimo di un array")[
+  ```
+  int min(int[] A, int n){
+      int min = A[1];
+      int i = 2;
+      while(i <= n){
+          if(A[i] < min){
+              min := A[i];
+          }
+          i := i + 1;
+      }
+      return min;
+  }
+  ```
+]
+
+*Analisi del costo.* Tutte le operazioni nel corpo del ciclo (`if`, confronto, eventuale assegnamento, incremento) hanno costo costante nel modello RAM. Il ciclo `while` viene eseguito esattamente $n - 1$ volte, indipendentemente dai valori contenuti nell'array. Il costo totale e' quindi:
+
+$ T(n) = c_1 + (n - 1) dot c_2 + c_3 $
+
+dove $c_1, c_3$ sono costanti per le operazioni fuori dal ciclo e $c_2$ e' il costo costante di ciascuna iterazione. La complessità in tempo e' *lineare* nella dimensione $n$ dell'input. Si noti che in questo caso il costo non dipende dalla specifica istanza: caso ottimo, pessimo e medio coincidono.
+
+=== Esempio: Ricerca di un elemento
+
+Consideriamo il problema della ricerca lineare (o sequenziale).
+
+*Input*: array $A[1..n]$ di interi, intero $k$. \
+*Output*: il minimo indice $i$ tale che $A[i] = k$, oppure $-1$ se $k in.not A$.
+
+#algorithm(title: "Ricerca lineare (CercaK)")[
+  ```
+  int cercaK(int[] A, int n, int k){
+      int i = 1;
+      bool trovato = false;
+      while((!trovato) && (i <= n)){
+          if(A[i] == k){
+              trovato := true;
+          } else {
+              i := i + 1;
+          }
+      }
+      if(trovato){
+          return i;
+      } else {
+          return -1;
+      }
+  }
+  ```
+]
+
+*Analisi del costo.* A differenza dell'esempio precedente, il numero di iterazioni dipende dalla posizione di $k$ nell'array:
+
+- *Caso ottimo*: $A[1] = k$, il ciclo esegue una sola iterazione. Il costo e' $T^"best"(n) = Theta(1)$ (costante).
+- *Caso pessimo*: $k in.not A$, il ciclo scorre l'intero array senza trovare $k$. Il costo e' $T^"worst"(n) = Theta(n)$ (lineare).
+- *Caso medio*: assumendo che $k$ sia presente e che ciascuna posizione sia equiprobabile, il numero medio di confronti e' $(n+1)/2$, dunque $T^"avg"(n) = Theta(n)$.
+
+Questo esempio mostra come lo stesso algoritmo possa avere costi significativamente diversi a seconda dell'istanza, motivando la distinzione tra caso ottimo e pessimo.
+
+=== Complessità asintotica
+
+L'obiettivo dell'analisi di complessità non e' calcolare il numero esatto di operazioni, ma determinare *l'ordine di grandezza* della funzione di costo $T(n)$ al crescere di $n$. Si trascurano:
+- le *costanti moltiplicative*, che dipendono dal modello di calcolo e dall'implementazione;
+- i *termini di ordine inferiore*, che diventano trascurabili per $n$ grande.
+
+#example(title: "Complessità lineare")[
+  $ T(n) = 3n + 2 $
+  Il termine dominante e' $3n$. Trascurando la costante moltiplicativa 3 e il termine di ordine inferiore 2, si conclude che $T(n)$ ha ordine di grandezza *lineare*.
+]
+
+#example(title: "Complessità quadratica")[
+  $ T(n) = 8n^2 + log n + 4 $
+  Il termine dominante e' $8n^2$. I termini $log n$ e $4$ sono di ordine inferiore e vengono trascurati. La complessità e' *quadratica*.
+]
+
+Per formalizzare queste nozioni, introduciamo la *notazione asintotica*.
+
+=== Notazione $Theta$ -- Limite asintotico stretto
+
+#definition(title: [$Theta$ (Theta)])[
+  Sia $g(n)$ una funzione. L'insieme $Theta(g(n))$ e' definito come:
+  $ Theta(g(n)) = {f(n) mid(|) exists c_1, c_2, n_0 > 0 : forall n >= n_0, quad 0 <= c_1 dot g(n) <= f(n) <= c_2 dot g(n)} $
+
+  Se $f(n) in Theta(g(n))$, si dice che $g(n)$ e' un *limite asintotico stretto* per $f(n)$.
+]
+
+Si scrive $f(n) = Theta(g(n))$ (con abuso di notazione, poiché $Theta(g(n))$ e' un insieme).
 
 #figure(
   image("../images/big_theta.jpg", width: 25%),
+  caption: [Rappresentazione grafica di $Theta(g(n))$: per $n >= n_0$, la funzione $f(n)$ e' compresa tra $c_1 dot g(n)$ e $c_2 dot g(n)$.]
 )
 
-#note[
-  Al crescere di $n$, da un certo punto in poi ($n_0$), la funzione $f(n)$ è compresa in una fascia delimitata da $c_1 g(n)$ e $c_2 g(n)$
+Intuitivamente, $f(n) = Theta(g(n))$ significa che, per $n$ sufficientemente grande, $f(n)$ cresce *allo stesso ritmo* di $g(n)$, a meno di costanti moltiplicative.
+
+=== Notazione $O$ -- Limite asintotico superiore
+
+#definition(title: [$O$ (O grande)])[
+  Sia $g(n)$ una funzione. L'insieme $O(g(n))$ e' definito come:
+  $ O(g(n)) = {f(n) mid(|) exists c, n_0 > 0 : forall n >= n_0, quad 0 <= f(n) <= c dot g(n)} $
+
+  Se $f(n) in O(g(n))$, si dice che $g(n)$ e' un *limite asintotico superiore* per $f(n)$.
 ]
 
-=== Notazione $O$ - limite asintotico superiore
-
-$ O(g(n)) = {f(n) | exists c, n_0 > 0 : forall n >= n_0, 0 <= f(n) <= c g(n)} $
-
-Si dice $g(n)$ è un #underline[limite asintotico superiore] per $f(n)$
-
-Si scrive $f(n) in O(g(n))$ o $f(n) = O(g(n))$
-
-Si legge "$f(n)$ è in O grande di $g(n)$"
+Si scrive $f(n) = O(g(n))$.
 
 #figure(
   image("../images/big_o.jpg", width: 25%),
+  caption: [Rappresentazione grafica di $O(g(n))$: per $n >= n_0$, la funzione $f(n)$ non supera $c dot g(n)$.]
 )
 
-#note[
-  Al crescere di $n$, la funzione $f(n)$ non supera mai $c g(n)$
+La notazione $O$ fornisce un *maggiorante* alla crescita di $f(n)$. Si utilizza tipicamente per esprimere il costo nel caso pessimo.
+
+=== Notazione $Omega$ -- Limite asintotico inferiore
+
+#definition(title: [$Omega$ (Omega grande)])[
+  Sia $g(n)$ una funzione. L'insieme $Omega(g(n))$ e' definito come:
+  $ Omega(g(n)) = {f(n) mid(|) exists c, n_0 > 0 : forall n >= n_0, quad 0 <= c dot g(n) <= f(n)} $
+
+  Se $f(n) in Omega(g(n))$, si dice che $g(n)$ e' un *limite asintotico inferiore* per $f(n)$.
 ]
 
-=== Notazione $Omega$ - limite asintotico inferiore
-
-$ Omega(g(n)) = {f(n) | exists c, n_0 > 0 : forall n >= n_0, 0 <= c g(n) <= f(n)} $
-
-Si dice $g(n)$ è un #underline[limite asintotico inferiore] di $f(n)$
-
-Si scrive $f(n) in Omega(g(n))$ o $f(n) = Omega(g(n))$
-
-Si legge "$f(n)$ è in Omega Grande di $g(n)$"
+Si scrive $f(n) = Omega(g(n))$.
 
 #figure(
   image("../images/big_omega.jpg", width: 25%),
+  caption: [Rappresentazione grafica di $Omega(g(n))$: per $n >= n_0$, la funzione $f(n)$ e' sempre almeno $c dot g(n)$.]
 )
+
+La notazione $Omega$ fornisce un *minorante* alla crescita di $f(n)$. Si utilizza tipicamente per esprimere il costo nel caso ottimo o per dimostrare limiti inferiori.
+
+=== Relazione tra le notazioni
+
+#theorem(title: "Relazione tra " + $Theta$+ ", " + $O$ + " e " + $Omega$)[
+  Per ogni coppia di funzioni $f(n)$ e $g(n)$:
+  $ f(n) = Theta(g(n)) quad arrow.l.r.double quad f(n) = O(g(n)) #h(0.3em) and #h(0.3em) f(n) = Omega(g(n)) $
+]
+
+#demonstration[
+  ($arrow.double$) Se $f(n) = Theta(g(n))$, allora esistono $c_1, c_2, n_0 > 0$ tali che per ogni $n >= n_0$:
+  $ c_1 dot g(n) <= f(n) <= c_2 dot g(n) $
+  La disuguaglianza $f(n) <= c_2 dot g(n)$ implica $f(n) = O(g(n))$ con $c = c_2$. La disuguaglianza $c_1 dot g(n) <= f(n)$ implica $f(n) = Omega(g(n))$ con $c = c_1$.
+
+  ($arrow.l.double$) Se $f(n) = O(g(n))$, esiste $c_2, n_1 > 0$ con $f(n) <= c_2 dot g(n)$ per $n >= n_1$. Se $f(n) = Omega(g(n))$, esiste $c_1, n_2 > 0$ con $c_1 dot g(n) <= f(n)$ per $n >= n_2$. Prendendo $n_0 = max(n_1, n_2)$, entrambe le disuguaglianze valgono simultaneamente per $n >= n_0$, ovvero $f(n) = Theta(g(n))$.
+]
 
 === Proprietà della notazione asintotica
 
-Le notazioni $Theta$, $O$ e $Omega$ godono di alcune proprietà fondamentali che permettono di manipolare e confrontare le complessità degli algoritmi.
+Le notazioni $Theta$, $O$ e $Omega$ godono di proprietà algebriche che ne facilitano l'uso. Per ciascuna proprietà riportiamo la formulazione e, ove opportuno, una giustificazione intuitiva.
 
-#definition(title: "Transitività")[
-  Se $f(n) = Theta(g(n))$ e $g(n) = Theta(h(n))$, allora $f(n) = Theta(h(n))$
+#theorem(title: "Transitività")[
+  Se $f(n) = Theta(g(n))$ e $g(n) = Theta(h(n))$, allora $f(n) = Theta(h(n))$.
 
-  Questa proprietà vale anche per $O$ e $Omega$:
+  Analogamente per $O$ e $Omega$:
   - $f(n) = O(g(n)) and g(n) = O(h(n)) arrow.double f(n) = O(h(n))$
   - $f(n) = Omega(g(n)) and g(n) = Omega(h(n)) arrow.double f(n) = Omega(h(n))$
 ]
 
-#definition(title: "Riflessività")[
-  Per ogni funzione $f(n)$:
-  $ f(n) = Theta(f(n)) $
-
-  Questa proprietà vale anche per $O$ e $Omega$:
-  - $f(n) = O(f(n))$
-  - $f(n) = Omega(f(n))$
+#demonstration[
+  Dimostriamo il caso $O$. Per ipotesi, esistono $c_1, n_1$ con $f(n) <= c_1 dot g(n)$ per $n >= n_1$, e $c_2, n_2$ con $g(n) <= c_2 dot h(n)$ per $n >= n_2$. Per $n >= max(n_1, n_2)$:
+  $ f(n) <= c_1 dot g(n) <= c_1 dot c_2 dot h(n) $
+  Ponendo $c = c_1 dot c_2$ e $n_0 = max(n_1, n_2)$, si ha $f(n) = O(h(n))$. Le dimostrazioni per $Omega$ e $Theta$ sono analoghe.
 ]
 
-#definition(title: "Simmetria")[
+#theorem(title: "Riflessivita'")[
+  Per ogni funzione $f(n)$:
+  $ f(n) = Theta(f(n)) , quad f(n) = O(f(n)) , quad f(n) = Omega(f(n)) $
+]
+
+Basta prendere $c_1 = c_2 = c = 1$ e $n_0 = 1$ nelle rispettive definizioni.
+
+#theorem(title: "Simmetria")[
   $ f(n) = Theta(g(n)) arrow.l.r.double g(n) = Theta(f(n)) $
 
-  #note[
-    La simmetria vale *solo* per $Theta$, non per $O$ e $Omega$.
-  ]
+  La simmetria vale *solo* per $Theta$. Non vale per $O$ e $Omega$.
 ]
 
-#definition(title: "Simmetria trasposta")[
+#theorem(title: "Simmetria trasposta")[
   $ f(n) = O(g(n)) arrow.l.r.double g(n) = Omega(f(n)) $
 
-  Questa proprietà collega $O$ e $Omega$: dire che $f$ è limitata superiormente da $g$ equivale a dire che $g$ è limitata inferiormente da $f$.
+  Intuitivamente: dire che $f$ cresce al più come $g$ equivale a dire che $g$ cresce almeno come $f$.
 ]
 
-#note(title: "Relazione tra le notazioni")[
-  Vale la seguente equivalenza:
-  $ f(n) = Theta(g(n)) arrow.l.r.double f(n) = O(g(n)) and f(n) = Omega(g(n)) $
+#note(title: "Analogia con le relazioni d'ordine")[
+  Le notazioni asintotiche si possono interpretare come relazioni d'ordine tra funzioni:
+  - $f(n) = O(g(n))$ corrisponde a $f lt.eq g$ (informalmente)
+  - $f(n) = Omega(g(n))$ corrisponde a $f gt.eq g$
+  - $f(n) = Theta(g(n))$ corrisponde a $f approx g$
 
-  Ovvero $f(n)$ ha limite asintotico stretto $g(n)$ se e solo se $g(n)$ è sia limite superiore che inferiore per $f(n)$.
+  Le proprietà di transitivita', riflessivita' e simmetria ricalcano quelle delle relazioni $<=$, $>=$ e $=$.
 ]
 
 === Esercizi sulla notazione asintotica
@@ -358,13 +251,13 @@ Le notazioni $Theta$, $O$ e $Omega$ godono di alcune proprietà fondamentali che
   Dobbiamo trovare costanti $c_1, c_2 > 0$ e $n_0 >= 1$ tali che:
   $ forall n >= n_0: quad c_1 dot n^2 <= 3n^2 - 2n - 1 <= c_2 dot n^2 $
 
-  *Limite superiore* ($O$): Dimostriamo che $3n^2 - 2n - 1 <= c_2 dot n^2$
+  *Limite superiore* ($O$): Dimostriamo che $3n^2 - 2n - 1 <= c_2 dot n^2$.
 
   Per $n >= 1$: $quad 3n^2 - 2n - 1 <= 3n^2$
 
-  Quindi con $c_2 = 3$ il limite superiore è verificato per ogni $n >= 1$.
+  Quindi con $c_2 = 3$ il limite superiore e' verificato per ogni $n >= 1$.
 
-  *Limite inferiore* ($Omega$): Dimostriamo che $c_1 dot n^2 <= 3n^2 - 2n - 1$
+  *Limite inferiore* ($Omega$): Dimostriamo che $c_1 dot n^2 <= 3n^2 - 2n - 1$.
 
   Riscriviamo: $quad 3n^2 - 2n - 1 >= c_1 dot n^2$
 
@@ -376,34 +269,129 @@ Le notazioni $Theta$, $O$ e $Omega$ godono di alcune proprietà fondamentali che
 
   Quindi: $quad 3 - 1 - frac(1, 4) = frac(7, 4) >= c_1$
 
-  Scegliendo $c_1 = 1$ (più semplice), verifichiamo per $n = 2$:
+  Scegliendo $c_1 = 1$, verifichiamo per $n = 2$:
   $ 3(4) - 2(2) - 1 = 12 - 4 - 1 = 7 >= 1 dot 4 = 4 quad checkmark $
 
   *Conclusione*: Con $c_1 = 1$, $c_2 = 3$, $n_0 = 2$ abbiamo dimostrato che:
   $ 3n^2 - 2n - 1 in Theta(n^2) $
 ]
 
+#example(title: "Dimostrare che " + $5n + 3 in O(n)$)[
+  Dobbiamo trovare $c > 0$ e $n_0 >= 1$ tali che $5n + 3 <= c dot n$ per ogni $n >= n_0$.
+
+  Per $n >= 1$: $quad 5n + 3 <= 5n + 3n = 8n$ (poiché $3 <= 3n$ per $n >= 1$).
+
+  Dunque con $c = 8$ e $n_0 = 1$ la disuguaglianza e' verificata. Si ha $5n + 3 in O(n)$.
+]
+
+#example(title: "Dimostrare che " + $n^2 in.not O(n)$)[
+  Per assurdo, supponiamo $n^2 in O(n)$. Allora esistono $c, n_0 > 0$ tali che $n^2 <= c dot n$ per ogni $n >= n_0$, cioè $n <= c$ per ogni $n >= n_0$. Ma questo e' impossibile, perché $n$ cresce senza limite. Contraddizione.
+]
+
 #example(title: "Ordinamento per crescita asintotica")[
   Ordinare le seguenti funzioni in ordine crescente di crescita asintotica:
-  $ 2, quad log n, quad log^2 n, quad (log n)^2, quad sqrt(n), quad n, quad n log n, quad n log^2 n, quad n^2, quad 2^n, quad 3^n, quad n! $
+  $ 2, quad log n, quad (log n)^2, quad sqrt(n), quad n, quad n log n, quad n (log n)^2, quad n^2, quad 2^n, quad 3^n, quad n! $
 
   *Soluzione*:
 
-  $ 2 prec log n prec log^2 n = (log n)^2 prec sqrt(n) prec n prec n log n prec n log^2 n prec n^2 prec 2^n prec 3^n prec n! $
+  $ 2 prec log n prec (log n)^2 prec sqrt(n) prec n prec n log n prec n (log n)^2 prec n^2 prec 2^n prec 3^n prec n! $
 
-  Dove $f prec g$ significa $f(n) = o(g(n))$, ovvero $f$ cresce strettamente più lentamente di $g$.
+  Dove $f prec g$ significa $f(n) = o(g(n))$, ovvero $lim_(n -> infinity) f(n) / g(n) = 0$.
 
-  *Spiegazione delle classi*:
+  *Classificazione per famiglie di crescita*:
   - *Costanti*: $2 = Theta(1)$
-  - *Logaritmiche*: $log n$, $log^2 n = (log n)^2$
-  - *Sublineari*: $sqrt(n) = n^(1/2)$
+  - *Logaritmiche*: $log n$
+  - *Polilogaritmiche*: $(log n)^2$
+  - *Sublineari*: $sqrt(n) = n^(1\/2)$
   - *Lineari*: $n$
-  - *Linearitmiche*: $n log n$, $n log^2 n$
+  - *Linearitmiche*: $n log n$, $n (log n)^2$
   - *Polinomiali*: $n^2$
   - *Esponenziali*: $2^n prec 3^n$ (base maggiore $arrow.double$ crescita più rapida)
-  - *Fattoriali*: $n!$ (cresce più velocemente di qualsiasi esponenziale $c^n$)
+  - *Fattoriali*: $n!$ (cresce più rapidamente di qualsiasi $c^n$ con $c$ costante)
 
   #note[
-    Per confrontare $log^2 n$ e $(log n)^2$: sono la stessa funzione! La notazione $log^2 n$ significa $(log n)^2$, non $log(log n)$.
+    La notazione $log^2 n$ si intende come $(log n)^2$, non come $log(log n)$. Per evitare ambiguita', in queste dispense si usa sempre la scrittura estesa $(log n)^2$.
   ]
+]
+
+== Limiti inferiori alla difficolta' di un problema
+
+La notazione asintotica ci consente di classificare la complessità dei singoli algoritmi. Un'ulteriore domanda fondamentale e': dato un problema, qual e' il minimo costo necessario per risolverlo? Per rispondere, occorre stabilire dei *limiti inferiori*, cioè delle soglie al di sotto delle quali nessun algoritmo può scendere.
+
+#definition(title: "Difficolta' di un problema")[
+  Dato un problema $pi$, la *difficolta'* di $pi$ e' la complessità al caso pessimo del miglior algoritmo che risolve $pi$, espressa in funzione della dimensione dell'input e in termini asintotici. Un algoritmo che risolve $pi$ con complessità $T(n)$ fornisce un *limite superiore* alla difficolta' di $pi$.
+]
+
+#definition(title: "Limite inferiore")[
+  Una funzione $L(n)$ e' un *limite inferiore* per il problema $pi$ se, per ogni algoritmo $A$ che risolve $pi$, la complessità al caso pessimo di $A$ soddisfa $T_A(n) in Omega(L(n))$.
+
+  In altre parole, $L(n)$ e' il numero minimo di operazioni necessarie per risolvere $pi$ al caso peggiore.
+]
+
+#note(title: "Algoritmo ottimo")[
+  Un algoritmo e' *ottimo* per il problema $pi$ se la sua complessità al caso pessimo coincide (asintoticamente) con il limite inferiore. In tal caso il limite inferiore e' detto *stretto*.
+]
+
+Esistono tre criteri principali per stabilire limiti inferiori.
+
+=== Criterio della dimensione dell'input
+
+Se la soluzione di un problema richiede necessariamente l'esame di tutti i dati in input, allora la dimensione dell'input $n$ e' un limite inferiore:
+$ L(n) = Omega(n) $
+
+#example(title: "Ricerca del massimo")[
+  La ricerca del massimo in un vettore non ordinato deve necessariamente esaminare tutti gli $n$ elementi: un elemento non esaminato potrebbe essere il massimo. Dunque $L(n) = Omega(n)$.
+
+  Poiche' l'algoritmo di scansione lineare ha complessità $Theta(n)$, il limite inferiore e' stretto e l'algoritmo e' *ottimo*.
+]
+
+=== Criterio dell'albero di decisione
+
+Questo criterio si applica a problemi risolvibili attraverso una sequenza di *decisioni binarie* (tipicamente confronti tra valori) che via via riducono lo spazio delle soluzioni possibili.
+
+#definition(title: "Albero di decisione")[
+  Un *albero di decisione* per un problema $pi$ e' un albero binario in cui:
+  - ogni *nodo interno* rappresenta un confronto (decisione);
+  - ogni *foglia* rappresenta una possibile soluzione;
+  - ogni *percorso radice-foglia* corrisponde a una possibile esecuzione dell'algoritmo.
+]
+
+Il *caso pessimo* di un algoritmo basato su confronti corrisponde alla lunghezza del percorso più lungo dalla radice a una foglia, ossia all'*altezza* dell'albero di decisione.
+
+#definition(title: "Altezza di un albero")[
+  L'altezza di un albero e' la lunghezza (in numero di archi) del più lungo percorso dalla radice ad una foglia.
+]
+
+#theorem(title: "Limite inferiore dall'albero di decisione")[
+  Se $"SOL"(n)$ e' il numero di soluzioni possibili per un'istanza di dimensione $n$ del problema $pi$, allora ogni albero di decisione per $pi$ ha almeno $"SOL"(n)$ foglie. Poiche' un albero binario con $F$ foglie ha altezza almeno $log_2 F$, si ha:
+  $ L(n) = Omega(log_2("SOL"(n))) $
+]
+
+#demonstration[
+  Un albero binario di altezza $h$ ha al massimo $2^h$ foglie. L'albero di decisione deve avere almeno $"SOL"(n)$ foglie (una per ogni soluzione possibile). Dunque $2^h >= "SOL"(n)$, da cui $h >= log_2("SOL"(n))$.
+]
+
+#note(title: "Percorsi nell'albero di decisione")[
+  In un albero di decisione, il percorso più breve dalla radice a una foglia corrisponde al *caso ottimo*, mentre il percorso più lungo corrisponde al *caso pessimo*. Un *albero bilanciato* e' un albero in cui il caso ottimo e il caso pessimo differiscono al più di una costante.
+]
+
+#definition(title: "Albero bilanciato")[
+  Un albero si dice *bilanciato* se, per ogni nodo, le altezze dei suoi sottoalberi differiscono al più di una costante. Come conseguenza, un albero bilanciato con $n$ nodi ha altezza $Theta(log n)$.
+]
+
+#note(title: "Algoritmo ottimo per problemi basati su confronti")[
+  L'algoritmo ottimo al caso pessimo e' quello che minimizza l'altezza dell'albero di decisione. Questo corrisponde a un albero bilanciato, con altezza $Theta(log("SOL"(n)))$.
+]
+
+=== Criterio degli eventi contabili
+
+Se la soluzione di un problema richiede che un certo *evento* si ripeta un numero minimo di volte, e ogni occorrenza ha un certo costo, allora si ottiene un limite inferiore:
+$ L(n) = ("numero minimo di ripetizioni dell'evento") times ("costo per evento") $
+
+#example(title: "Ordinamento per confronti")[
+  Nell'ordinamento per confronti, l'evento elementare e' il *confronto* tra due elementi (costo $Theta(1)$). Le soluzioni possibili sono le $n!$ permutazioni dell'array. Dall'albero di decisione:
+  $ L(n) = Omega(log_2(n!)) = Omega(n log n) $
+  dove l'ultima uguaglianza segue dall'approssimazione di Stirling: $log(n!) = Theta(n log n)$.
+
+  Poiche' il Merge Sort ha complessità $Theta(n log n)$, esso e' un algoritmo *ottimo* per l'ordinamento basato su confronti.
 ]

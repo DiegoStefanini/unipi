@@ -1,165 +1,163 @@
 // ========================================
-// Template - Ambienti (stile accademico migliorato)
+// Template - Stile accademico
 // ========================================
 
-// Colori per gli ambienti
-#let def-color = rgb("#1e3a5f")      // Blu scuro per definizioni
-#let thm-color = rgb("#1a5c3a")      // Verde scuro per teoremi
-#let ex-color = rgb("#b35900")       // Arancione per esempi
-#let note-color = rgb("#4a4a4a")     // Grigio per note
-
-#let def-bg = rgb("#e8f0f8")         // Sfondo blu chiaro
-#let thm-bg = rgb("#e8f5ec")         // Sfondo verde chiaro
-#let ex-bg = rgb("#fff8f0")          // Sfondo arancione chiaro
-#let code-bg = rgb("#f5f5f5")        // Sfondo grigio per codice
-
-// Contatori per numerazione automatica
+// Contatori per numerazione (resettati per capitolo)
 #let definition-counter = counter("definition")
 #let theorem-counter = counter("theorem")
 #let lemma-counter = counter("lemma")
 #let corollary-counter = counter("corollary")
 #let example-counter = counter("example")
 
+// Sfondo per codice
+#let code-bg = rgb("#f5f5f5")
+
 // ========================================
-// Definizione (box blu con numerazione)
+// Definizione
 // ========================================
 #let definition(title: none, body) = {
   v(0.5em)
   definition-counter.step()
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: def-bg,
-    stroke: (left: 3pt + def-color),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 2pt + luma(160)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: def-color, weight: "bold")[Definizione #context definition-counter.display()#if title != none [ (#title)].] #body
+    #context {
+      let ch = counter(heading).get().first()
+      let n = definition-counter.get().first()
+      text(weight: "bold")[Definizione #ch.#n#if title != none [ -- #title].]
+    } #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Teorema (box verde con numerazione)
+// Teorema
 // ========================================
 #let theorem(title: none, body) = {
   v(0.5em)
   theorem-counter.step()
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: thm-bg,
-    stroke: (left: 3pt + thm-color),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 2pt + luma(160)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: thm-color, weight: "bold")[Teorema #context theorem-counter.display()#if title != none [ (#title)].] #body
+    #context {
+      let ch = counter(heading).get().first()
+      let n = theorem-counter.get().first()
+      text(weight: "bold")[Teorema #ch.#n#if title != none [ -- #title].]
+    } #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Lemma (box verde chiaro con numerazione)
+// Lemma
 // ========================================
 #let lemma(title: none, body) = {
   v(0.5em)
   lemma-counter.step()
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: thm-bg.lighten(30%),
-    stroke: (left: 3pt + thm-color.lighten(20%)),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 2pt + luma(160)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: thm-color, weight: "bold")[Lemma #context lemma-counter.display()#if title != none [ (#title)].] #body
+    #context {
+      let ch = counter(heading).get().first()
+      let n = lemma-counter.get().first()
+      text(weight: "bold")[Lemma #ch.#n#if title != none [ -- #title].]
+    } #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Corollario (box verde chiaro con numerazione)
+// Corollario
 // ========================================
 #let corollary(title: none, body) = {
   v(0.5em)
   corollary-counter.step()
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: thm-bg.lighten(30%),
-    stroke: (left: 3pt + thm-color.lighten(20%)),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 2pt + luma(160)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: thm-color, weight: "bold")[Corollario #context corollary-counter.display()#if title != none [ (#title)].] #body
+    #context {
+      let ch = counter(heading).get().first()
+      let n = corollary-counter.get().first()
+      text(weight: "bold")[Corollario #ch.#n#if title != none [ -- #title].]
+    } #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Esempio (box arancione con numerazione)
+// Esempio
 // ========================================
 #let example(title: none, body) = {
   v(0.5em)
   example-counter.step()
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: ex-bg,
-    stroke: (left: 3pt + ex-color),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 2pt + luma(160)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: ex-color, weight: "bold")[Esempio #context example-counter.display()#if title != none [ (#title)].] #body
+    #context {
+      let ch = counter(heading).get().first()
+      let n = example-counter.get().first()
+      text(weight: "bold")[Esempio #ch.#n#if title != none [ -- #title].]
+    } #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Nota (box grigio senza numerazione)
+// Nota (senza numerazione)
 // ========================================
 #let note(title: none, body) = {
   v(0.5em)
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: luma(245),
-    stroke: (left: 2pt + note-color),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 1.5pt + luma(180)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: note-color, weight: "bold")[Nota#if title != none [ (#title)].] #body
+    *Nota#if title != none [ -- #title].* #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Osservazione (box grigio senza numerazione)
+// Osservazione (senza numerazione)
 // ========================================
 #let observation(body) = {
   v(0.5em)
   block(
     width: 100%,
-    inset: (left: 1em, top: 0.7em, bottom: 0.7em, right: 0.8em),
-    fill: luma(245),
-    stroke: (left: 2pt + note-color),
-    radius: (right: 4pt),
+    inset: (left: 1em, top: 0.5em, bottom: 0.5em, right: 0.5em),
+    stroke: (left: 1.5pt + luma(180)),
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(fill: note-color, weight: "bold")[Osservazione.] #body
+    *Osservazione.* #body
   ]
   v(0.5em)
 }
 
 // ========================================
-// Dimostrazione (senza box, con QED)
+// Dimostrazione
 // ========================================
 #let demonstration(body) = {
   v(0.5em)
@@ -169,13 +167,13 @@
   )[
     #set text(size: 10pt)
     #set par(justify: true)
-    #text(style: "italic")[Dimostrazione.] #body #h(1fr) $square.filled$
+    _Dimostrazione._ #body #h(1fr) $square.filled$
   ]
   v(0.5em)
 }
 
 // ========================================
-// Ambiente Codice/Algoritmo (nuovo)
+// Algoritmo/Codice (box grigio chiaro)
 // ========================================
 #let algorithm(title: none, body) = {
   v(0.5em)
@@ -184,10 +182,10 @@
     inset: (x: 1em, y: 0.8em),
     fill: code-bg,
     stroke: 1pt + luma(200),
-    radius: 4pt,
+    radius: 3pt,
   )[
     #if title != none [
-      #text(size: 9pt, weight: "bold", fill: luma(80))[#title]
+      #text(size: 9pt, weight: "bold")[#title]
       #v(0.3em)
     ]
     #set text(size: 9.5pt, font: "Consolas")
@@ -209,7 +207,7 @@
 }
 
 // ========================================
-// Nota a margine (per concetti chiave)
+// Nota a margine
 // ========================================
 #let margin-note(body) = {
   place(
@@ -227,16 +225,16 @@
 }
 
 // ========================================
-// Box concetto chiave (per ripasso)
+// Concetto chiave (box sobrio)
 // ========================================
 #let keypoint(body) = {
   v(0.3em)
   block(
     width: 100%,
     inset: 0.6em,
-    fill: rgb("#fff3cd"),
-    stroke: 1pt + rgb("#ffc107"),
-    radius: 4pt,
+    fill: luma(245),
+    stroke: 1pt + luma(200),
+    radius: 3pt,
   )[
     #set text(size: 9.5pt)
     #set par(justify: true)
@@ -246,7 +244,7 @@
 }
 
 // ========================================
-// Funzione per resettare i contatori per capitolo
+// Reset contatori per capitolo
 // ========================================
 #let reset-counters() = {
   definition-counter.update(0)

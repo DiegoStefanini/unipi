@@ -1,56 +1,60 @@
 #import "../template.typ": *
 
-=== Mao (Modello Astratto Operazionale)
+== Il linguaggio MAO (Modello Astratto Operazionale)
 
-=== Array e espressioni con effetti collaterali
+Il linguaggio MAO estende MiniMao con costrutti fondamentali per la programmazione reale: gli *array*, le *funzioni*, la *ricorsione* e un *sistema di tipi* formale. In questo capitolo si presenta ciascuno di questi aspetti, a partire dalla loro sintassi formale fino alla semantica operazionale e al type checking.
 
-#definition(title: "array - informale")[
-  Un array è una struttura dati volta a trattare un insieme di dati omogenei in modo efficiente
+== Array
+
+#definition(title: "Array -- definizione informale")[
+  Un *array* e una struttura dati che permette di trattare in modo efficiente un insieme finito di dati omogenei, cioe tutti dello stesso tipo. Gli elementi sono memorizzati in celle contigue di memoria e sono accessibili tramite un indice posizionale intero.
 ]
 
-Utilizzando `int[]` o `bool[]` e stabilito che una dichiarazione avviene come
+In MAO, gli array si dichiarano specificando il tipo degli elementi seguito da `[]`. Ad esempio, la dichiarazione
 
 #align(center)[
-  `int[] voti = [x₁, x₂, x₃]`
+  `int[] voti = [18, 30, 23];`
 ]
 
-Viene riservato un primo elemento in $l_b$ (indirizzo base) per memorizzare la lunghezza dell'array. Per ciascun valore della serie lo si accede attraverso la sua posizione $x$:
+alloca in memoria un blocco contiguo di celle. La prima cella, situata all'_indirizzo base_ $l_b$, contiene la lunghezza dell'array. Le celle successive $l_b + 1, l_b + 2, ...$ contengono i singoli elementi. Per accedere all'elemento in posizione $i$ si usa la notazione $l_b [i]$, che corrisponde all'indirizzo $l_b + 1 + i$.
+
+=== Rappresentazione in memoria
+
+Nella struttura memoria-ambiente di MAO, un array viene rappresentato tramite una catena di indirezione. L'ambiente $rho$ associa il nome della variabile a una locazione $l_x$, e la memoria $sigma$ associa $l_x$ all'indirizzo base $l_b$ dell'array:
 
 #align(center)[
-  $l_b [x]$
+  $rho("voti") = l_x$, $quad sigma(l_x) = l_b$ \
+  $sigma(l_b) = 3$ #h(1cm) _(lunghezza)_ \
+  $sigma(l_b + 1) = 18$, $quad sigma(l_b + 2) = 30$, $quad sigma(l_b + 3) = 23$
 ]
 
-Nella struttura memoria-ambiente, si rappresenta nel seguente modo l'indirizzo base e le successive:
+Si osservi che la variabile `voti` non contiene direttamente i dati dell'array, ma un _riferimento_ (locazione) all'indirizzo base. Questa scelta progettuale ha conseguenze importanti, come vedremo nella sezione sull'aliasing.
 
-#align(center)[
-  $rho(x) = l_x$, $sigma(l_x) = l_b$ \
-  $sigma(l_b) = 3$ \
-  $sigma(l_b [0]) = 18$
+#definition(title: "Array -- definizione formale")[
+  Un array e una collezione finita di elementi dello stesso tipo, memorizzati in celle contigue di memoria. Il numero degli elementi e detto #underline[lunghezza dell'array]. Tipo e lunghezza sono fissati al momento della dichiarazione e sono *statici*: non possono essere modificati durante l'esecuzione del programma.
 ]
 
-#definition(title: "Array - formale")[
-  Un array è una collezione finita dello stesso tipo, memorizzati contiguamente. Il numero degli elementi è la #underline[lunghezza dell'array]. Tipo e lunghezza sono fissati alla dichiarazione e sono statici (non possono essere cambiati una volta dichiarati)
-]
-
-Un array permette di trattare come entità atomiche intere collezioni e al contempo permette di accedere ai singoli elementi tramite indici posizionali con intervallo
+Un array permette di trattare come entita atomiche intere collezioni di dati e, al contempo, consente l'accesso ai singoli elementi tramite indici posizionali. Gli indici ammissibili appartengono all'intervallo
 
 #align(center)[
   $[0, "lunghezza")$
 ]
 
-=== Sintassi
+cioe da $0$ (incluso) a "lunghezza" $- 1$ (incluso). Un accesso con indice fuori da questo intervallo costituisce un errore a tempo di esecuzione.
 
-Per ottenere la lunghezza di un array è possibile utilizzare il costrutto `.length`
+== Sintassi degli array
 
-#example(title: "lunghezza array")[
+Per ottenere la lunghezza di un array si utilizza il costrutto `.length`, che restituisce un valore intero.
+
+#example(title: "Lunghezza di un array")[
   ```
-  int[] voti = [18,30,23];
+  int[] voti = [18, 30, 23];
 
   voti.length = 3
   ```
 ]
 
-La sintassi degli array in Mao è così grammaticalmente rappresentata:
+La grammatica di MAO viene estesa con le seguenti produzioni per supportare gli array:
 
 #align(center)[
   $T &::= ... | T[]$ \
@@ -59,46 +63,78 @@ La sintassi degli array in Mao è così grammaticalmente rappresentata:
   $C &::= ... | E "[" E "]" := E$
 ]
 
-Dove:
-- $T[]$: tipo array di elementi di tipo $T$
-- $"[" S "]"$: letterale array (serie di espressioni)
-- $"new" space T "[" E "]"$: allocazione di un nuovo array
-- $E "." "length"$: lunghezza dell'array
-- $E "[" E "]"$: accesso a un elemento
+Dove ciascuna produzione ha il seguente significato:
+- $T[]$: tipo array di elementi di tipo $T$ (ad esempio `int[]`, `bool[]`)
+- $"[" S "]"$: *letterale array*, cioe una lista esplicita di espressioni che definisce i valori iniziali
+- $"new" space T "[" E "]"$: *allocazione* di un nuovo array di tipo $T$ con dimensione data dalla valutazione di $E$, con elementi inizializzati ai valori di default
+- $E "." "length"$: espressione che restituisce la *lunghezza* dell'array
+- $E "[" E "]"$: *accesso* a un singolo elemento dell'array, dove la prima espressione denota l'array e la seconda l'indice
+- $E "[" E "]" := E$: *assegnamento* a un elemento dell'array
 
-=== Valori e riferimenti
+== Valori e riferimenti
 
-Se in MiniMao le celle di memoria contenevano solamente valori interi e booleani
-
-#align(center)[
-  $rho: bb(I) arrow.r.hook bb(L)$ e $sigma: bb(L) arrow.r.hook bb(V)$ dove $bb(V) = bb(Z) union bb(B)$
-]
-
-adesso in Mao si memorizzano anche gli indirizzi base degli array
+In MiniMao le celle di memoria contenevano solamente valori interi e booleani. L'ambiente e la memoria erano definiti come:
 
 #align(center)[
-  $rho: bb(I) arrow.r.hook bb(L)$ e $sigma: bb(L) arrow.r.hook bb(V)$ dove $bb(V) = bb(Z) union bb(B) union bb(L)$
+  $rho: bb(I) arrow.r.hook bb(L)$ #h(1cm) $sigma: bb(L) arrow.r.hook bb(V)$ dove $bb(V) = bb(Z) union bb(B)$
 ]
 
-Ora si includono tra i valori anche le locazioni (riferimenti)
-
-=== Espressioni "pure" e non
-
-Se in MiniMao la presenza nella grammatica di sole espressioni pure ci permetteva la seguente semplificazione
+Con l'introduzione degli array in MAO, il dominio dei valori viene esteso per includere anche le _locazioni_ (indirizzi di memoria), poiche una variabile di tipo array contiene un riferimento all'indirizzo base dell'array:
 
 #align(center)[
-  $chevron.l E, rho, sigma chevron.r arrow.b.double (v, sigma') arrow.r chevron.l E, rho, sigma chevron.r arrow.b.double v$
+  $rho: bb(I) arrow.r.hook bb(L)$ #h(1cm) $sigma: bb(L) arrow.r.hook bb(V)$ dove $bb(V) = bb(Z) union bb(B) union bb(L)$
 ]
 
-Adesso con l'introduzione di #underline[allocazione di memoria] non è più possibile. Le espressioni che allocano memoria (come `new T[E]` o letterali array `[E1, E2, ...]`) producono anche una memoria modificata:
+Le locazioni che compaiono come valori prendono il nome di *riferimenti*. Un riferimento non e un dato del programma, ma un indirizzo di memoria che permette di accedere indirettamente a una struttura dati.
+
+== Espressioni pure e con effetti collaterali
+
+#definition(title: "Espressione pura")[
+  Un'espressione si dice *pura* se la sua valutazione non modifica lo stato della memoria. Il risultato dipende solo dai valori correnti delle variabili, senza effetti collaterali.
+]
+
+In *MiniMao* tutte le espressioni erano pure: la valutazione di un'espressione $E$ produceva un valore $v$ lasciando la memoria $sigma$ invariata. Cio permetteva di usare la notazione semplificata:
+
+#align(center)[
+  $chevron.l E, rho, sigma chevron.r arrow.b.double v$
+]
+
+#example(title: "Espressioni pure in MiniMao")[
+  Le seguenti espressioni non modificano la memoria:
+  - `x + 3` $arrow.r$ legge il valore di $x$, calcola la somma, restituisce un intero
+  - `a > b and c` $arrow.r$ legge $a$, $b$, $c$, restituisce un booleano
+  - `(x + 1) * (y - 2)` $arrow.r$ solo letture e calcoli aritmetici
+]
+
+In *MAO*, con l'introduzione degli array, alcune espressioni possono *allocare nuova memoria*. Queste espressioni producono *effetti collaterali* e restituiscono, oltre al valore, una memoria modificata $sigma'$:
 
 #align(center)[
   $chevron.l E, rho, sigma chevron.r arrow.b.double (v, sigma')$
 ]
 
-=== Semantica degli Array
+#example(title: "Espressioni con effetti collaterali")[
+  Le seguenti espressioni modificano la memoria allocando nuove celle:
+  - `new int[5]` $arrow.r$ alloca 6 celle consecutive (1 per la lunghezza + 5 per gli elementi)
+  - `[1, 2, 3]` $arrow.r$ alloca 4 celle consecutive (1 per la lunghezza + 3 per i valori)
+  - `new bool[n+1]` $arrow.r$ prima valuta l'espressione `n+1`, poi alloca il numero risultante di celle
+]
 
-==== Allocazione di un array letterale
+#note(title: "Conseguenza sulla semantica")[
+  In MAO la valutazione di _qualsiasi_ espressione restituisce sempre una coppia $(v, sigma')$, anche quando $sigma' = sigma$ (cioe quando l'espressione e pura). Questo garantisce uniformita nella semantica: ogni regola di valutazione segue lo stesso schema, indipendentemente dalla presenza o meno di effetti collaterali.
+]
+
+La distinzione tra espressioni pure e non pure ha importanti implicazioni pratiche:
+- *Ordine di valutazione*: se due sottoespressioni hanno effetti collaterali, l'ordine in cui vengono valutate puo influenzare il risultato finale
+- *Ottimizzazioni del compilatore*: il compilatore puo riordinare o eliminare espressioni pure senza alterare la semantica del programma, ma non puo fare altrettanto con espressioni che hanno effetti collaterali
+- *Ragionamento formale*: le espressioni pure sono piu semplici da analizzare perche il loro comportamento e completamente determinato dai valori correnti delle variabili
+
+== Semantica operazionale degli array
+
+Le regole seguenti definiscono la semantica operazionale degli array in stile _big-step_. In ciascuna regola, le premesse (sopra la linea) stabiliscono le condizioni necessarie, e la conclusione (sotto la linea) descrive il risultato della valutazione.
+
+=== Allocazione di un array letterale
+
+Quando si valuta un letterale array $[E_1, ..., E_n]$, si valutano in ordine le $n$ espressioni, ottenendo i valori $v_1, ..., v_n$. Si allocano poi $n+1$ celle consecutive a partire dall'indirizzo base $l_b$: la prima cella memorizza la lunghezza $n$, le successive i valori degli elementi.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_1, rho, sigma chevron.r arrow.b.double (v_1, sigma_1)$ #h(0.2cm) $...$ #h(0.2cm) $chevron.l E_n, rho, sigma_(n-1) chevron.r arrow.b.double (v_n, sigma_n)$ #h(0.2cm) $l_b, l_b+1, ..., l_b+n in.not "dom"(sigma_n)$] \
@@ -106,93 +142,111 @@ Adesso con l'introduzione di #underline[allocazione di memoria] non è più poss
 ]
 
 #note[
-  L'array viene memorizzato con la lunghezza in $l_b$ e gli elementi in $l_b+1, ..., l_b+n$.
+  Si osservi che il valore restituito e l'indirizzo base $l_b$, non l'array stesso. Cio riflette il fatto che in MAO gli array sono gestiti per riferimento. Inoltre, ogni espressione $E_i$ viene valutata nella memoria $sigma_(i-1)$ risultante dalla valutazione precedente, garantendo la corretta propagazione degli effetti collaterali.
 ]
 
-==== Allocazione con new
+=== Allocazione con new
+
+L'espressione `new T[E]` valuta prima $E$ per ottenere la dimensione $n$, poi alloca $n+1$ celle consecutive: la prima per la lunghezza, le restanti inizializzate al valore di default del tipo $T$ (tipicamente $0$ per `int`, `false` per `bool`).
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E, rho, sigma chevron.r arrow.b.double (n, sigma')$ #h(0.3cm) $l_b, ..., l_b+n in.not "dom"(sigma')$] \
   $chevron.l "new" T[E], rho, sigma chevron.r arrow.b.double (l_b, sigma'[l_b |-> n][l_b+1 |-> "default"]...[l_b+n |-> "default"])$ #h(0.2cm) (Array-New)
 ]
 
-==== Lunghezza
+=== Lunghezza
+
+L'espressione `E.length` valuta $E$ ottenendo l'indirizzo base $l_b$, quindi legge il valore memorizzato in $l_b$, che per costruzione e la lunghezza dell'array.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E, rho, sigma chevron.r arrow.b.double (l_b, sigma')$ #h(0.3cm) $sigma'(l_b) = n$] \
   $chevron.l E."length", rho, sigma chevron.r arrow.b.double (n, sigma')$ #h(0.5cm) (Array-Length)
 ]
 
-==== Accesso
+=== Accesso a un elemento
+
+L'espressione $E_1[E_2]$ valuta prima $E_1$ per ottenere l'indirizzo base $l_b$, poi $E_2$ per ottenere l'indice $i$. La premessa $0 <= i < sigma_2(l_b)$ garantisce che l'indice sia nell'intervallo valido. L'elemento cercato si trova all'indirizzo $l_b + 1 + i$ (si aggiunge 1 perche la prima cella contiene la lunghezza).
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_1, rho, sigma chevron.r arrow.b.double (l_b, sigma_1)$ #h(0.2cm) $chevron.l E_2, rho, sigma_1 chevron.r arrow.b.double (i, sigma_2)$ #h(0.2cm) $0 <= i < sigma_2(l_b)$] \
   $chevron.l E_1[E_2], rho, sigma chevron.r arrow.b.double (sigma_2(l_b + 1 + i), sigma_2)$ #h(0.3cm) (Array-Access)
 ]
 
-==== Assegnamento in array
+=== Assegnamento in array
+
+Il comando $E_1[E_2] := E_3$ valuta le tre espressioni in ordine: $E_1$ per l'indirizzo base, $E_2$ per l'indice, $E_3$ per il nuovo valore. La cella all'indirizzo $l_b + 1 + i$ viene aggiornata con il valore $v$.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_1, rho, sigma chevron.r arrow.b.double (l_b, sigma_1)$ #h(0.15cm) $chevron.l E_2, rho, sigma_1 chevron.r arrow.b.double (i, sigma_2)$ #h(0.15cm) $chevron.l E_3, rho, sigma_2 chevron.r arrow.b.double (v, sigma_3)$] \
   $chevron.l E_1[E_2] := E_3;, rho, sigma chevron.r arrow.r chevron.l rho, sigma_3[l_b + 1 + i |-> v] chevron.r$ #h(0.2cm) (Array-Assign)
 ]
 
-=== Aliasing
+== Aliasing
+
+#definition(title: "Aliasing")[
+  Si ha *aliasing* quando due o piu variabili distinte fanno riferimento alla stessa zona di memoria. Poiche in MAO gli array sono gestiti tramite riferimenti (indirizzi base), l'assegnamento di un array a un'altra variabile copia il _riferimento_, non i dati. Di conseguenza, entrambe le variabili puntano allo stesso blocco di memoria.
+]
 
 #example(title: "Problema dell'aliasing")[
-  Con l'aliasing si intende la copia di un array per riferimento:
+  Consideriamo il seguente frammento di codice:
   ```
   int[] a = [1, 2, 3];
   int[] b = a;        // b punta allo stesso array di a!
   b[0] := 99;         // modifica anche a[0]!
   ```
 
-  Dopo l'esecuzione:
+  Dopo l'esecuzione, lo stato e il seguente:
   - $rho = [a |-> l_a, b |-> l_b]$
-  - $sigma(l_a) = sigma(l_b) = l_{"base"}$ (stesso indirizzo base!)
+  - $sigma(l_a) = sigma(l_b) = l_("base")$ (stesso indirizzo base!)
 
-  Quindi `a[0]` e `b[0]` accedono alla stessa cella di memoria.
+  Quindi `a[0]` e `b[0]` accedono alla stessa cella di memoria $l_("base") + 1$. La modifica effettuata tramite `b` e visibile anche tramite `a`, perche non e stata creata una copia indipendente dell'array.
 ]
 
-#note(title: "Conseguenza")[
-  Quando si passa un array come parametro a una funzione, si passa il *riferimento*. Modifiche all'array nel corpo della funzione si riflettono sull'array originale.
+#note(title: "Conseguenza sul passaggio di parametri")[
+  L'aliasing ha implicazioni dirette sul passaggio di parametri alle funzioni. Quando si passa un array come argomento a una funzione, si passa il suo *riferimento* (indirizzo base). Di conseguenza, eventuali modifiche agli elementi dell'array effettuate nel corpo della funzione si riflettono sull'array originale del chiamante. Questo comportamento e equivalente a un passaggio per _riferimento implicito_.
 ]
 
-=== Analisi statica e controllo di tipi
+== Analisi statica e controllo di tipi
 
-Grazie alle grammatiche le categorie sintattiche delle espressioni e dei comandi sono definite in maniera rigorosa, ma molti di essi, anche se sintatticamente validi, potrebbero portare ad un'altra categoria di eventi.
+In un linguaggio di programmazione, le grammatiche definiscono in modo rigoroso le categorie sintattiche delle espressioni e dei comandi. Tuttavia, molti programmi sintatticamente validi possono contenere errori che si manifestano solo a tempo di esecuzione: ad esempio, sommare un intero con un booleano, oppure accedere a un array con un indice di tipo booleano. Per prevenire questa classe di errori si ricorre all'*analisi statica*.
 
-#definition(title: "analisi statica")[
-  Con analisi statica si indicano i controlli fatti sul codice sorgente senza eseguire il programma
+#definition(title: "Analisi statica")[
+  L'*analisi statica* consiste nei controlli effettuati sul codice sorgente _senza eseguire il programma_. Il suo scopo e individuare errori e anomalie prima dell'esecuzione, basandosi esclusivamente sulla struttura sintattica e sulle informazioni di tipo.
 ]
 
-La maggior parte dei linguaggi moderni hanno diversi controlli con analisi statica, Mao si limita al #underline[controllo dei tipi (type checking)] che permette di rilevare problemi legati alla mancanza di coerenza tra i tipi delle variabili, costanti e operazioni.
+La maggior parte dei linguaggi di programmazione moderni prevede diversi controlli di analisi statica (ad esempio, il controllo di raggiungibilita del codice, l'analisi di variabili non inizializzate, e altri). In MAO ci si limita al #underline[controllo dei tipi (type checking)], che verifica la coerenza tra i tipi dichiarati per le variabili e l'uso che ne viene fatto nelle espressioni e nei comandi.
 
-=== Sistemi di tipi
+== Sistemi di tipi
 
-In Mao il controllo dei tipi viene in modo formale attraverso #underline[regole di tipo] che stabiliscono le condizioni necessarie affinché espressione o comandi vengano considerati #underline[ben tipati]. Il controllo avviene in modo #underline[composizionale] cioè le regole di tipo per espressioni e comandi sono definite su giudizi di tipo sulle sue componenti; per fare ciò è necessario sapere quali tipi sono associati alle variabili nelle espressioni o nel comando.
+In MAO il controllo dei tipi avviene in modo formale attraverso #underline[regole di tipo] che stabiliscono le condizioni necessarie affinche un'espressione o un comando vengano considerati #underline[ben tipati]. Il controllo e *composizionale*: le regole di tipo per un costrutto composito sono definite in funzione dei giudizi di tipo sulle sue sottocomponenti. Per poter effettuare questo controllo e necessario conoscere i tipi associati alle variabili che occorrono nelle espressioni e nei comandi; a tal fine si introduce l'_ambiente di tipo_.
 
-=== Ambiente di tipo
+== Ambiente di tipo
 
-#definition[
-  L'ambiente di tipo $Gamma: bb(I) arrow.r.hook bb(T)$ è una funzione parziale che assegna agli identificatori: $Gamma(x) = "int"$ che significa #underline[assumere che x abbia tipo int]
+#definition(title: "Ambiente di tipo")[
+  L'*ambiente di tipo* $Gamma: bb(I) arrow.r.hook bb(T)$ e una funzione parziale che associa a ciascun identificatore nel suo dominio un tipo. La scrittura $Gamma(x) = "int"$ si legge: "nell'ambiente $Gamma$ si assume che la variabile $x$ abbia tipo `int`".
 ]
 
-Scriviamo $"Id" : T$ per dire $Gamma("Id") = T$.
+Per comodita si scrive $"Id" : T$ in luogo di $Gamma("Id") = T$. Un ambiente di tipo si rappresenta come un insieme di associazioni:
 $ Gamma = {"Id"_1 : T_1, "Id"_2 : T_2, ..., "Id"_n : T_n} $
 
-#example[
-  Dopo le seguenti dichiarazioni
+L'ambiente di tipo e un concetto esclusivamente statico: esiste solo a tempo di compilazione e serve al type checker per verificare la correttezza del programma. Non va confuso con l'ambiente $rho$ (che mappa identificatori a locazioni a tempo di esecuzione).
+
+#example(title: "Costruzione di un ambiente di tipo")[
+  Dopo le seguenti dichiarazioni:
   ```
   int temp = 2;
   bool y = true;
   ```
-  Si troverà $Gamma = {x : "int", y : "bool"}$
+  L'ambiente di tipo risultante e $Gamma = {"temp" : "int", y : "bool"}$.
 ]
+
+== Variabili libere
+
+Le variabili libere di un'espressione o di un comando sono quelle variabili che vi occorrono senza essere state dichiarate localmente. La loro definizione formale e necessaria per garantire che il type checking possa procedere: ogni variabile libera deve essere presente nell'ambiente di tipo $Gamma$.
 
 === Variabili libere in un'espressione
 
-Data un'espressione $E in bb(E)$, la funzione $"fv"(.): bb(E) arrow.r cal(P)_("fin")(bb(I))$ restituisce l'insieme di tutte le variabili che occorrono in $E$, dette #underline[variabili libere]. La funzione viene definita per induzione nel modo seguente:
+Data un'espressione $E in bb(E)$, la funzione $"fv"(.): bb(E) arrow.r cal(P)_("fin")(bb(I))$ restituisce l'insieme finito di tutte le variabili che occorrono in $E$, dette #underline[variabili libere]. La funzione e definita per induzione sulla struttura dell'espressione:
 
 #align(center)[
   $"fv"(n) &= emptyset$ \
@@ -207,19 +261,23 @@ Data un'espressione $E in bb(E)$, la funzione $"fv"(.): bb(E) arrow.r cal(P)_("f
   $"fv"("new" T[E]) &= "fv"(E)$
 ]
 
+Le costanti (numeriche e booleane) non contengono variabili libere. Un identificatore ha se stesso come unica variabile libera. Per le espressioni composte, le variabili libere sono l'unione delle variabili libere delle sottoespressioni.
+
 #example[
-  $"fv"($`x+3`$) = "fv"($`x`$) union "fv"($`3`$) = {$`x`$}$
+  $"fv"($`x+3`$) = "fv"($`x`$) union "fv"($`3`$) = {$`x`$} union emptyset = {$`x`$}$
 ]
 
 #example[
-  $"fv"($`new int[a.length]`$) = {$`a`$}$
+  $"fv"($`new int[a.length]`$) = "fv"($`a.length`$) = "fv"($`a`$) = {$`a`$}$
 ]
 
 #example[
-  $"fv"($`x%7 == z*x`$) = {$`x, z`$}$
+  $"fv"($`x%7 == z*x`$) = "fv"($`x%7`$) union "fv"($`z*x`$) = {$`x`$} union {$`z, x`$} = {$`x, z`$}$
 ]
 
-Dato un comando $C in bb(C)$, la funzione $"fv"(.): bb(C) arrow.r cal(P)_("fin")(bb(I))$ restituisce l'insieme di tutte le variabili che occorrono in $C$ senza essere dichiarate. La funzione è definita per induzione ma richiede $"dv"(.): bb(C) arrow.r cal(P)_("fin")(bb(I))$ che restituisce le variabili introdotte da dichiarazioni.
+=== Variabili libere in un comando
+
+Dato un comando $C in bb(C)$, la funzione $"fv"(.): bb(C) arrow.r cal(P)_("fin")(bb(I))$ restituisce l'insieme di tutte le variabili che occorrono in $C$ senza essere state dichiarate all'interno di $C$ stesso. La definizione per induzione richiede una funzione ausiliaria $"dv"(.): bb(C) arrow.r cal(P)_("fin")(bb(I))$, che restituisce l'insieme delle variabili _introdotte_ da dichiarazioni.
 
 #align(center)[
   $"fv"("skip";) &= emptyset$ \
@@ -232,24 +290,48 @@ Dato un comando $C in bb(C)$, la funzione $"fv"(.): bb(C) arrow.r cal(P)_("fin")
   $"fv"("while"(E){C}) &= "fv"(E) union "fv"(C)$
 ]
 
-Dove $"dv"(C)$ è l'insieme delle variabili dichiarate in $C$:
+#note[
+  Nella regola per la sequenza $C_1 C_2$, le variabili dichiarate in $C_1$ (cioe $"dv"(C_1)$) vengono sottratte dalle variabili libere di $C_2$, perche le dichiarazioni di $C_1$ rendono disponibili quei nomi nel contesto di $C_2$.
+]
+
+La funzione $"dv"(C)$ e definita come segue:
 #align(center)[
   $"dv"(T space "Id" = E;) &= {"Id"}$ \
   $"dv"(C_1 C_2) &= "dv"(C_1) union "dv"(C_2)$ \
   $"dv"("altri comandi") &= emptyset$
 ]
 
-=== Giudizi di tipo per espressioni
+== Giudizi di tipo
 
-Dato un ambiente di tipo $Gamma$ e una espressione $E$ tale che $"fv"(E) subset.eq "dom"(Gamma)$ possiamo derivare un #underline[giudizio di tipo], scritto $Gamma tack E : T$ che si legge "nell'ambiente $Gamma$, l'espressione $E$ è ben tipata e ha tipo $T$"
+I giudizi di tipo sono le asserzioni fondamentali del sistema di tipi. Ve ne sono di due forme, una per le espressioni e una per i comandi.
+
+=== Giudizi di tipo per le espressioni
+
+Dato un ambiente di tipo $Gamma$ e un'espressione $E$ tale che $"fv"(E) subset.eq "dom"(Gamma)$, possiamo derivare un #underline[giudizio di tipo] della forma
+
+#align(center)[
+  $Gamma tack E : T$
+]
+
+che si legge: "nell'ambiente $Gamma$, l'espressione $E$ e ben tipata e ha tipo $T$". La condizione $"fv"(E) subset.eq "dom"(Gamma)$ garantisce che tutte le variabili che compaiono in $E$ abbiano un tipo noto.
 
 === Giudizi di tipo per i comandi
 
-Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "dom"(Gamma)$ possiamo derivare un #underline[giudizio di tipo], scritto $Gamma tack C : Gamma'$ che si legge "nell'ambiente $Gamma$, il comando $C$ è ben tipato e rende disponibile l'ambiente locale $Gamma'$"
+Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "dom"(Gamma)$, possiamo derivare un giudizio della forma
 
-=== Regole di Type Checking per espressioni
+#align(center)[
+  $Gamma tack C : Gamma'$
+]
 
-==== Valori
+che si legge: "nell'ambiente $Gamma$, il comando $C$ e ben tipato e produce l'ambiente locale $Gamma'$". L'ambiente $Gamma'$ contiene le associazioni introdotte dalle eventuali dichiarazioni presenti in $C$; per i comandi che non dichiarano variabili (come l'assegnamento, il condizionale o il ciclo), si ha $Gamma' = emptyset$.
+
+== Regole di type checking per le espressioni
+
+Le regole seguenti definiscono come derivare i giudizi di tipo per le espressioni. Ogni regola e presentata in stile _regola di inferenza_: le premesse si trovano sopra la linea orizzontale, la conclusione sotto.
+
+=== Costanti
+
+Una costante intera $n$ ha sempre tipo `int`, indipendentemente dall'ambiente. Le costanti booleane `true` e `false` hanno tipo `bool`. Queste sono regole _assiomatiche_ (senza premesse sostanziali).
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$n in bb(Z)$] \
@@ -264,28 +346,47 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   $Gamma tack "false" : "bool"$ #h(1cm) (T-False)
 ]
 
-==== Variabili
+=== Variabili
+
+Il tipo di un identificatore e quello assegnato dall'ambiente $Gamma$. La premessa richiede che l'identificatore sia presente nel dominio di $Gamma$.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma("Id") = T$] \
   $Gamma tack "Id" : T$ #h(1cm) (T-Var)
 ]
 
-==== Operatori aritmetici
+=== Operatori aritmetici
+
+Gli operatori aritmetici ($+, -, times, div, mod$) richiedono che entrambi gli operandi abbiano tipo `int` e producono un risultato di tipo `int`.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : "int"$ #h(0.3cm) $Gamma tack E_2 : "int"$] \
   $Gamma tack E_1 "aop" E_2 : "int"$ #h(0.5cm) (T-Aop) dove $"aop" in {+, -, times, div, mod}$
 ]
 
-==== Operatori di confronto
+=== Operatori di confronto
+
+Gli operatori di confronto di ordinamento ($<, <=, >, >=$) confrontano due espressioni intere e producono un risultato booleano:
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : "int"$ #h(0.3cm) $Gamma tack E_2 : "int"$] \
-  $Gamma tack E_1 "cop" E_2 : "bool"$ #h(0.5cm) (T-Cop) dove $"cop" in {<, <=, >, >=, ==, !=}$
+  $Gamma tack E_1 "cop" E_2 : "bool"$ #h(0.5cm) (T-Cop) dove $"cop" in {<, <=, >, >=}$
 ]
 
-==== Operatori logici
+Gli operatori di uguaglianza e disuguaglianza ($==$, $!=$) accettano operandi dello stesso tipo, sia `int` che `bool`, e producono un risultato booleano. Si richiede che entrambi gli operandi abbiano lo stesso tipo $T in {"int", "bool"}$:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : T$ #h(0.3cm) $Gamma tack E_2 : T$ #h(0.3cm) $T in {"int", "bool"}$] \
+  $Gamma tack E_1 "eop" E_2 : "bool"$ #h(0.5cm) (T-Eop) dove $"eop" in {==, !=}$
+]
+
+#note[
+  La distinzione tra (T-Cop) e (T-Eop) riflette il fatto che gli operatori di ordinamento hanno senso solo su valori interi (non ha significato confrontare `true < false`), mentre l'uguaglianza e la disuguaglianza sono definite anche per i booleani. Ad esempio, l'espressione `(x > 0) == (y > 0)` e ben tipata: entrambi i lati hanno tipo `bool` e l'operatore `==` accetta operandi booleani.
+]
+
+=== Operatori logici
+
+Gli operatori logici binari ($and$, $or$) richiedono operandi booleani e producono un booleano. L'operatore unario $not$ nega un'espressione booleana.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : "bool"$ #h(0.3cm) $Gamma tack E_2 : "bool"$] \
@@ -297,146 +398,200 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   $Gamma tack not E : "bool"$ #h(1cm) (T-Not)
 ]
 
-=== Regole di Type Checking per comandi
+=== Regole di tipo per gli array
 
-==== Skip
+Le seguenti regole gestiscono il type checking dei costrutti relativi agli array.
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : "int"$] \
+  $Gamma tack "new" T[E] : T[]$ #h(1cm) (T-NewArray)
+]
+
+Un letterale array $[E_1, ..., E_n]$ e ben tipato se tutte le espressioni hanno lo stesso tipo $T$. Il risultato ha tipo $T[]$:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : T$ #h(0.3cm) $...$ #h(0.3cm) $Gamma tack E_n : T$] \
+  $Gamma tack [E_1, ..., E_n] : T[]$ #h(1cm) (T-ArrayLit)
+]
+
+#note[
+  La regola (T-ArrayLit) garantisce l'omogeneita del tipo degli elementi: un letterale come `[1, 2, 3]` ha tipo `int[]`, mentre `[true, false]` ha tipo `bool[]`. Un letterale misto come `[1, true, 3]` e _mal tipato_ perche non esiste un tipo $T$ tale che tutte le espressioni abbiano tipo $T$.
+]
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : T[]$] \
+  $Gamma tack E."length" : "int"$ #h(1cm) (T-Length)
+]
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : T[]$ #h(0.3cm) $Gamma tack E_2 : "int"$] \
+  $Gamma tack E_1[E_2] : T$ #h(0.5cm) (T-ArrayAccess)
+]
+
+== Regole di type checking per i comandi
+
+Le regole per i comandi stabiliscono quando un comando e ben tipato e quale ambiente locale $Gamma'$ esso produce.
+
+=== Skip
+
+Il comando `skip` e sempre ben tipato e non introduce nuove variabili.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
   $Gamma tack "skip"; : emptyset$ #h(1cm) (T-Skip)
 ]
 
-==== Dichiarazione
+=== Dichiarazione
+
+Una dichiarazione `T Id = E;` e ben tipata se l'espressione $E$ ha tipo $T$. La dichiarazione introduce l'associazione $"Id" : T$ nell'ambiente locale.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : T$] \
   $Gamma tack T space "Id" = E; : {"Id" : T}$ #h(1cm) (T-Decl)
 ]
 
-==== Assegnamento
+=== Assegnamento
+
+Un assegnamento `Id := E;` e ben tipato se la variabile `Id` e gia presente nell'ambiente con tipo $T$ e l'espressione $E$ ha lo stesso tipo $T$. L'assegnamento non introduce nuove variabili.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma("Id") = T$ #h(0.3cm) $Gamma tack E : T$] \
   $Gamma tack "Id" := E; : emptyset$ #h(1cm) (T-Assign)
 ]
 
-==== Sequenza
+=== Assegnamento in array
+
+L'assegnamento a un elemento di array richiede che $E_1$ abbia tipo $T[]$, che $E_2$ abbia tipo `int` (l'indice) e che $E_3$ abbia tipo $T$ (coerente con il tipo degli elementi).
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : T[]$ #h(0.3cm) $Gamma tack E_2 : "int"$ #h(0.3cm) $Gamma tack E_3 : T$] \
+  $Gamma tack E_1[E_2] := E_3; : emptyset$ #h(0.5cm) (T-ArrayAssign)
+]
+
+=== Sequenza
+
+La composizione sequenziale $C_1 C_2$ verifica prima $C_1$ nell'ambiente $Gamma$, ottenendo l'ambiente locale $Gamma_1$. Poi verifica $C_2$ nell'ambiente esteso $Gamma union Gamma_1$, ottenendo $Gamma_2$. L'ambiente locale complessivo e l'unione $Gamma_1 union Gamma_2$.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack C_1 : Gamma_1$ #h(0.3cm) $Gamma union Gamma_1 tack C_2 : Gamma_2$] \
   $Gamma tack C_1 C_2 : Gamma_1 union Gamma_2$ #h(0.5cm) (T-Seq)
 ]
 
-==== Blocco
+=== Blocco
+
+Un blocco `{C}` incapsula un comando: le dichiarazioni all'interno del blocco sono _locali_ e non visibili all'esterno. Per questo motivo la regola restituisce l'ambiente vuoto $emptyset$.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack C : Gamma'$] \
   $Gamma tack {C} : emptyset$ #h(1cm) (T-Block)
 ]
 
-==== Condizionale
+=== Condizionale
+
+Il condizionale richiede che la guardia $E$ sia di tipo `bool` e che entrambi i rami $C_1$ e $C_2$ siano ben tipati. Non introduce nuove variabili nell'ambiente esterno, perche i rami sono racchiusi in blocchi.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : "bool"$ #h(0.3cm) $Gamma tack C_1 : Gamma_1$ #h(0.3cm) $Gamma tack C_2 : Gamma_2$] \
   $Gamma tack "if"(E){C_1}"else"{C_2} : emptyset$ #h(0.3cm) (T-If)
 ]
 
-==== While
+=== Ciclo while
+
+Il ciclo `while` richiede che la guardia $E$ abbia tipo `bool` e che il corpo $C$ sia ben tipato. Come il condizionale, non introduce nuove variabili nell'ambiente esterno.
 
 #align(center)[
   #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : "bool"$ #h(0.3cm) $Gamma tack C : Gamma'$] \
   $Gamma tack "while"(E){C} : emptyset$ #h(0.5cm) (T-While)
 ]
 
-#example(title: "Derivazione di tipo completa per espressione")[
-  Verifichiamo che l'espressione `x + y * 2` sia ben tipata nell'ambiente $Gamma = {x : "int", y : "int"}$
+== Esempi di derivazioni di tipo
 
-  Costruiamo l'albero di derivazione dal basso verso l'alto:
+I seguenti esempi illustrano come le regole di type checking vengano applicate per costruire _alberi di derivazione_ che dimostrano la correttezza dei tipi in un programma.
+
+#example(title: "Derivazione di tipo per un'espressione aritmetica")[
+  Verifichiamo che l'espressione `x + y * 2` sia ben tipata nell'ambiente $Gamma = {x : "int", y : "int"}$.
+
+  L'albero di derivazione si costruisce dal basso verso l'alto, partendo dalle foglie (assiomi) e applicando le regole fino a raggiungere il giudizio desiderato.
+
+  Prima si verifica la sottoespressione `y * 2`:
 
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[
-      #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] $y : "int" in Gamma$
+      #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma(y) = "int"$] $Gamma tack y : "int"$ #h(0.3cm) (T-Var)
       #h(0.5cm)
-      #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] $2 in bb(Z)$
+      #box(stroke: (bottom: 1pt), inset: 3pt)[$2 in bb(Z)$] $Gamma tack 2 : "int"$ #h(0.3cm) (T-Int)
     ] \
-    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack y : "int"$ #h(0.5cm) $Gamma tack 2 : "int"$] \
-    $Gamma tack y * 2 : "int"$ #h(0.5cm) (T-Mult)
+    $Gamma tack y * 2 : "int"$ #h(0.5cm) (T-Aop)
   ]
 
-  E poi:
+  Poi si combina con `x`:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[
-      $x : "int" in Gamma$ #h(0.5cm) $Gamma tack y * 2 : "int"$
+      $Gamma(x) = "int"$ #h(0.5cm) $Gamma tack y * 2 : "int"$
     ] \
-    $Gamma tack x + y * 2 : "int"$ #h(0.5cm) (T-Add)
+    $Gamma tack x + y * 2 : "int"$ #h(0.5cm) (T-Aop)
   ]
 
-  L'espressione è *ben tipata* con tipo `int` ✓
+  L'espressione e *ben tipata* con tipo `int`.
 ]
 
-#example(title: "Derivazione di tipo per comando")[
-  Verifichiamo che il comando sia ben tipato:
+#example(title: "Derivazione di tipo per una sequenza di comandi")[
+  Verifichiamo il seguente frammento:
   ```
   int z = 0;
   z := x + 1;
   ```
-  Con $Gamma_0 = {x : "int"}$
+  nell'ambiente iniziale $Gamma_0 = {x : "int"}$.
 
-  *Passo 1*: Tipo di `int z = 0;`
+  *Passo 1*: Type checking della dichiarazione `int z = 0;`
 
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_0 tack 0 : "int"$] \
     $Gamma_0 tack "int" space z = 0; : {z : "int"}$ #h(0.5cm) (T-Decl)
   ]
 
-  Dopo la dichiarazione: $Gamma_1 = Gamma_0 union {z : "int"} = {x : "int", z : "int"}$
+  Dopo la dichiarazione, l'ambiente viene esteso: $Gamma_1 = Gamma_0 union {z : "int"} = {x : "int", z : "int"}$
 
-  *Passo 2*: Tipo di `z := x + 1;`
+  *Passo 2*: Type checking dell'assegnamento `z := x + 1;` nell'ambiente $Gamma_1$
 
-  Prima verifichiamo $x + 1$:
+  Prima verifichiamo l'espressione `x + 1`:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_1 tack x : "int"$ #h(0.3cm) $Gamma_1 tack 1 : "int"$] \
-    $Gamma_1 tack x + 1 : "int"$ #h(0.5cm) (T-Add)
+    $Gamma_1 tack x + 1 : "int"$ #h(0.5cm) (T-Aop)
   ]
 
-  Poi l'assegnamento:
+  Poi l'assegnamento, verificando la coerenza dei tipi:
   #align(center)[
-    #box(stroke: (bottom: 1pt), inset: 3pt)[$z : "int" in Gamma_1$ #h(0.3cm) $Gamma_1 tack x + 1 : "int"$] \
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_1(z) = "int"$ #h(0.3cm) $Gamma_1 tack x + 1 : "int"$] \
     $Gamma_1 tack z := x + 1; : emptyset$ #h(0.5cm) (T-Assign)
   ]
 
-  Il comando è *ben tipato* ✓
+  Il comando e *ben tipato*.
 ]
 
 #example(title: "Errore di tipo")[
-  Consideriamo:
+  Consideriamo il seguente programma:
   ```
   int x = 5;
   bool y = true;
   x := x + y;  // ERRORE!
   ```
 
-  Con $Gamma = {x : "int", y : "bool"}$
-
-  Tentiamo di derivare il tipo di `x + y`:
-  - $Gamma tack x : "int"$ ✓
-  - $Gamma tack y : "bool"$ ✓
-  - Ma la regola (T-Add) richiede che *entrambi* gli operandi siano `int`!
+  Con $Gamma = {x : "int", y : "bool"}$, tentiamo di derivare il tipo di `x + y`.
+  - $Gamma tack x : "int"$ (corretto per T-Var)
+  - $Gamma tack y : "bool"$ (corretto per T-Var)
+  - La regola (T-Aop) richiede che *entrambi* gli operandi siano di tipo `int`:
 
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : "int"$ #h(0.5cm) $Gamma tack E_2 : "int"$] \
     $Gamma tack E_1 + E_2 : "int"$
   ]
 
-  Poiché $y$ ha tipo `bool` $eq.not$ `int`, la derivazione *fallisce*.
-
-  Il programma è *mal tipato* e il compilatore segnala errore ✗
+  Poiche $y$ ha tipo `bool` e non `int`, la premessa $Gamma tack y : "int"$ non e derivabile. La derivazione *fallisce* e il compilatore segnala un errore di tipo. Il programma e *mal tipato*.
 ]
 
-=== Esempi completi di derivazioni di type checking
-
 #example(title: "Type checking di un programma con while")[
-  Verifichiamo il type checking del seguente programma:
+  Verifichiamo il type checking del seguente programma completo:
   ```
   int x = 5;
   int y = 6;
@@ -446,7 +601,7 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   }
   ```
 
-  *Passo 1*: Partiamo dall'ambiente vuoto $Gamma_0 = emptyset$
+  *Passo 1*: Partiamo dall'ambiente vuoto $Gamma_0 = emptyset$.
 
   *Passo 2*: Type checking di `int x = 5;`
   #align(center)[
@@ -454,7 +609,7 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_0 tack 5 : "int"$] \
     $Gamma_0 tack "int" space x = 5; : {x : "int"}$ #h(0.5cm) (T-Decl)
   ]
-  Dopo questa dichiarazione: $Gamma_1 = Gamma_0 union {x : "int"} = {x : "int"}$
+  Dopo la dichiarazione: $Gamma_1 = Gamma_0 union {x : "int"} = {x : "int"}$
 
   *Passo 3*: Type checking di `int y = 6;` nell'ambiente $Gamma_1$
   #align(center)[
@@ -462,9 +617,9 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_1 tack 6 : "int"$] \
     $Gamma_1 tack "int" space y = 6; : {y : "int"}$ #h(0.5cm) (T-Decl)
   ]
-  Dopo questa dichiarazione: $Gamma_2 = Gamma_1 union {y : "int"} = {x : "int", y : "int"}$
+  Dopo la dichiarazione: $Gamma_2 = Gamma_1 union {y : "int"} = {x : "int", y : "int"}$
 
-  *Passo 4*: Verifica della condizione `x != y` nell'ambiente $Gamma_2$
+  *Passo 4*: Verifica della guardia `x != y` nell'ambiente $Gamma_2$
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(x) = "int"$ #h(0.5cm) $Gamma_2(y) = "int"$] \
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x : "int"$ #h(0.5cm) $Gamma_2 tack y : "int"$] \
@@ -473,26 +628,24 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
 
   *Passo 5*: Verifica del ramo then `{ x := x + 2; }`
 
-  Prima verifichiamo l'espressione `x + 2`:
+  Prima l'espressione `x + 2`:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(x) = "int"$ #h(0.5cm) $2 in bb(Z)$] \
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x : "int"$ #h(0.5cm) $Gamma_2 tack 2 : "int"$] \
     $Gamma_2 tack x + 2 : "int"$ #h(0.5cm) (T-Aop)
   ]
 
-  Poi l'assegnamento:
+  Poi l'assegnamento e il blocco:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(x) = "int"$ #h(0.3cm) $Gamma_2 tack x + 2 : "int"$] \
     $Gamma_2 tack x := x + 2; : emptyset$ #h(0.5cm) (T-Assign)
   ]
-
-  E il blocco:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2 tack x := x + 2; : emptyset$] \
     $Gamma_2 tack {x := x + 2;} : emptyset$ #h(0.5cm) (T-Block)
   ]
 
-  *Passo 6*: Verifica del ramo else `{ y := y + 1; }` (analogamente)
+  *Passo 6*: Verifica del ramo else `{ y := y + 1; }` (procedimento analogo)
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_2(y) = "int"$ #h(0.3cm) $Gamma_2 tack y + 1 : "int"$] \
     $Gamma_2 tack y := y + 1; : emptyset$ #h(0.5cm) (T-Assign)
@@ -520,17 +673,392 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma_2 tack "while"(x != y){"if"(x < y){x := x + 2;}"else"{y := y + 1;}} : emptyset$ #h(0.3cm) (T-While)
   ]
 
-  *Passo 10*: Verifica della sequenza completa usando (T-Seq):
+  *Passo 10*: Verifica della sequenza completa tramite (T-Seq):
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma_0 tack "int" x = 5; : {x : "int"}$ #h(0.2cm) $Gamma_1 tack "int" y = 6; "while"... : {y : "int"}$] \
     $Gamma_0 tack "int" x = 5; "int" y = 6; "while"... : {x : "int", y : "int"}$ #h(0.3cm) (T-Seq)
   ]
 
-  Il programma è *ben tipato*.
+  Il programma e *ben tipato*.
 ]
 
+== Controllo di tipi e inferenza di tipo
+
+Il sistema di tipi di MAO e un sistema a *controllo di tipi* (type checking): il programmatore dichiara esplicitamente il tipo di ogni variabile e il type checker verifica che l'uso sia coerente con le dichiarazioni. Questa non e l'unica strategia possibile.
+
+Molti linguaggi moderni adottano approcci diversi:
+- *Linguaggi senza controllo di tipi* (ad esempio JavaScript): i tipi delle variabili non vengono verificati staticamente; eventuali errori di tipo emergono solo a tempo di esecuzione
+- *Linguaggi con inferenza di tipo* (ad esempio Go, Haskell, OCaml): il compilatore _deduce_ automaticamente il tipo di una variabile dal contesto in cui viene usata, senza che il programmatore debba dichiararlo esplicitamente
+
+#example(title: "Inferenza di tipo")[
+  In un linguaggio con inferenza di tipo, la dichiarazione
+  ```
+  x := 5 + 3;
+  ```
+  permette al compilatore di dedurre che `x` ha tipo `int` dal fatto che `5 + 3` e un'espressione aritmetica il cui risultato e un intero.
+]
+
+== Tipi base aggiuntivi: char e stringhe
+
+=== Caratteri
+
+Il tipo `char` rappresenta singoli simboli, lettere e altri caratteri alfanumerici. In MAO i caratteri possono essere codificati secondo lo standard `ASCII` o `Unicode`. I caratteri _speciali_ (come il ritorno a capo o la tabulazione) vengono rappresentati tramite _sequenze di escape_, cioe combinazioni di caratteri che iniziano con il backslash.
+
+#example(title: "Dichiarazione di caratteri")[
+  ```
+  char lettera = 'R';
+  char a_capo = '\n';
+  ```
+  Il valore `'\n'` e la sequenza di escape che rappresenta il carattere di ritorno a capo (_newline_).
+]
+
+=== Stringhe
+
+Le stringhe in MAO sono trattate come array di caratteri, ovvero hanno tipo `char[]`. Questa scelta semplifica la semantica: tutte le operazioni sugli array (accesso per indice, `.length`, assegnamento) si applicano direttamente alle stringhe.
+
+#example(title: "Stringhe come array di caratteri")[
+  La stringa `"Ciao"` e equivalente all'array:
+  ```
+  char[] saluto = ['C', 'i', 'a', 'o'];
+  ```
+  Pertanto `saluto.length` restituisce $4$ e `saluto[0]` restituisce `'C'`.
+]
+
+== Assegnamento multiplo
+
+Molti linguaggi di programmazione permettono di dichiarare o assegnare piu variabili contemporaneamente in un unico comando. Questa funzionalita, detta *assegnamento multiplo*, consente di scrivere codice piu compatto e, in alcuni casi, di realizzare operazioni altrimenti impossibili con assegnamenti singoli.
+
+#example(title: "Dichiarazione multipla")[
+  ```
+  let x, y, z = 6, 7, 42;
+  ```
+  Questa singola istruzione dichiara tre variabili e assegna a ciascuna il valore corrispondente nella lista di destra.
+]
+
+L'assegnamento multiplo e particolarmente utile per lo *scambio di variabili* (swap), che con assegnamenti singoli richiederebbe una variabile temporanea:
+
+#algorithm(title: "Swap tramite assegnamento multiplo")[
+  ```
+  x, y := y, x;
+  ```
+  Tutte le espressioni a destra vengono valutate _prima_ che qualsiasi assegnamento abbia luogo. Cio significa che i valori originali di `x` e `y` vengono letti, e solo successivamente scritti nelle posizioni scambiate.
+]
+
+=== Sintassi dell'assegnamento multiplo
+
+Si introducono due nuove categorie sintattiche, LHS (_Left-Hand Side_) e RHS (_Right-Hand Side_):
+
+#align(center)[
+  $"LHS" &::= "Id" | "Id", "LHS"$ \
+  $"RHS" &::= E | E, "RHS"$
+]
+
+I comandi atomici vengono generalizzati per includere la forma multipla:
+
+#align(center)[
+  $C &::= ... | T space "LHS" = "RHS"; | "LHS" := "RHS";$
+]
+
+=== Type checking per l'assegnamento multiplo
+
+Le variabili libere di LHS e RHS sono definite come:
+#align(center)[
+  $"fv"("Id") = {"Id"}$ #h(1cm) $"fv"("Id", "LHS") = {"Id"} union "fv"("LHS")$ \
+  $"fv"(E) = "fv"(E)$ #h(1cm) $"fv"(E, "RHS") = "fv"(E) union "fv"("RHS")$
+]
+
+La regola di tipo per l'assegnamento multiplo richiede che ogni espressione $E_i$ abbia un tipo coerente con il tipo della variabile corrispondente $"Id"_i$. Si noti che ciascuna coppia variabile-espressione viene verificata in modo indipendente: variabili diverse possono avere tipi diversi.
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma("Id"_i) = T_i$ #h(0.2cm) $Gamma tack E_i : T_i$ #h(0.2cm) per $i = 1..n$] \
+  $Gamma tack "Id"_1, ..., "Id"_n := E_1, ..., E_n; : emptyset$ #h(0.3cm) (T-MultiAssign)
+]
+
+#note[
+  La regola (T-MultiAssign) si applica all'assegnamento di variabili semplici. Per l'assegnamento a elementi di array all'interno di un assegnamento multiplo (ad esempio `a[0], b[1] := 5, 10;`) si applicano le stesse verifiche di tipo della regola (T-ArrayAssign) per ciascuna posizione del lato sinistro che sia un accesso ad array.
+]
+
+=== Semantica operazionale dell'assegnamento multiplo
+
+La semantica della dichiarazione multipla prevede la valutazione sequenziale di tutte le espressioni, seguita dall'allocazione simultanea delle variabili:
+
+*Dichiarazione multipla:*
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_i, rho, sigma_(i-1) chevron.r arrow.b.double (v_i, sigma_i)$ per $i = 1..n$ #h(0.2cm) $l_1, ..., l_n in.not "dom"(sigma_n)$] \
+  $chevron.l T space "Id"_1, ..., "Id"_n = E_1, ..., E_n;, rho, sigma chevron.r arrow.r chevron.l rho["Id"_1 |-> l_1]...["Id"_n |-> l_n], sigma_n[l_1 |-> v_1]...[l_n |-> v_n] chevron.r$
+]
+
+*Assegnamento multiplo:*
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_i, rho, sigma_(i-1) chevron.r arrow.b.double (v_i, sigma_i)$ per $i = 1..n$ #h(0.2cm) $rho("Id"_i) = l_i$ per $i = 1..n$] \
+  $chevron.l "Id"_1, ..., "Id"_n := E_1, ..., E_n;, rho, sigma chevron.r arrow.r chevron.l rho, sigma_n[l_1 |-> v_1]...[l_n |-> v_n] chevron.r$
+]
+
+#note(title: "Semantica dello swap")[
+  Nell'assegnamento multiplo `x, y := y, x`, la semantica garantisce che tutte le espressioni del lato destro vengano valutate _prima_ di effettuare gli assegnamenti. Questo significa che `y` e `x` vengono letti con i loro valori originali, e solo dopo i risultati vengono scritti nelle locazioni di `x` e `y` rispettivamente. Lo swap avviene correttamente senza bisogno di variabili temporanee.
+]
+
+== Direttiva return
+
+La direttiva `return` permette a un blocco di codice (tipicamente il corpo di una funzione) di restituire un valore al chiamante. Il valore restituito e il risultato della valutazione dell'espressione che segue la parola chiave `return`.
+
+#example(title: "Uso della direttiva return")[
+  ```
+  { count := count + 1; return count; }
+  ```
+  Questo blocco incrementa la variabile `count` e restituisce il suo nuovo valore.
+]
+
+=== Sintassi
+
+La grammatica dei comandi viene estesa con la produzione:
+
+#align(center)[
+  $C ::= ... | "return" E;$
+]
+
+=== Variabili libere
+
+Le variabili libere di un comando `return` sono quelle dell'espressione restituita:
+
+#align(center)[
+  $"fv"("return" E;) = "fv"(E)$
+]
+
+=== Type checking
+
+La regola di tipo verifica che l'espressione restituita sia ben tipata. Il comando `return` non introduce nuove variabili.
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : T$] \
+  $Gamma tack "return" E; : emptyset$ #h(1cm) (T-Return)
+]
+
+#note[
+  In un sistema di tipi completo, il tipo $T$ dell'espressione restituita dovrebbe essere confrontato con il tipo di ritorno dichiarato nella firma della funzione. In MAO questo controllo viene effettuato dalla regola (T-Fun) o (T-RecFun).
+]
+
+=== Semantica operazionale
+
+L'esecuzione di `return E;` valuta l'espressione $E$ nello stato corrente e produce una terna $(v, rho, sigma')$ che segnala la terminazione con il valore $v$:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E, rho, sigma chevron.r arrow.b.double (v, sigma')$] \
+  $chevron.l "return" E;, rho, sigma chevron.r arrow.r (v, rho, sigma')$ #h(1cm) (Return)
+]
+
+=== Propagazione del return nei comandi composti
+
+Quando un comando `return` viene eseguito all'interno di un comando composto (sequenza, condizionale o ciclo), il valore restituito deve *propagarsi verso l'alto* fino al contesto della funzione chiamante. In pratica, l'esecuzione di un `return` interrompe immediatamente l'esecuzione del corpo della funzione e restituisce il valore al chiamante.
+
+Nella semantica big-step di MAO, questa propagazione si realizza nel modo seguente: quando l'esecuzione di un sotto-comando produce una terna $(v, rho, sigma')$ anziche una coppia $(rho', sigma')$, cio segnala che un `return` e stato eseguito. I comandi composti che lo contengono devono propagare questa terna senza eseguire ulteriori istruzioni.
+
+- *Sequenza*: se nella sequenza $C_1 C_2$ l'esecuzione di $C_1$ produce $(v, rho', sigma')$, allora $C_2$ non viene eseguito e il risultato complessivo e $(v, rho', sigma')$. Se $C_1$ termina normalmente e $C_2$ produce un return, il risultato e quello di $C_2$.
+- *Condizionale*: se il ramo selezionato (then o else) produce $(v, rho', sigma')$, questo risultato viene propagato.
+- *Ciclo while*: se il corpo del while produce $(v, rho', sigma')$, il ciclo si interrompe e il valore viene propagato.
+
+#note[
+  La distinzione tra terminazione normale (coppia $(rho', sigma')$) e terminazione con return (terna $(v, rho', sigma')$) e il meccanismo chiave che permette al `return` di interrompere il flusso di esecuzione e propagare il valore restituito attraverso qualsiasi livello di annidamento fino alla regola (Call).
+]
+
+== Funzioni
+
+Le funzioni sono un meccanismo di astrazione fondamentale nella programmazione. Permettono di associare un nome a un frammento di codice parametrico, che calcola un valore a partire da uno o piu argomenti. Una volta definita, una funzione puo essere _invocata_ (chiamata) piu volte con argomenti diversi, favorendo il riuso del codice e la modularita del programma.
+
+Si distinguono due momenti:
+- *Definizione della funzione*: si scrive il codice del corpo della funzione, specificando i _parametri formali_ (nomi simbolici che rappresentano gli input)
+- *Invocazione (chiamata) della funzione*: si esegue il corpo della funzione con _parametri attuali_ (espressioni concrete i cui valori vengono passati ai parametri formali)
+
+#example(title: "Definizione e invocazione di una funzione")[
+  ```
+  int max(int a, int b){
+      int m = a;
+      if (b > m) {
+          m := b;
+      }
+      return m;
+  }
+  ...
+  if (max(x, y) < 10) {
+      z := max(x + 2, y * 3);
+  } else {
+      z := max(x / 10, y - 10);
+  }
+  ```
+  La funzione `max` e definita con due parametri formali `a` e `b`. Viene poi invocata tre volte con parametri attuali diversi.
+]
+
+=== Corrispondenza tra parametri formali e attuali
+
+Quando si invoca una funzione, i parametri attuali devono corrispondere ai parametri formali *in numero e in tipo*. La corrispondenza e _posizionale_: il primo parametro attuale viene associato al primo parametro formale, il secondo al secondo, e cosi via.
+
+=== Passaggio di parametri per valore
+
+Il *passaggio per valore* e la modalita di default in MAO per i tipi scalari (`int`, `bool`, `char`). Ogni parametro formale viene inizializzato con una _copia_ del valore del corrispondente parametro attuale. Di conseguenza, eventuali modifiche ai parametri formali all'interno del corpo della funzione _non influenzano_ i parametri attuali nel contesto del chiamante.
+
+=== Passaggio di parametri per riferimento (array)
+
+Quando un array viene passato come parametro attuale, il valore copiato nel parametro formale e l'_indirizzo base_ $l_b$ dell'array. Si tratta tecnicamente ancora di un passaggio per valore (si copia il riferimento), ma il risultato pratico e un *passaggio per riferimento implicito*: la funzione e il chiamante condividono lo stesso array in memoria, quindi le modifiche agli elementi dell'array effettuate nel corpo della funzione sono visibili anche nel contesto del chiamante.
+
+#note[
+  Questa e una conseguenza diretta del meccanismo di aliasing descritto in precedenza. Poiche la variabile di tipo array contiene un riferimento e non i dati stessi, copiare la variabile equivale a creare un alias.
+]
+
+== Sintassi delle funzioni
+
+=== Dichiarazione
+
+La sintassi della dichiarazione di funzione e la seguente:
+
+#align(center)[
+  $C ::= ... | T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}$
+]
+
+dove $T_R$ e il *tipo di ritorno* (puo essere `void` per funzioni che non restituiscono un valore), $"Id"$ e il nome della funzione, $T_i space "Id"_i$ sono le coppie tipo-nome dei parametri formali, e $C$ e il corpo della funzione.
+
+=== Invocazione
+
+La sintassi della chiamata di funzione e:
+
+#align(center)[
+  $E ::= ... | "Id"(E_1, ..., E_n)$
+]
+
+dove le espressioni $E_1, ..., E_n$ sono i parametri attuali.
+
+=== Tipo di una funzione
+
+Il tipo di una funzione viene rappresentato come un tipo freccia:
+
+#align(center)[
+  $(T_1, ..., T_n) arrow.r T_R$
+]
+
+dove $(T_1, ..., T_n)$ sono i tipi dei parametri formali e $T_R$ e il tipo di ritorno.
+
+=== Variabili libere di una funzione
+
+Le variabili libere nel corpo di una funzione escludono i parametri formali, che sono dichiarati nell'intestazione:
+
+#align(center)[
+  $"fv"(T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}) = "fv"(C) backslash {"Id"_1, ..., "Id"_n}$
+]
+
+== Type checking delle funzioni
+
+=== Dichiarazione di funzione
+
+La regola di tipo per la dichiarazione di una funzione verifica che il corpo $C$ sia ben tipato in un ambiente esteso con i parametri formali. La dichiarazione introduce nell'ambiente l'associazione tra il nome della funzione e il suo tipo freccia.
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {"Id"_1 : T_1, ..., "Id"_n : T_n} tack C : Gamma'$] \
+  $Gamma tack T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C} : {"Id" : (T_1, ..., T_n) arrow.r T_R}$ #h(0.5cm) (T-Fun)
+]
+
+#note[
+  Si osservi che il corpo della funzione viene verificato nell'ambiente $Gamma union {"Id"_1 : T_1, ..., "Id"_n : T_n}$, in cui i parametri formali sono disponibili con i loro tipi dichiarati. L'ambiente $Gamma$ del chiamante resta invariato tranne per l'aggiunta del tipo della funzione.
+]
+
+=== Invocazione di funzione
+
+La regola per l'invocazione verifica che la funzione sia presente nell'ambiente con un tipo freccia compatibile e che i tipi dei parametri attuali corrispondano (posizionalmente) ai tipi dei parametri formali.
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma("Id") = (T_1, ..., T_n) arrow.r T_R$ #h(0.3cm) $Gamma tack E_1 : T_1$ #h(0.3cm) $...$ #h(0.3cm) $Gamma tack E_n : T_n$] \
+  $Gamma tack "Id"(E_1, ..., E_n) : T_R$ #h(0.5cm) (T-Call)
+]
+
+== Semantica operazionale delle funzioni
+
+=== Dichiarazione di funzione
+
+La dichiarazione di una funzione non esegue il corpo, ma memorizza nell'ambiente una *chiusura* (_closure_), ovvero una terna composta dai nomi dei parametri formali, dal corpo della funzione e dall'ambiente al momento della dichiarazione:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+  $chevron.l T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}, rho, sigma chevron.r arrow.r chevron.l rho["Id" |-> ("Id"_1, ..., "Id"_n, C, rho)], sigma chevron.r$
+]
+
+#note(title: "Chiusura (closure)")[
+  La chiusura cattura l'ambiente $rho$ al momento della dichiarazione. Questo e essenziale per lo *scoping statico* (o _lessicale_): quando la funzione verra invocata, le variabili libere nel corpo saranno risolte nell'ambiente della dichiarazione, non in quello della chiamata. Senza la chiusura, una funzione definita in un certo contesto e chiamata in un altro potrebbe accedere a variabili diverse da quelle previste dal programmatore.
+]
+
+=== Chiamata di funzione
+
+La chiamata di funzione si articola nei seguenti passi:
+1. Si recupera la chiusura della funzione dall'ambiente del chiamante
+2. Si valutano i parametri attuali $E_1, ..., E_n$ da sinistra a destra
+3. Si allocano nuove locazioni $l_1, ..., l_n$ per i parametri formali
+4. Si costruisce un nuovo ambiente $rho'$ estendendo l'ambiente della chiusura $rho_f$ con le associazioni tra parametri formali e locazioni
+5. Si esegue il corpo $C$ nel nuovo ambiente $rho'$
+6. Il valore restituito dal `return` diventa il risultato della chiamata
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[
+    $rho("Id") = ("Id"_1, ..., "Id"_n, C, rho_f)$ \
+    $chevron.l E_i, rho, sigma_(i-1) chevron.r arrow.b.double (v_i, sigma_i)$ per $i = 1..n$ \
+    $l_1, ..., l_n in.not "dom"(sigma_n)$ \
+    $rho' = rho_f["Id"_1 |-> l_1]...["Id"_n |-> l_n]$ \
+    $sigma' = sigma_n[l_1 |-> v_1]...[l_n |-> v_n]$ \
+    $chevron.l C, rho', sigma' chevron.r arrow.r (v_r, rho'', sigma'')$
+  ] \
+  $chevron.l "Id"(E_1, ..., E_n), rho, sigma chevron.r arrow.b.double (v_r, sigma'')$ #h(0.3cm) (Call)
+]
+
+#note(title: "Scoping statico")[
+  Si osservi che il nuovo ambiente $rho'$ e costruito a partire da $rho_f$ (l'ambiente catturato nella chiusura), *non* da $rho$ (l'ambiente del chiamante). Questo implementa lo scoping statico: le variabili libere nel corpo della funzione vengono risolte nel contesto in cui la funzione e stata _definita_, non in quello in cui viene _chiamata_.
+]
+
+== Ricorsione
+
+In molti linguaggi di programmazione e ammessa la possibilita di definire *funzioni ricorsive*, cioe funzioni che invocano se stesse (direttamente o indirettamente) nel proprio corpo. La ricorsione e un meccanismo potente che permette di risolvere problemi definiti in modo induttivo, decomponendoli in sottoproblemi della stessa natura ma di dimensione ridotta.
+
+La chiamata ricorsiva puo essere:
+- *Diretta*: la funzione $f$ contiene nel proprio corpo una chiamata a $f$ stessa
+- *Indiretta*: la funzione $f$ chiama una funzione $g$, che a sua volta chiama $f$ (oppure tramite una catena piu lunga di chiamate intermedie)
+
+=== Variabili libere nelle funzioni ricorsive
+
+Per supportare la ricorsione, la definizione di variabili libere di una funzione viene modificata includendo anche il nome della funzione stessa tra le variabili escluse:
+
+#align(center)[
+  $"fv"(T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}) = "fv"(C) backslash {"Id", "Id"_1, ..., "Id"_n}$
+]
+
+In questo modo il nome della funzione non e considerato una variabile libera nel corpo, anche se vi compare come chiamata ricorsiva. Senza questa modifica, il type checker richiederebbe che `Id` fosse gia presente nell'ambiente $Gamma$ prima della dichiarazione, rendendo impossibile la ricorsione.
+
+=== Type checking delle funzioni ricorsive
+
+La regola di tipo per le funzioni ricorsive differisce da (T-Fun) per il fatto che l'ambiente in cui viene verificato il corpo include anche l'associazione tra il nome della funzione e il suo tipo freccia. Questo permette al type checker di verificare le chiamate ricorsive:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {"Id" : (T_1, ..., T_n) arrow.r T_R} union {"Id"_1 : T_1, ..., "Id"_n : T_n} tack C : Gamma'$] \
+  $Gamma tack T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C} : {"Id" : (T_1, ..., T_n) arrow.r T_R}$ #h(0.3cm) (T-RecFun)
+]
+
+#note(title: "Differenza tra T-Fun e T-RecFun")[
+  La differenza chiave e nell'ambiente usato per verificare il corpo $C$. In (T-Fun), l'ambiente e $Gamma union {"Id"_1 : T_1, ..., "Id"_n : T_n}$; in (T-RecFun), e $Gamma union {"Id" : (T_1, ..., T_n) arrow.r T_R} union {"Id"_1 : T_1, ..., "Id"_n : T_n}$. La presenza del binding $"Id" : (T_1, ..., T_n) arrow.r T_R$ permette di verificare le chiamate ricorsive nel corpo della funzione come normali invocazioni tramite la regola (T-Call).
+]
+
+=== Semantica operazionale delle funzioni ricorsive
+
+Nella semantica operazionale, la ricorsione funziona perche la chiusura di una funzione ricorsiva include il nome della funzione stessa nell'ambiente catturato. Al momento della dichiarazione, l'ambiente $rho$ viene esteso con il binding della funzione _prima_ di costruire la chiusura:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+  $chevron.l T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}, rho, sigma chevron.r arrow.r chevron.l rho', sigma chevron.r$
+]
+
+dove $rho' = rho["Id" |-> ("Id"_1, ..., "Id"_n, C, rho')]$
+
+#note(title: "Autoreferenza nella chiusura")[
+  Si osservi la natura circolare della definizione: l'ambiente $rho'$ contenuto nella chiusura include il binding di $"Id"$ alla chiusura stessa. Questa autoreferenza e cio che rende possibile la ricorsione a livello semantico. Quando il corpo $C$ viene eseguito durante una chiamata, il nome della funzione e presente nell'ambiente $rho'$ e punta alla stessa chiusura, permettendo di effettuare chiamate ricorsive. Senza questo meccanismo, il corpo della funzione non troverebbe il binding per $"Id"$ nell'ambiente e la chiamata ricorsiva fallirebbe. La regola (Call) non necessita di modifiche: funziona identicamente per funzioni ricorsive e non ricorsive, perche la ricorsione e interamente gestita dalla struttura della chiusura.
+]
+
+== Esempi completi di derivazioni di tipo per funzioni
+
 #example(title: "Type checking della funzione abs")[
-  Verifichiamo che la funzione `abs` sia ben tipata:
+  Verifichiamo che la funzione `abs` (valore assoluto) sia ben tipata:
   ```
   int abs(int n) {
     int m = n;
@@ -539,11 +1067,11 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   }
   ```
 
-  Vogliamo dimostrare che $Gamma tack "abs" : ("int") arrow.r "int"$
+  Vogliamo dimostrare: $Gamma tack "abs" : ("int") arrow.r "int"$
 
-  *Passo 1*: Costruiamo l'ambiente per il corpo della funzione.
+  *Passo 1*: Costruzione dell'ambiente per il corpo.
 
-  Secondo la regola (T-Fun), dobbiamo verificare il corpo nell'ambiente:
+  Secondo la regola (T-Fun), il corpo deve essere verificato nell'ambiente:
   $ Gamma' = Gamma union {n : "int"} $
 
   *Passo 2*: Type checking di `int m = n;` in $Gamma'$
@@ -553,18 +1081,18 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma' tack "int" space m = n; : {m : "int"}$ #h(0.5cm) (T-Decl)
   ]
 
-  Aggiorniamo l'ambiente: $Gamma'' = Gamma' union {m : "int"} = Gamma union {n : "int", m : "int"}$
+  Ambiente aggiornato: $Gamma'' = Gamma' union {m : "int"} = Gamma union {n : "int", m : "int"}$
 
-  *Passo 3*: Type checking della condizione `m < 0` in $Gamma''$
+  *Passo 3*: Type checking della guardia `m < 0` in $Gamma''$
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(m) = "int"$ #h(0.5cm) $0 in bb(Z)$] \
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m : "int"$ #h(0.5cm) $Gamma'' tack 0 : "int"$] \
     $Gamma'' tack m < 0 : "bool"$ #h(0.5cm) (T-Cop)
   ]
 
-  *Passo 4*: Type checking dell'espressione `-m` in $Gamma''$
+  *Passo 4*: Type checking della negazione `-m` in $Gamma''$
 
-  L'operatore unario meno (negazione) richiede un operando intero:
+  L'operatore unario meno richiede un operando intero e produce un intero:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m : "int"$] \
     $Gamma'' tack -m : "int"$ #h(0.5cm) (T-Neg)
@@ -582,7 +1110,7 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma'' tack {m := -m;} : emptyset$ #h(0.5cm) (T-Block)
   ]
 
-  *Passo 7*: Type checking del condizionale (con else implicito = skip)
+  *Passo 7*: Type checking del condizionale (con else implicito uguale a skip)
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack m < 0 : "bool"$ #h(0.2cm) $Gamma'' tack {m := -m;} : emptyset$ #h(0.2cm) $Gamma'' tack "skip"; : emptyset$] \
     $Gamma'' tack "if"(m < 0){m := -m;} : emptyset$ #h(0.3cm) (T-If)
@@ -595,9 +1123,9 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma'' tack "return" m; : emptyset$ #h(0.5cm) (T-Return)
   ]
 
-  Il tipo restituito (`int`) corrisponde al tipo di ritorno dichiarato.
+  Il tipo restituito (`int`) corrisponde al tipo di ritorno dichiarato nella firma.
 
-  *Passo 9*: Type checking della sequenza del corpo della funzione
+  *Passo 9*: Composizione sequenziale del corpo della funzione
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma' tack "int" m = n; : {m : "int"}$ #h(0.2cm) $Gamma'' tack "if"(...){...} "return" m; : emptyset$] \
     $Gamma' tack "int" m = n; "if"(m < 0){m := -m;} "return" m; : {m : "int"}$ #h(0.2cm) (T-Seq)
@@ -612,8 +1140,8 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   Quindi $Gamma tack "abs" : ("int") arrow.r "int"$ come richiesto.
 ]
 
-#example(title: "Type checking di funzione ricorsiva su array")[
-  Verifichiamo il type checking della funzione ricorsiva:
+#example(title: "Type checking di una funzione ricorsiva su array")[
+  Verifichiamo il type checking della funzione ricorsiva `azzera`, che cerca l'elemento `k` nell'array `a` a partire dalla posizione `p` e, se lo trova, lo sostituisce con $0$:
   ```
   bool azzera(int[] a, int k, int p) {
     bool res = false;
@@ -625,11 +1153,9 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
   }
   ```
 
-  Questa funzione cerca l'elemento `k` nell'array `a` a partire dalla posizione `p`, e se lo trova lo azzera.
+  *Passo 1*: Poiche la funzione e ricorsiva, usiamo la regola (T-RecFun).
 
-  *Passo 1*: Poiché la funzione è ricorsiva, usiamo la regola (T-RecFun).
-
-  L'ambiente per il corpo deve includere il tipo della funzione stessa:
+  L'ambiente per il corpo deve includere il tipo della funzione stessa (per permettere la chiamata ricorsiva) e i parametri formali:
   $ Gamma' = Gamma union {"azzera" : ("int"[], "int", "int") arrow.r "bool"} union {a : "int"[], k : "int", p : "int"} $
 
   *Passo 2*: Type checking di `bool res = false;` in $Gamma'$
@@ -639,31 +1165,31 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma' tack "bool" space "res" = "false"; : {"res" : "bool"}$ #h(0.5cm) (T-Decl)
   ]
 
-  Aggiorniamo: $Gamma'' = Gamma' union {"res" : "bool"}$
+  Ambiente aggiornato: $Gamma'' = Gamma' union {"res" : "bool"}$
 
-  *Passo 3*: Type checking della condizione `(p >= 0) && (p < a.length)` in $Gamma''$
+  *Passo 3*: Type checking della guardia `(p >= 0) && (p < a.length)` in $Gamma''$
 
-  Prima verifichiamo `p >= 0`:
+  Verifica di `p >= 0`:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(p) = "int"$ #h(0.3cm) $0 in bb(Z)$] \
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p : "int"$ #h(0.3cm) $Gamma'' tack 0 : "int"$] \
     $Gamma'' tack p >= 0 : "bool"$ #h(0.5cm) (T-Cop)
   ]
 
-  Poi verifichiamo `a.length`:
+  Verifica di `a.length`:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''(a) = "int"[]$] \
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack a : "int"[]$] \
     $Gamma'' tack a."length" : "int"$ #h(0.5cm) (T-Length)
   ]
 
-  Poi `p < a.length`:
+  Verifica di `p < a.length`:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p : "int"$ #h(0.3cm) $Gamma'' tack a."length" : "int"$] \
     $Gamma'' tack p < a."length" : "bool"$ #h(0.5cm) (T-Cop)
   ]
 
-  Infine la congiunzione:
+  Congiunzione logica:
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma'' tack p >= 0 : "bool"$ #h(0.3cm) $Gamma'' tack p < a."length" : "bool"$] \
     $Gamma'' tack (p >= 0) and (p < a."length") : "bool"$ #h(0.5cm) (T-Lop)
@@ -701,7 +1227,7 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma'' tack p + 1 : "int"$ #h(0.5cm) (T-Aop)
   ]
 
-  Poi la chiamata (usando il tipo di `azzera` presente in $Gamma''$):
+  Poi la chiamata, usando il tipo di `azzera` presente in $Gamma''$ grazie alla regola (T-RecFun):
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma''("azzera") = ("int"[], "int", "int") arrow.r "bool"$ #h(0.2cm) $Gamma'' tack a : "int"[]$ #h(0.2cm) $Gamma'' tack k : "int"$ #h(0.2cm) $Gamma'' tack p+1 : "int"$] \
     $Gamma'' tack "azzera"(a, k, p+1) : "bool"$ #h(0.3cm) (T-Call)
@@ -719,292 +1245,14 @@ Dato un ambiente di tipo $Gamma$ e un comando $C$ tale che $"fv"(C) subset.eq "d
     $Gamma'' tack "return" "res"; : emptyset$ #h(0.5cm) (T-Return)
   ]
 
-  Il tipo restituito (`bool`) corrisponde al tipo di ritorno dichiarato.
+  Il tipo restituito (`bool`) corrisponde al tipo di ritorno dichiarato nella firma.
 
   *Passo 11*: Applicazione della regola (T-RecFun)
   #align(center)[
     #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {"azzera" : ("int"[], "int", "int") arrow.r "bool"} union {a : "int"[], k : "int", p : "int"} tack C : Gamma'''$] \
     $Gamma tack "bool" space "azzera"("int"[] space a, "int" space k, "int" space p){C} : {"azzera" : ("int"[], "int", "int") arrow.r "bool"}$
   ]
-  dove $C$ rappresenta il corpo della funzione.
+  dove $C$ rappresenta il corpo completo della funzione.
 
-  Quindi $Gamma tack "azzera" : ("int"[], "int", "int") arrow.r "bool"$
-
-  La funzione è *ben tipata* e ha tipo $("int"[], "int", "int") arrow.r "bool"$.
-]
-
-=== Controllo di tipi vs inferenza di tipo
-
-Il sistema di tipi di Mao è progettato per controllare che i tipi dichiarati dal programmatore per le variabili corrispondano all'uso che viene fatto di esse. Molti linguaggi di programmazione non richiedono di dichiarare il tipo di variabile al momento della sua dichiarazione:
-- o perché non vengono controllati (JS)
-- o perché viene utilizzato un meccanismo di #underline[inferenza di tipo] (Golang): il contesto in cui viene usata la variabile determina il tipo
-
-=== Tipi Base aggiuntivi - Char e stringhe
-
-=== Caratteri
-
-I caratteri sono utilizzati per rappresentare simboli, lettere e altri caratteri alfanumerici. In Mao il tipo `char` possono essere codificati `ASCII` o `Unicode`. I caratteri speciali vengono rappresentati da _sequenze di escape_.
-
-#example[
-  ```
-  char lettera = 'R';
-  char a_capo = '\n';
-  ```
-]
-
-=== Stringhe
-
-Le stringhe in Mao sono un array di caratteri, di tipo `char[]`.
-
-#example[
-  `['C', 'i', 'a', 'o'] = "Ciao"`
-]
-
-=== Assegnamento multiplo
-
-Molti linguaggi permettono l'assegnamento multiplo, permettendo quindi di inizializzare più variabili contemporaneamente.
-
-#example[
-  `let x,y,z = 6,7,42;`
-]
-
-È anche possibile fare lo scambio delle variabili sfruttando l'assegnamento multiplo
-
-```
-x, y := y,x;
-```
-
-=== Sintassi assegnamento multiplo
-
-#align(center)[
-  $"LHS" &::= "Id" | "Id", "LHS"$ \
-  $"RHS" &::= E | E, "RHS"$
-]
-
-Sfruttando queste nuove categorie sintattiche, generalizziamo i comandi atomici:
-
-#align(center)[
-  $C &::= ... | T space "LHS" = "RHS"; | "LHS" := "RHS";$
-]
-
-Dove LHS (Left-Hand Side) è la lista degli identificatori e RHS (Right-Hand Side) è la lista delle espressioni.
-
-==== Type checking per assegnamento multiplo
-
-Le variabili libere di LHS e RHS sono definite come:
-#align(center)[
-  $"fv"("Id") = {"Id"}$ #h(1cm) $"fv"("Id", "LHS") = {"Id"} union "fv"("LHS")$ \
-  $"fv"(E) = "fv"(E)$ #h(1cm) $"fv"(E, "RHS") = "fv"(E) union "fv"("RHS")$
-]
-
-La regola di tipo richiede che ogni espressione abbia il tipo corrispondente all'identificatore:
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E_1 : T$ #h(0.2cm) $...$ #h(0.2cm) $Gamma tack E_n : T$ #h(0.2cm) $Gamma("Id"_i) = T$ per $i = 1..n$] \
-  $Gamma tack "Id"_1, ..., "Id"_n := E_1, ..., E_n; : emptyset$ #h(0.3cm) (T-MultiAssign)
-]
-
-==== Semantica operazionale assegnamento multiplo
-
-*Dichiarazione multipla*:
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_i, rho, sigma_(i-1) chevron.r arrow.b.double (v_i, sigma_i)$ per $i = 1..n$ #h(0.2cm) $l_1, ..., l_n in.not "dom"(sigma_n)$] \
-  $chevron.l T space "Id"_1, ..., "Id"_n = E_1, ..., E_n;, rho, sigma chevron.r arrow.r chevron.l rho["Id"_1 |-> l_1]...["Id"_n |-> l_n], sigma_n[l_1 |-> v_1]...[l_n |-> v_n] chevron.r$
-]
-
-*Assegnamento multiplo*:
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E_i, rho, sigma_(i-1) chevron.r arrow.b.double (v_i, sigma_i)$ per $i = 1..n$ #h(0.2cm) $rho("Id"_i) = l_i$ per $i = 1..n$] \
-  $chevron.l "Id"_1, ..., "Id"_n := E_1, ..., E_n;, rho, sigma chevron.r arrow.r chevron.l rho, sigma_n[l_1 |-> v_1]...[l_n |-> v_n] chevron.r$
-]
-
-#note[
-  L'assegnamento multiplo `x, y := y, x` permette lo swap in un solo comando perché tutte le espressioni RHS vengono valutate *prima* di effettuare gli assegnamenti.
-]
-
-=== Direttiva return
-
-Permette di restituire il valore aggiornato di un'espressione qualsiasi.
-
-#example[
-  ```
-  { count := count + 1; return count; }
-  ```
-]
-
-La sintassi della direttiva `return` è la seguente:
-
-#align(center)[
-  $C ::= ... | "return" E;$
-]
-
-Data la seguente definizione di variabili libere:
-
-#align(center)[
-  $"fv"("return" E;) = "fv"(E)$
-]
-
-Per controllare il tipo dell'espressione:
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma tack E : T$] \
-  $Gamma tack "return" E; : emptyset$ #h(1cm) (T-Return)
-]
-
-La semantica operazionale del return:
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$chevron.l E, rho, sigma chevron.r arrow.b.double (v, sigma')$] \
-  $chevron.l "return" E;, rho, sigma chevron.r arrow.r (v, rho, sigma')$ #h(1cm) (Return)
-]
-
-=== Funzioni
-
-Le funzioni servono per dare un nome ad un frammento di codice che calcola un valore in modo da poter riutilizzare il codice tutte le volte che vogliamo utilizzando parametri diversi.
-
-- *Definizione di funzione*: momento in cui scriviamo il codice dell'espressione che vogliamo calcolare. specifichiamo l'input parametrico (parametri formali)
-- *Invocazione di funzione*: momento nel programma in cui chiamo la funzione per eseguire il calcolo dell'espressione specificata, i parametri sono effettivi (parametri attuali)
-
-#example[
-  ```
-  int max(int a, int b){
-      int m = a;
-      if (b>m) {
-          m := b;
-      }
-      return m;
-  }
-  ...
-  if(max(x,y) <10){
-      z := max(x+2, y*3)
-  } else {
-      z := max(x/10, y-10);
-  }
-  ```
-]
-
-=== Corrispondenza tra parametri formali e attuali
-
-La chiamata di funzione deve contenere espressioni corrispondenti in numero e in tipo a quelle dichiarate nell'intestazione. La comunicazione avviene tramite il passaggio di parametri. Ad ogni parametro formale della funzione deve corrispondere un'espressione nella stessa posizione tra i parametri attuali.
-
-==== Passaggio parametri per valore
-
-Il passaggio per valore è la modalità più comune: ogni parametro formale viene inizializzato con una copia del valore corrispondente del parametro attuale. Se i parametri formali vengono modificati all'interno della funzione, tali modifiche non influenzano i parametri attuali originali.
-
-==== Passaggio parametri per riferimento
-
-Il passaggio per riferimento avviene inizializzando i parametri formali con il riferimento ai corrispondenti argomenti attuali. Se i parametri formali vengono modificati all'interno della funzione, tale modifica influenza i parametri attuali originali.
-
-#note[
-  Quando un array viene passato come argomento attuale, stiamo implicitamente passando il riferimento all'array stesso $l_b$
-]
-
-=== Sintassi delle funzioni
-
-La sintassi della dichiarazione di funzione:
-
-#align(center)[
-  $C ::= ... | T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}$
-]
-
-Dove $T_R$ è il tipo di ritorno (può essere `void` per funzioni senza valore di ritorno).
-
-La sintassi della chiamata di funzione:
-
-#align(center)[
-  $E ::= ... | "Id"(E_1, ..., E_n)$
-]
-
-Il tipo di una funzione è rappresentato come:
-
-#align(center)[
-  $(T_1, ..., T_n) arrow.r T_R$
-]
-
-Dove $(T_1, ..., T_n)$ sono i tipi dei parametri formali e $T_R$ è il tipo di ritorno.
-
-Definizione variabili libere di una funzione:
-
-#align(center)[
-  $"fv"(T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}) = "fv"(C) backslash {"Id"_1, ..., "Id"_n}$
-]
-
-Le variabili libere nel corpo della funzione escludono i parametri formali.
-
-Regola di tipo per la dichiarazione di funzione:
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {"Id"_1 : T_1, ..., "Id"_n : T_n} tack C : Gamma'$] \
-  $Gamma tack T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C} : {"Id" : (T_1, ..., T_n) arrow.r T_R}$ #h(0.5cm) (T-Fun)
-]
-
-Regola di tipo per l'invocazione:
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma("Id") = (T_1, ..., T_n) arrow.r T_R$ #h(0.3cm) $Gamma tack E_1 : T_1$ #h(0.3cm) $...$ #h(0.3cm) $Gamma tack E_n : T_n$] \
-  $Gamma tack "Id"(E_1, ..., E_n) : T_R$ #h(0.5cm) (T-Call)
-]
-
-=== Semantica operazionale delle funzioni
-
-==== Dichiarazione di funzione
-
-La dichiarazione di una funzione memorizza la "chiusura" (closure) nell'ambiente:
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
-  $chevron.l T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}, rho, sigma chevron.r arrow.r chevron.l rho["Id" |-> ("Id"_1, ..., "Id"_n, C, rho)], sigma chevron.r$
-]
-
-#note[
-  La chiusura contiene: i nomi dei parametri, il corpo della funzione, e l'ambiente al momento della dichiarazione (per le variabili libere).
-]
-
-==== Chiamata di funzione
-
-La chiamata di funzione:
-1. Valuta gli argomenti
-2. Crea un nuovo ambiente con i parametri formali legati ai valori degli argomenti
-3. Esegue il corpo della funzione
-4. Restituisce il valore del return
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[
-    $rho("Id") = ("Id"_1, ..., "Id"_n, C, rho_f)$ \
-    $chevron.l E_i, rho, sigma_(i-1) chevron.r arrow.b.double (v_i, sigma_i)$ per $i = 1..n$ \
-    $l_1, ..., l_n in.not "dom"(sigma_n)$ \
-    $rho' = rho_f["Id"_1 |-> l_1]...["Id"_n |-> l_n]$ \
-    $sigma' = sigma_n[l_1 |-> v_1]...[l_n |-> v_n]$ \
-    $chevron.l C, rho', sigma' chevron.r arrow.r (v_r, rho'', sigma'')$
-  ] \
-  $chevron.l "Id"(E_1, ..., E_n), rho, sigma chevron.r arrow.b.double (v_r, sigma'')$ #h(0.3cm) (Call)
-]
-
-#note[
-  L'ambiente della funzione ($rho_f$) viene esteso con i parametri, non l'ambiente del chiamante. Questo implementa lo *scoping statico*.
-]
-
-=== Ricorsione
-
-In molti linguaggi di programmazione è ammessa la possibilità di definire funzioni ricorsive (funzione che richiama se stessa). La chiamata ricorsiva può essere:
-- diretta: chiamata avviene direttamente in una espressione del corpo di $f$
-- indiretta: $f$ contiene una chiamata a $g$ che a sua volta contiene una chiamata a $f$
-
-Per avere possibile la ricorsione deve essere modificata la definizione di variabili libere:
-
-#align(center)[
-  $"fv"(T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C}) = "fv"(C) backslash {"Id", "Id"_1, ..., "Id"_n}$
-]
-
-Il nome della funzione stessa viene escluso dalle variabili libere, permettendo così la chiamata ricorsiva.
-
-Regola di tipo per funzioni ricorsive (include l'associazione tra il nome della funzione e il suo tipo nell'ambiente):
-
-#align(center)[
-  #box(stroke: (bottom: 1pt), inset: 3pt)[$Gamma union {"Id" : (T_1, ..., T_n) arrow.r T_R} union {"Id"_1 : T_1, ..., "Id"_n : T_n} tack C : Gamma'$] \
-  $Gamma tack T_R space "Id"(T_1 space "Id"_1, ..., T_n space "Id"_n){C} : {"Id" : (T_1, ..., T_n) arrow.r T_R}$ #h(0.3cm) (T-RecFun)
-]
-
-#note[
-  La differenza rispetto a (T-Fun) è che nell'ambiente del corpo della funzione è presente anche il binding $"Id" : (T_1, ..., T_n) arrow.r T_R$, permettendo chiamate ricorsive ben tipate.
+  La funzione e *ben tipata* e ha tipo $("int"[], "int", "int") arrow.r "bool"$.
 ]

@@ -11,8 +11,9 @@ Appunti Typst/
 ├── template.typ                # Template con stili e ambienti personalizzati
 ├── algoritmica/
 │   ├── introduzione.typ        # Definizione di algoritmo, problema, programma
-│   ├── complessita_in_tempo.typ # Complessità, notazione asintotica, invarianti
+│   ├── complessita_in_tempo.typ # Complessità, notazione asintotica, limiti inferiori
 │   ├── divide_et_impera.typ    # Divide et Impera, Master Theorem, MergeSort
+│   ├── ordinamenti_elementari.typ # Insertion Sort, Selection Sort, invarianti di ciclo
 │   ├── quicksort.typ           # QuickSort e analisi
 │   ├── heap.typ                # Heap, HeapSort, code di priorità
 │   ├── ordinamenti_lineari.typ # Counting Sort, Radix Sort, Bucket Sort
@@ -52,7 +53,7 @@ Il template definisce questi ambienti:
 - **Regole di inferenza**: usare `#box(stroke: (bottom: 1pt), inset: 3pt)[premesse]` seguito da `\` e conclusione. NON usare `frac()` perché le virgole nel contenuto vengono interpretate come separatori di argomenti
 - **Immagini**: nella cartella `images/`, alcune sono state sostituite con codice Typst
 
-## Task completati in questa sessione
+## Task completati in sessioni precedenti
 
 1. Espanso esempi Counting Sort e Radix Sort con esecuzioni passo-passo
 2. Aggiunto esempi completi di sviluppo sequenziale (semantica operazionale)
@@ -62,6 +63,7 @@ Il template definisce questi ambienti:
    - Mao.typ: **100% convertito** - type checking, semantica array, funzioni, assegnamento multiplo
 5. Corretto warning deprecazione `angle.l/r` → `chevron.l/r`
 6. Corretto errore sintassi `frac()` → usare `#box(stroke: (bottom: 1pt))`
+7. **Ristrutturazione capitoli**: spostato Insertion Sort/Selection Sort/invarianti da "Complessità" a "Ordinamento", spostato limiti inferiori da "Divide et Impera" a "Complessità", rimossa immagine placeholder `oss_da_sistemare.png`
 
 ## Note per future modifiche
 

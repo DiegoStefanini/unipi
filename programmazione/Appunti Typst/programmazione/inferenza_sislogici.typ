@@ -2,148 +2,329 @@
 
 == Regole di Inferenza e Sistemi Logici
 
-Data una produzione S $::=$ a b $|$ a S b possiamo scriverla in due modi:
-- lettura generativa (o produttiva): la grammatica è vista come un insieme di regole di riscrittura, la produzione si legge da sinistra verso destra e se trovo il simbolo S posso rimpiazzarlo con a S b
-- lettura induttiva (costruttiva): la grammatica è una definizione induttiva, la produzione si legge da destra verso sinistra e ogni produzione è una clausola che spiega come costruire stringhe valide; presa una stringa w qualsiasi in L(S) concludo che anche a w b è in L(S)
+Le grammatiche formali, introdotte nel capitolo precedente, possono essere lette in due modi complementari. Questa doppia lettura e' alla base della semantica formale dei linguaggi di programmazione.
 
-=== Regole di inferenza
+#definition(title: "Lettura generativa e lettura induttiva")[
+  Data una produzione come $S ::= a b | a S b$, possiamo interpretarla in due modi:
+  - *Lettura generativa (produttiva)*: la grammatica e' vista come un insieme di regole di riscrittura. La produzione si legge da sinistra verso destra: ogni volta che incontro il simbolo $S$, posso rimpiazzarlo con $a b$ oppure con $a S b$. Questa lettura descrive come _generare_ stringhe.
+  - *Lettura induttiva (costruttiva)*: la grammatica e' una definizione induttiva. La produzione si legge da destra verso sinistra: la clausola $S ::= a b$ afferma che $a b in L(S)$ (caso base), mentre $S ::= a S b$ afferma che se $w in L(S)$ allora anche $a w b in L(S)$ (passo induttivo). Questa lettura descrive come _costruire_ l'insieme delle stringhe valide.
+]
 
-Per definire la semantica del linguaggio Mao verranno utilizzate le regole di inferenza. Date premesse $p$ e conclusione $q$ possiamo definire le regole di inferenza come:
+La lettura induttiva e' particolarmente importante perche' ci permette di utilizzare le *regole di inferenza* per definire la semantica di un linguaggio di programmazione in modo rigoroso.
+
+== Regole di inferenza
+
+Per definire la semantica del linguaggio MAO utilizzeremo le regole di inferenza, uno strumento formale che permette di derivare nuovi giudizi (conclusioni) a partire da giudizi gia' noti (premesse).
+
+#definition(title: "Regola di inferenza")[
+  Una regola di inferenza ha la seguente forma: date premesse $p_1, ..., p_n$ e una conclusione $q$, scriviamo:
+
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 5pt)[$p_1 space ... space p_n$] \
+    $q$ #h(1cm) (Nome-Regola)
+  ]
+
+  La regola si legge: "se tutte le premesse $p_1, ..., p_n$ sono vere, allora si puo' trarre la conclusione $q$".
+]
+
+Quando le premesse sono vuote, la regola si chiama #underline[assioma]: una verita' che vale senza bisogno di giustificazione.
+
+#definition(title: "Assioma")[
+  Un assioma e' una regola di inferenza senza premesse:
+
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 5pt)[$ $] \
+    $q$ #h(1cm) (Nome-Assioma)
+  ]
+
+  L'assioma afferma che $q$ e' vero incondizionatamente.
+]
+
+=== Produzioni come regole di inferenza
+
+Le produzioni di una grammatica possono essere viste come regole di inferenza. Consideriamo una grammatica per le espressioni aritmetiche con le produzioni:
+
+$"Exp" ::= "Exp" + "Pro" | "Pro"$ #h(1cm) $"Pro" ::= "Pro" times "Cifra" | "Cifra"$ #h(1cm) $"Cifra" ::= 0 | 1 | ... | 9$
+
+Ogni produzione corrisponde a una regola di inferenza letta induttivamente:
 
 #align(center)[
-  #box(stroke: (bottom: 1pt), inset: 5pt)[$p_1 space ... space p_n$] \
-  $q$ #h(1cm) (Nome-Regola)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$y in L("Exp")$ #h(0.5cm) $z in L("Pro")$] \
+  $y + z in L("Exp")$ #h(0.5cm) (Exp-Sum)
+  #h(1.5cm)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$z in L("Pro")$] \
+  $z in L("Exp")$ #h(0.5cm) (Exp-Pro)
 ]
 
-Se tutte le premesse sono vere allora si può trarre la conclusione $q$; se le premesse sono vuote allora si ha un #underline[assioma] di forma (assioma).
+#v(0.3cm)
 
 #align(center)[
-  #box(stroke: (bottom: 1pt), inset: 5pt)[$ $] \
-  $q$ #h(1cm) (Nome-assioma)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$z in L("Pro")$ #h(0.5cm) $c in L("Cifra")$] \
+  $z times c in L("Pro")$ #h(0.5cm) (Pro-Mul)
+  #h(1.5cm)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+  $5 in L("Cifra")$ #h(0.5cm) (Cifra-5)
 ]
 
-Le regole di inferenza vengono utilizzate per derivare nuovi giudizi a partire dalle verità già note.
+Ad esempio, la regola (Exp-Sum) si legge: "se $y$ e' un'espressione e $z$ e' un prodotto, allora $y + z$ e' un'espressione". La regola (Cifra-5) e' un assioma: 5 e' una cifra senza bisogno di ulteriori giustificazioni.
 
-==== Produzioni come regole di inferenza
+== Sistemi logici
 
-#figure(
-  image("../images/produz_inf.png", width: 40%),
-)
-
-=== Sistemi logici
-
-Un sistema logico è un insieme di regole di inferenza che possono essere applicate per dimostrare la validità di formule.
-
-#figure(
-  image("../images/gram.png", width: 25%),
-)
-
-#example[
-  Prendendo come riferimento la grammatica nell'immagine precedente, $2 times 3$ è un'espressione valida?
-
-  #figure(
-    image("../images/sis_log.png", width: 50%),
-  )
+#definition(title: "Sistema logico")[
+  Un *sistema logico* e' un insieme di regole di inferenza (e assiomi) che possono essere applicate per dimostrare la validita' di formule, dette _giudizi_. Fissato un sistema logico, diciamo che un giudizio $q$ e' *derivabile* se esiste una sequenza di applicazioni di regole che lo dimostra.
 ]
 
-==== Derivazione
+#example(title: "Derivazione in un sistema logico")[
+  Consideriamo il sistema logico associato alla grammatica delle espressioni aritmetiche mostrata sopra. Vogliamo mostrare che $2 times 3$ e' un'espressione valida, cioe' che $2 times 3 in L("Exp")$.
 
-#definition[
-  Una derivazione nel sistema logico è una sequenza di passaggi che partendo dagli assiomi e applicando le regole giustificano una certa conclusione, scritto $d tack q$, si legge "la derivazione d dimostra il giudizio q" oppure "d è una derivazione per q"
+  Per farlo, costruiamo una derivazione applicando le regole dal basso verso l'alto:
+  + $2 in L("Cifra")$ per l'assioma (Cifra-2), e quindi $2 in L("Pro")$ per (Pro-Cifra)
+  + $3 in L("Cifra")$ per l'assioma (Cifra-3)
+  + Da $2 in L("Pro")$ e $3 in L("Cifra")$, otteniamo $2 times 3 in L("Pro")$ per la regola (Pro-Mul)
+  + Da $2 times 3 in L("Pro")$, otteniamo $2 times 3 in L("Exp")$ per la regola (Exp-Pro)
 ]
 
-Le derivazioni sono definite come segue:
-- ogni assioma del sistema logico è una derivazione per q
-- se $frac(p_1 space ... space p_n, q)$ è regola del sistema logico le cui premesse sono derivabili $d_1 tack p_1, ..., d_n tack p_n$, allora $frac(d_1 space ... space d_n, q)$
+=== Derivazione
 
-#figure(
-  image("../images/es_deriv.png", width: 30%),
-)
-
-==== Alberi di derivazioni
-
-Anche le derivazioni formano una #underline[struttura ad albero], anche se in questo caso la radice è posta verso il basso.
-
-#figure(
-  image("../images/albero_deriv.png", width: 40%),
-)
-
-==== Grammatiche come sistemi logici
-
-Formalmente invece dei blocchetti colorati, introduciamo le formule $x in L(X)$, col significato che la stringa x appartiene al linguaggio di X.
-
-#figure(
-  image("../images/gramm_logi.png", width: 30%),
-)
-
-Ad ogni produzione della grammatica (dove $omega_i in T^*$ e $X_i in N$) associamo una regola di inferenza
-
-#figure(
-  image("../images/prod_infere.png", width: 30%),
-)
-
-==== Valutazione di espressioni
-
-I sistemi logici permettono di assegnare un significato ad espressioni e comandi seguendone la struttura grammaticale.
-
-#example[
-  riprendendo la grammatica ambigua delle espressioni con sole cifre:
-
-  #figure(
-    image("../images/espress.png", width: 50%),
-  )
-
-  presa un'espressione w: se w è una cifra allora il valore è il numero che rappresenta; se w = $w_1 + w_2$ è la somma di Espressione e il valore è la somma dei valori; analogamente vale anche per il prodotto.
+#definition(title: "Derivazione")[
+  Una *derivazione* nel sistema logico e' una sequenza di passaggi che, partendo dagli assiomi e applicando le regole di inferenza, giustifica una certa conclusione. Si scrive $d tack q$ e si legge "la derivazione $d$ dimostra il giudizio $q$", oppure "$d$ e' una derivazione per $q$".
 ]
 
-Definiamo un predicato di valutazione per ogni categoria sintattica $w arrow.b.double_X v$, spesso abbreviato con $w arrow.b.double v$, si legge dicendo che "il termine $w in T^*$) del linguaggio di $X in N$ ha valore $v$
+Le derivazioni sono definite ricorsivamente:
+- *Caso base*: ogni assioma del sistema logico e' una derivazione per la sua conclusione $q$.
+- *Passo induttivo*: se esiste una regola
 
-#figure(
-  image("../images/espress_valutaz.png", width: 50%),
-)
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$p_1 space ... space p_n$] \
+    $q$
+  ]
 
-#figure(
-  image("../images/espress_valutaz_1.png", width: 50%),
-)
+  del sistema logico, e le premesse sono derivabili ($d_1 tack p_1, ..., d_n tack p_n$), allora la composizione delle sotto-derivazioni e' una derivazione per $q$.
 
-#figure(
-  image("../images/espress_valutaz_2.png", width: 50%),
-)
+#example(title: "Derivazione per $2 times 3 in L(\"Exp\")$")[
+  Rappresentiamo la derivazione come albero di regole applicate (le foglie sono assiomi):
+
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[
+      #box(stroke: (bottom: 1pt), inset: 3pt)[
+        #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+        $2 in L("Cifra")$
+      ] \
+      $2 in L("Pro")$
+      #h(0.5cm)
+      #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+      $3 in L("Cifra")$
+    ] \
+    $2 times 3 in L("Pro")$
+  ]
+
+  Da questa derivazione, applicando (Exp-Pro), concludiamo $2 times 3 in L("Exp")$.
+]
+
+=== Alberi di derivazione
+
+Le derivazioni formano naturalmente una *struttura ad albero*, anche se in questo caso la radice (la conclusione finale) e' posta verso il basso, e le foglie (gli assiomi) sono in alto. Ogni nodo interno corrisponde all'applicazione di una regola, e i suoi figli sono le sotto-derivazioni delle premesse.
+
+#note[
+  Non confondere gli alberi di derivazione della semantica (che crescono verso il basso con la conclusione in fondo) con gli alberi di derivazione delle grammatiche (capitolo 2), che hanno la radice in alto.
+]
+
+=== Grammatiche come sistemi logici
+
+Possiamo formalizzare il legame tra grammatiche e sistemi logici. Invece di usare rappresentazioni grafiche colorate, introduciamo le formule $x in L(X)$, con il significato che "la stringa $x$ appartiene al linguaggio generato dal non-terminale $X$".
+
+Ad ogni produzione della grammatica della forma $X ::= omega_0 X_1 omega_1 X_2 omega_2 ... X_n omega_n$ (dove $omega_i in T^*$ sono stringhe di terminali e $X_i in N$ sono non-terminali) associamo una regola di inferenza:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$x_1 in L(X_1)$ #h(0.3cm) $x_2 in L(X_2)$ #h(0.3cm) $...$ #h(0.3cm) $x_n in L(X_n)$] \
+  $omega_0 x_1 omega_1 x_2 omega_2 ... x_n omega_n in L(X)$
+]
+
+=== Valutazione di espressioni
+
+I sistemi logici permettono non solo di stabilire se una stringa appartiene a un linguaggio, ma anche di assegnare un *significato* (valore) alle espressioni, seguendone la struttura grammaticale.
+
+#example(title: "Grammatica ambigua delle espressioni")[
+  Riprendiamo la grammatica ambigua delle espressioni con sole cifre:
+
+  $E ::= 0 | 1 | 2 | ... | 9 | E + E | E times E$
+
+  Per ogni espressione $w$ definiamo un predicato di valutazione $w arrow.b.double v$, che si legge "il termine $w$ ha valore $v$".
+]
+
+Definiamo le regole di valutazione come segue. Per le cifre abbiamo assiomi (una per ciascuna cifra da 0 a 9):
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+  $0 arrow.b.double 0$ #h(0.5cm) (Val-0)
+  #h(1cm)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+  $1 arrow.b.double 1$ #h(0.5cm) (Val-1)
+  #h(1cm) $...$  #h(1cm)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+  $9 arrow.b.double 9$ #h(0.5cm) (Val-9)
+]
+
+Per le operazioni abbiamo regole con premesse:
+
+#align(center)[
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$x_1 arrow.b.double n_1$ #h(0.5cm) $x_2 arrow.b.double n_2$ #h(0.5cm) $n = n_1 + n_2$] \
+  $x_1 + x_2 arrow.b.double n$ #h(0.5cm) (Val-Sum)
+  #h(1cm)
+  #box(stroke: (bottom: 1pt), inset: 3pt)[$x_1 arrow.b.double n_1$ #h(0.5cm) $x_2 arrow.b.double n_2$ #h(0.5cm) $n = n_1 times n_2$] \
+  $x_1 times x_2 arrow.b.double n$ #h(0.5cm) (Val-Mul)
+]
+
+#example(title: "Derivazione della valutazione di $1 + (3 times 2)$")[
+  Vogliamo derivare $1 + (3 times 2) arrow.b.double 7$. Costruiamo l'albero di derivazione:
+
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[
+      #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+      $1 arrow.b.double 1$
+      #h(0.5cm)
+      #box(stroke: (bottom: 1pt), inset: 3pt)[
+        #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+        $3 arrow.b.double 3$
+        #h(0.3cm)
+        #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+        $2 arrow.b.double 2$
+        #h(0.3cm)
+        $6 = 3 times 2$
+      ] \
+      $3 times 2 arrow.b.double 6$
+      #h(0.3cm)
+      $7 = 1 + 6$
+    ] \
+    $1 + (3 times 2) arrow.b.double 7$
+  ]
+
+  La derivazione procede come segue:
+  + Per l'assioma (Val-1): $1 arrow.b.double 1$
+  + Per l'assioma (Val-3): $3 arrow.b.double 3$ e per (Val-2): $2 arrow.b.double 2$
+  + Per la regola (Val-Mul): poiche' $3 arrow.b.double 3$ e $2 arrow.b.double 2$ e $6 = 3 times 2$, concludiamo $3 times 2 arrow.b.double 6$
+  + Per la regola (Val-Sum): poiche' $1 arrow.b.double 1$ e $3 times 2 arrow.b.double 6$ e $7 = 1 + 6$, concludiamo $1 + (3 times 2) arrow.b.double 7$
+]
 
 == Induzione
 
 #definition[
-  L'induzione è un principio fondamentale che permette di trattare insiemi infiniti di oggetti, attraverso un numero finito di regole o casi.
+  L'*induzione* e' un principio fondamentale che permette di trattare insiemi infiniti di oggetti attraverso un numero finito di regole o casi.
 ]
 
-Il principio di induzione ci permette di costruire un numero infinito di un insieme mediante un numero finito di regole, definire il comportamento di una funzione su un insieme infinito di elementi descrivendo il comportamento su casi finiti e dimostrare che una proprietà è valida per tutti gli elementi di un insieme finito, esaminando un numero finito di casi.
+Il principio di induzione ha tre aspetti fondamentali:
+- *Costruzione*: permette di costruire un insieme infinito di oggetti mediante un numero finito di regole (ad esempio, l'insieme dei numeri naturali si definisce con due regole: 0 e' un naturale, e se $n$ e' un naturale allora $n+1$ e' un naturale).
+- *Definizione di funzioni*: permette di definire il comportamento di una funzione su un insieme infinito, descrivendo solo un numero finito di casi.
+- *Dimostrazione*: permette di dimostrare che una proprieta' vale per tutti gli elementi di un insieme infinito, esaminando un numero finito di casi.
 
 === Induzione matematica
 
-Voglio dimostrare che una proprietà è valida per tutti i naturali. Preso un generico $n$, assumendo che la proprietà sia vera per $n$, dimostro che è vera anche per $n + 1$.
+L'induzione matematica permette di dimostrare che una proprieta' $P(n)$ vale per tutti i numeri naturali $n >= n_0$.
 
-#example[
-  Voglio dimostrare che per ogni naturale positivo $n$, la somma dei primi $n$ positivi è la metà del prodotto $n$ e $n + 1$.
-  $ 1 + 2 + 3 + 4 + ... + n = frac(n(n + 1), 2) $
-
-  Caso induttivo: prendo un generico n, assumo valga $1 + 2 + 3 + 4 + ... + n = frac(n(n + 1), 2)$ e cerco di dimostrare che $1 + 2 + 3 + 4 + ... + n + (n + 1) = frac((n + 1)(n + 2), 2)$
+#definition(title: "Principio di induzione matematica")[
+  Per dimostrare $P(n)$ per ogni $n >= n_0$:
+  - *Caso base*: dimostrare che $P(n_0)$ vale.
+  - *Passo induttivo*: preso un generico $n >= n_0$, assumendo che $P(n)$ sia vera (*ipotesi induttiva*), dimostrare che $P(n+1)$ e' vera.
 ]
 
-#figure(
-  image("../images/induz.png", width: 50%),
-)
+#example(title: "Somma dei primi $n$ naturali positivi")[
+  Dimostriamo che per ogni naturale positivo $n$:
+  $ 1 + 2 + 3 + ... + n = frac(n(n + 1), 2) $
+
+  *Caso base* ($n = 1$): $1 = frac(1 dot 2, 2) = 1$. Verificato.
+
+  *Passo induttivo*: assumiamo che la formula valga per $n$ (ipotesi induttiva):
+  $ 1 + 2 + 3 + ... + n = frac(n(n + 1), 2) $
+  Dimostriamo che vale per $n + 1$:
+  $ 1 + 2 + ... + n + (n + 1) = frac(n(n + 1), 2) + (n + 1) = frac(n(n + 1) + 2(n + 1), 2) = frac((n + 1)(n + 2), 2) $
+  L'ultimo passaggio si ottiene raccogliendo $(n + 1)$ a fattor comune. La formula e' quindi dimostrata per $n + 1$.
+]
 
 === Induzione strutturale
 
-Voglio dimostrare che una proprietà è valida per tutte le stringhe $s in T^*$ di un linguaggio generato da una grammatica. Nel caso base dimostro la proprietà per le stringhe $omega in T^*$ che compaiono nella parte destra delle produzioni atomiche (X $::=$ $omega$). Nei casi induttivi, presa una qualsiasi altra produzione non atomica dimostro che se la proprietà è valida per le stringhe $s_1, ..., s_n in T^*$, allora deve valere anche per $omega_0 s_1 omega_1 s_2 ... s_n omega_n$
+L'induzione strutturale estende il principio di induzione matematica alle stringhe di un linguaggio generato da una grammatica. Invece di indurre sui numeri naturali, si induce sulla struttura delle stringhe.
+
+#definition(title: "Principio di induzione strutturale")[
+  Per dimostrare una proprieta' $P(w)$ per tutte le stringhe $w in L(S)$ generate da una grammatica:
+  - *Casi base*: dimostrare $P(omega)$ per le stringhe $omega in T^*$ che compaiono nella parte destra delle produzioni _atomiche_ (cioe' produzioni della forma $X ::= omega$ senza non-terminali a destra).
+  - *Casi induttivi*: per ogni produzione non atomica della forma $X ::= omega_0 Y_1 omega_1 ... Y_n omega_n$, assumendo che $P(s_1), ..., P(s_n)$ valgano per le stringhe $s_i$ generate dai non-terminali $Y_i$ (ipotesi induttiva), dimostrare che $P(omega_0 s_1 omega_1 ... s_n omega_n)$ vale.
+]
 
 === Induzione sulle derivazioni
 
-Voglio dimostrare che una proprietà è valida per tutti i giudizi derivabili in un sistema logico. Nel caso base dimostro la proprietà è valida per tutte le conclusioni degli assiomi. Nel caso induttivo, presa una qualsiasi altra regola di inferenza dimostro che se la proprietà è valida per tutte le premesse allora vale anche per la conclusione.
+L'induzione sulle derivazioni permette di dimostrare proprieta' valide per tutti i giudizi derivabili in un sistema logico. A differenza dell'induzione strutturale (che lavora sulla struttura delle stringhe), qui si lavora sulla *struttura delle derivazioni* stesse.
 
-#figure(
-  image("../images/induz_deriv.png", width: 70%),
-)
+#definition(title: "Principio di induzione sulle derivazioni")[
+  Sia $cal(S)$ un sistema logico e $P$ una proprieta' sui giudizi. Per dimostrare che $P(J)$ vale per ogni giudizio $J$ derivabile in $cal(S)$:
+
+  *Casi base (assiomi):* Per ogni assioma
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$ $] \
+    $q$
+  ]
+  del sistema, dimostrare che $P(q)$ vale.
+
+  *Casi induttivi (regole):* Per ogni regola
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$p_1 space ... space p_n$] \
+    $q$
+  ]
+  del sistema, assumendo che $P(p_1), ..., P(p_n)$ valgano (*ipotesi induttiva*), dimostrare che $P(q)$ vale.
+]
+
+#note(title: "Intuizione")[
+  L'induzione sulle derivazioni riflette il modo in cui i giudizi vengono costruiti: partendo dagli assiomi (verita' di base) e applicando regole di inferenza. Se una proprieta' vale per le "fondamenta" (assiomi) e si "propaga" attraverso le regole, allora vale per tutto cio' che e' derivabile.
+]
+
+#example(title: "Applicazione: correttezza della valutazione")[
+  Consideriamo il sistema logico per la valutazione di espressioni aritmetiche con le regole:
+
+  #align(center)[
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$space$] \
+    $n arrow.b.double n$ #h(0.5cm) (Val-Num) #h(1cm)
+
+    #box(stroke: (bottom: 1pt), inset: 3pt)[$e_1 arrow.b.double v_1$ #h(0.3cm) $e_2 arrow.b.double v_2$] \
+    $e_1 + e_2 arrow.b.double v_1 + v_2$ #h(0.5cm) (Val-Sum)
+  ]
+
+  Vogliamo dimostrare: "Se $e arrow.b.double v$ e' derivabile, allora $v$ e' un numero intero".
+
+  *Caso base (Val-Num):* $n arrow.b.double n$. Il valore $n$ e' un numero intero per definizione.
+
+  *Caso induttivo (Val-Sum):* Assumiamo (ipotesi induttiva) che $v_1$ e $v_2$ siano interi. Allora $v_1 + v_2$ e' la somma di due interi, quindi e' un intero.
+]
+
+#example(title: "Confronto dei tre tipi di induzione")[
+  #table(
+    columns: (1fr, 1fr, 1fr),
+    align: (left, left, left),
+    table.header(
+      [*Induzione matematica*],
+      [*Induzione strutturale*],
+      [*Induzione sulle derivazioni*]
+    ),
+    [Sui numeri naturali $bb(N)$],
+    [Sulle stringhe di $L(G)$],
+    [Sui giudizi derivabili],
+    [Caso base: $n = 0$],
+    [Caso base: produzioni atomiche],
+    [Caso base: assiomi],
+    [Passo: $n arrow.r n+1$],
+    [Passo: produzioni ricorsive],
+    [Passo: regole di inferenza],
+    [Esempio: somma dei primi $n$],
+    [Esempio: $\#_a(w) = \#_b(w)$],
+    [Esempio: correttezza semantica],
+  )
+]
+
+Questa tecnica sara' fondamentale per dimostrare proprieta' della semantica di MAO, come ad esempio:
+- *Determinismo*: se $chevron.l e, rho, sigma chevron.r arrow.b.double v_1$ e $chevron.l e, rho, sigma chevron.r arrow.b.double v_2$, allora $v_1 = v_2$
+- *Type soundness*: se un'espressione e' ben tipata, la sua valutazione non produce errori di tipo
+
+#note(title: "Anticipazione: regole di tipo per gli operatori di confronto")[
+  Il sistema di tipi formale di MAO (presentato nel capitolo dedicato al linguaggio MAO completo) include una regola *T-Cop* per gli operatori di confronto ($<, <=, >, >=, ==, !=$). In tale regola, gli operandi sono vincolati ad avere tipo `int`. Si osservi tuttavia che, a livello semantico, gli operatori di uguaglianza `==` e disuguaglianza `!=` sono definiti anche su operandi booleani (come indicato nella tabella degli operatori di MiniMao). Questa discrepanza e' una scelta progettuale comune nei linguaggi didattici: il type checker puo' essere reso piu' permissivo estendendo T-Cop con una seconda variante che ammetta operandi di tipo `bool` per `==` e `!=`. Per i dettagli completi si rimanda alla sezione sulle regole di type checking nel capitolo su MAO.
+]
 
 == Esercizi: Dimostrazioni Induttive su Grammatiche
 

@@ -15,7 +15,7 @@
   header: context {
     if counter(page).get().first() > 1 [
       #set text(size: 9pt, style: "italic")
-      Programmazione ed Algoritmica #h(1fr) A.A 2025-2026
+      Programmazione ed Algoritmica #h(1fr) A.A. 2025-2026
       #v(-3pt)
       #line(length: 100%, stroke: 0.4pt)
     ]
@@ -32,7 +32,7 @@
 #set par(justify: true, leading: 0.65em)
 #set heading(numbering: "1.1")
 
-// Pagebreak e reset contatori per capitoli principali (level 1)
+// Stile heading livello 1 (capitoli)
 #show heading.where(level: 1): it => {
   pagebreak(weak: true)
   reset-counters()
@@ -41,7 +41,7 @@
   v(0.3em)
 }
 
-// Sezioni (level 2) senza pagebreak
+// Stile heading livello 2 (sezioni)
 #show heading.where(level: 2): it => {
   v(0.8em)
   it
@@ -49,7 +49,7 @@
 }
 
 // ========================================
-// Pagina titolo (design migliorato)
+// Pagina titolo
 // ========================================
 
 #page(
@@ -57,67 +57,40 @@
   header: none,
   footer: none,
 )[
-  // Banda superiore colorata
-  #place(top + left)[
-    #rect(width: 100%, height: 4cm, fill: rgb("#1e3a5f"))
-  ]
-
-  // Contenuto centrato
   #align(center)[
-    #v(5cm)
+    #v(6cm)
 
-    // Titolo principale
-    #block(
-      width: 80%,
-      inset: 1.5em,
-    )[
-      #text(size: 32pt, weight: "bold", fill: rgb("#1e3a5f"))[
-        Programmazione ed Algoritmica
-      ]
-    ]
+    #text(size: 28pt, weight: "bold")[Programmazione ed Algoritmica]
 
-    #v(0.5cm)
+    #v(0.8cm)
 
-    // Linea decorativa
-    #line(length: 40%, stroke: 2pt + rgb("#1a5c3a"))
+    #line(length: 30%, stroke: 1pt + luma(120))
 
-    #v(1cm)
+    #v(0.8cm)
 
-    // Sottotitolo
-    #text(size: 14pt, fill: luma(80))[
+    #text(size: 13pt, fill: luma(80))[
       Appunti del corso di Laurea in Informatica
     ]
 
     #v(3cm)
 
-    // Autore
-    #text(size: 14pt, weight: "medium")[Diego Stefanini]
-    #text(size: 14pt, weight: "medium")[cc. Davide Paolocchi]
+    #text(size: 13pt)[Diego Stefanini]
 
-    #v(0.8cm)
+    #v(0.3cm)
 
-    // Anno accademico
-    #block(
-      inset: (x: 1.5em, y: 0.8em),
-      radius: 4pt,
-      stroke: 1pt + luma(200),
-    )[
-      #text(size: 11pt)[Anno Accademico 2025-2026]
-    ]
+    #text(size: 12pt, fill: luma(80))[cc. Davide Paolocchi]
+
+    #v(1.5cm)
+
+    #text(size: 11pt)[Anno Accademico 2025--2026]
 
     #v(1fr)
 
-    // Footer con universita
     #text(size: 10pt, fill: luma(120))[
-      Universita degli Studi di Firenze
+      Università degli Studi di Pisa
     ]
 
     #v(2cm)
-  ]
-
-  // Banda inferiore
-  #place(bottom + left)[
-    #rect(width: 100%, height: 1cm, fill: rgb("#1a5c3a"))
   ]
 ]
 
@@ -137,7 +110,7 @@
 }
 
 // ========================================
-// PARTE I - INTRODUZIONE
+// CAPITOLO 1 - INTRODUZIONE
 // ========================================
 
 = Introduzione
@@ -146,7 +119,7 @@
 #include "programmazione/introduzione.typ"
 
 // ========================================
-// PARTE II - LINGUAGGI FORMALI E GRAMMATICHE
+// CAPITOLO 2 - LINGUAGGI FORMALI E GRAMMATICHE
 // ========================================
 
 = Linguaggi Formali e Grammatiche
@@ -156,38 +129,54 @@
 #include "programmazione/derivcan_alberi.typ"
 
 // ========================================
-// PARTE III - SEMANTICA E LINGUAGGIO MAO
+// CAPITOLO 3 - SEMANTICA OPERAZIONALE
 // ========================================
 
-= Semantica e Linguaggio MAO
+= Semantica Operazionale
 
 #include "programmazione/inferenza_sislogici.typ"
 #include "programmazione/MiniMao.typ"
+
+// ========================================
+// CAPITOLO 4 - SISTEMI DI TIPI, FUNZIONI E RICORSIONE
+// ========================================
+
+= Sistemi di Tipi, Funzioni e Ricorsione
+
 #include "programmazione/Mao.typ"
 
 // ========================================
-// PARTE IV - COMPLESSITA COMPUTAZIONALE
+// CAPITOLO 5 - COMPLESSITÀ COMPUTAZIONALE
 // ========================================
 
-= Complessita Computazionale
+= Complessità Computazionale
 
 #include "algoritmica/complessita_in_tempo.typ"
 
 // ========================================
-// PARTE V - ALGORITMI DI ORDINAMENTO
+// CAPITOLO 6 - DIVIDE ET IMPERA
+// ========================================
+
+= Divide et Impera
+
+#include "algoritmica/divide_et_impera.typ"
+
+// ========================================
+// CAPITOLO 7 - ALGORITMI DI ORDINAMENTO
 // ========================================
 
 = Algoritmi di Ordinamento
 
-#include "algoritmica/divide_et_impera.typ"
+#include "algoritmica/ordinamenti_elementari.typ"
 #include "algoritmica/quicksort.typ"
 #include "algoritmica/heap.typ"
 #include "algoritmica/ordinamenti_lineari.typ"
 
 // ========================================
-// PARTE VI - STRUTTURE DATI
+// CAPITOLO 8 - STRUTTURE DATI
 // ========================================
 
 = Strutture Dati
 
 #include "algoritmica/strutture_dati.typ"
+#include "algoritmica/alberi_binari.typ"

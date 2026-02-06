@@ -1,21 +1,51 @@
 #import "../template.typ": *
 
-=== Divide et Impera
+== Il paradigma Divide et Impera
 
-Il #underline[Divide et Impera] è un paradigma di programmazione adottato da molti algoritmi ricorsivi:
-- Si #underline[divide] il problema da risolvere in 2 o più sotto-problemi #underline[dello stesso tipo], ma che operano su un numero minore di dati (sottoinsieme di problema iniziale)
-- Si #underline[risolvono] i sottoproblemi in modo ricorsivo, con la stessa tecnica, o direttamente se si sono raggiunti i casi limite di dimensione minima del problema.
-- Si #underline[combinano] le soluzioni dei sottoproblemi per ottenere la soluzione del problema originale
+Il *Divide et Impera* (dal latino _divide et impera_) e uno dei paradigmi algoritmici fondamentali. Alla base della sua struttura vi sono tre fasi:
+
++ *Divide*: si suddivide il problema originale in due o più sotto-problemi _dello stesso tipo_, ciascuno operante su un sottoinsieme dei dati originali. La dimensione di ciascun sotto-problema e strettamente minore di quella del problema di partenza.
+
++ *Impera* (conquista): si risolvono i sotto-problemi in modo ricorsivo, applicando la stessa tecnica. Quando la dimensione del sotto-problema raggiunge un caso base (dimensione sufficientemente piccola), lo si risolve direttamente.
+
++ *Combina*: si fondono le soluzioni dei sotto-problemi per costruire la soluzione del problema originale.
 
 #figure(
   image("../images/divide_et_impera.png", width: 50%),
 )
 
-=== Ricerca Binaria
+La struttura generale di un algoritmo Divide et Impera e la seguente:
 
-=== Codice e complessità
+#algorithm(title: "Schema generale Divide et Impera")[
+  ```
+  soluzione DivideEtImpera(problema P) {
+      if (P e un caso base) {
+          return risolviDirettamente(P);
+      }
+      dividi P in sotto-problemi P1, P2, ..., Pa;
+      soluzione s1 = DivideEtImpera(P1);
+      soluzione s2 = DivideEtImpera(P2);
+      ...
+      soluzione sa = DivideEtImpera(Pa);
+      return combina(s1, s2, ..., sa);
+  }
+  ```
+]
 
-#example(title: "ricerca binaria")[
+La complessità di un algoritmo Divide et Impera e descritta da una *relazione di ricorrenza* della forma:
+$ T(n) = underbrace(a, "num. sotto-problemi") dot T(n\/b) + underbrace(f(n), "costo divide + combina") $
+dove $a >= 1$ e il numero di sotto-problemi, $b > 1$ e il fattore di riduzione, e $f(n)$ rappresenta il costo delle fasi di divisione e combinazione.
+
+== Ricerca Binaria
+
+La ricerca binaria e un algoritmo classico di tipo Divide et Impera per cercare un elemento $k$ in un array $A[p..r]$ *ordinato*. L'idea e la seguente: si confronta $k$ con l'elemento centrale dell'array; se $k$ e uguale all'elemento centrale, la ricerca termina; altrimenti si prosegue ricorsivamente nella meta sinistra (se $k$ e minore) o nella meta destra (se $k$ e maggiore).
+
+=== Implementazione e complessità
+
+*Input*: array ordinato $A[p..r]$ di interi, elemento $k$ da cercare. \
+*Output*: indice $i$ tale che $A[i] = k$, oppure $-1$ se $k$ non e presente.
+
+#algorithm(title: "Ricerca Binaria")[
   ```
   int binarySearch(int[] A, int p, int r, int k){
       if(p > r){
@@ -39,23 +69,35 @@ Il #underline[Divide et Impera] è un paradigma di programmazione adottato da mo
       }
   }
   ```
+]
 
-  La relazione di ricorrenza è
-  $ T(n) = cases(
-    Theta(1) & n <= 1,
-    T(n/2) + Theta(1) & n >= 2
-  ) $
+Analizziamo la complessità. Sia $n = r - p + 1$ la dimensione del sotto-array corrente:
+- *Divide*: il calcolo del punto medio $q$ costa $Theta(1)$.
+- *Impera*: si effettua *una sola* chiamata ricorsiva su un sotto-array di dimensione al più$n\/2$.
+- *Combina*: il risultato della chiamata ricorsiva e gia la risposta, quindi il costo di combinazione e $Theta(1)$.
 
-  $f(n) = C(n) + D(n)$ = combine + divide
+La relazione di ricorrenza e:
+$ T(n) = cases(
+  Theta(1) & "se" n <= 1,
+  T(n\/2) + Theta(1) & "se" n >= 2
+) $
 
-  La complessità in tempo è $O(log n)$
+dove $f(n) = D(n) + C(n) = Theta(1)$ (costo di divide + combina).
+
+#theorem(title: "Complessita della Ricerca Binaria")[
+  La ricerca binaria su un array ordinato di $n$ elementi ha complessità nel caso pessimo $Theta(log n)$ e nel caso ottimo $Theta(1)$ (quando l'elemento cercato si trova esattamente nella posizione centrale al primo confronto).
 ]
 
 === Correttezza
 
-Tipicamente si dimostra per induzione sulla dimensione $n$ del problema:
-- *Caso base*: $n = 0, n = 1, ... n <= n_0$ si dimostra che l'algoritmo è corretto nelle condizioni dei casi base in modo diretto.
-- *Caso induttivo*: Si assume, per ipotesi induttiva, che le soluzioni dei sottoproblemi siano corrette (ovvero che l'algoritmo è corretto $forall n'$ $n_0 < n' < n$ e si dimostra che di conseguenza è corretto per n
+La correttezza di un algoritmo Divide et Impera si dimostra tipicamente per *induzione forte* sulla dimensione $n$ del problema.
+
+- *Caso base* ($n <= 1$): se $p > r$ l'array e vuoto e si restituisce $-1$; se $p = r$ si confronta direttamente $A[p]$ con $k$. In entrambi i casi l'algoritmo e corretto.
+
+- *Passo induttivo*: si assume, per *ipotesi induttiva*, che l'algoritmo sia corretto per ogni input di dimensione $n' < n$ (con $n' >= 0$). Si deve dimostrare che e corretto per input di dimensione $n$. Poiché l'array e ordinato, dopo il confronto con $A[q]$:
+  - se $A[q] = k$, l'indice $q$ e restituito correttamente;
+  - se $A[q] > k$, allora $k$ puo trovarsi solo in $A[p..q-1]$ (dimensione $< n$), e per ipotesi induttiva la chiamata ricorsiva restituisce il risultato corretto;
+  - se $A[q] < k$, il ragionamento e simmetrico su $A[q+1..r]$.
 
 === Varianti della Ricerca Binaria
 
@@ -63,9 +105,9 @@ La ricerca binaria standard trova _una_ occorrenza di un elemento, ma non garant
 
 ==== Ricerca Binaria Sinistra
 
-Trova la *prima occorrenza* (più a sinistra) di un elemento $k$ in un array ordinato.
+Trova la *prima occorrenza* (più asinistra) di un elemento $k$ in un array ordinato.
 
-#example(title: "Ricerca Binaria Sinistra")[
+#algorithm(title: "Ricerca Binaria Sinistra")[
   ```
   int ricercaBinariaSx(int[] a, int sx, int dx, int k) {
       if (sx > dx) {
@@ -82,19 +124,19 @@ Trova la *prima occorrenza* (più a sinistra) di un elemento $k$ in un array ord
       }
   }
   ```
-
-  *Idea*: quando troviamo $k$ in posizione $"cx"$, verifichiamo se è la prima occorrenza controllando che:
-  - $"cx" = "sx"$ (siamo al bordo sinistro), oppure
-  - $a["cx" - 1] != k$ (l'elemento precedente è diverso)
-
-  Se non è la prima occorrenza, continuiamo a cercare nella metà sinistra.
 ]
+
+*Idea*: quando troviamo $k$ in posizione $"cx"$, verifichiamo se e la prima occorrenza controllando che:
+- $"cx" = "sx"$ (siamo al bordo sinistro del sotto-array), oppure
+- $a["cx" - 1] != k$ (l'elemento precedente e diverso da $k$).
+
+Se la condizione non e soddisfatta, $k$ compare anche a sinistra di $"cx"$, quindi si prosegue la ricerca nella meta sinistra. La complessità resta $O(log n)$.
 
 ==== Ricerca Binaria Destra
 
-Trova l'*ultima occorrenza* (più a destra) di un elemento $k$ in un array ordinato.
+Trova l'*ultima occorrenza* (più adestra) di un elemento $k$ in un array ordinato.
 
-#example(title: "Ricerca Binaria Destra")[
+#algorithm(title: "Ricerca Binaria Destra")[
   ```
   int ricercaBinariaDx(int[] a, int sx, int dx, int k) {
       if (sx > dx) {
@@ -111,19 +153,19 @@ Trova l'*ultima occorrenza* (più a destra) di un elemento $k$ in un array ordin
       }
   }
   ```
-
-  *Idea*: quando troviamo $k$ in posizione $"cx"$, verifichiamo se è l'ultima occorrenza controllando che:
-  - $"cx" = "dx"$ (siamo al bordo destro), oppure
-  - $a["cx" + 1] != k$ (l'elemento successivo è diverso)
-
-  Se non è l'ultima occorrenza, continuiamo a cercare nella metà destra.
 ]
+
+*Idea*: simmetricamente alla variante sinistra, quando troviamo $k$ in posizione $"cx"$, verifichiamo se e l'ultima occorrenza controllando che:
+- $"cx" = "dx"$ (siamo al bordo destro del sotto-array), oppure
+- $a["cx" + 1] != k$ (l'elemento successivo e diverso da $k$).
+
+Se la condizione non e soddisfatta, si prosegue nella meta destra. La complessità resta $O(log n)$.
 
 ==== Conta Occorrenze
 
-Usando le due varianti possiamo contare il numero di occorrenze di $k$ in tempo $Theta(log n)$.
+Combinando le due varianti si puo contare il numero di occorrenze di $k$ in un array ordinato in tempo $Theta(log n)$.
 
-#example(title: "Conta Occorrenze")[
+#algorithm(title: "Conta Occorrenze")[
   ```
   int contaOccorrenze(int[] a, int n, int k) {
       int prima = ricercaBinariaSx(a, 0, n - 1, k);
@@ -134,282 +176,284 @@ Usando le due varianti possiamo contare il numero di occorrenze di $k$ in tempo 
       return ultima - prima + 1;
   }
   ```
-
-  *Complessità*: $Theta(log n)$
-
-  Eseguiamo al massimo due ricerche binarie, ciascuna con complessità $O(log n)$, quindi la complessità totale è $Theta(log n)$.
 ]
 
-#note(title: "Confronto con approccio lineare")[
-  Un approccio naive che scorre l'array contando le occorrenze richiede $Theta(n)$. L'uso delle varianti della ricerca binaria permette di ottenere $Theta(log n)$, un miglioramento significativo per array di grandi dimensioni.
+#note(title: "Complessita di contaOccorrenze")[
+  Si eseguono al massimo due ricerche binarie, ciascuna con complessità $O(log n)$: la complessità totale e quindi $Theta(log n)$. Un approccio lineare che scorre l'intero array richiederebbe $Theta(n)$, dunque le varianti della ricerca binaria offrono un miglioramento significativo per array di grandi dimensioni.
 ]
 
-=== Merge Sort
+== Merge Sort
 
-#example(title: "Merge Sort")[
+Il Merge Sort e un algoritmo di ordinamento basato sul paradigma Divide et Impera. L'idea e la seguente:
+
++ *Divide*: si divide l'array $A[p..r]$ in due meta $A[p..q]$ e $A[q+1..r]$, dove $q = floor((p + r) \/ 2)$.
++ *Impera*: si ordinano ricorsivamente le due meta.
++ *Combina*: si fondono (_merge_) le due meta ordinate in un unico array ordinato.
+
+=== Implementazione
+
+#algorithm(title: "Merge Sort")[
   ```
   mergeSort(int[] A, int p, int r){        // -- T(n)
-      if(p < r){                           // -- θ(1)
-          int q = (p + r) / 2;             // divide -- θ(1)
+      if(p < r){                           // -- Theta(1)
+          int q = (p + r) / 2;             // divide -- Theta(1)
           mergeSort(A, p, q);              // impera -- T(n/2)
           mergeSort(A, q + 1, r);          // impera -- T(n/2)
-          merge(A, p, q, r);               // combine -- θ(n)
+          merge(A, p, q, r);               // combina -- Theta(n)
       }
   }
   ```
-
-  La relazione di ricorrenza dell'algoritmo è definita nel seguente modo:
-  $ T(n) = cases(
-    theta(1) & n = 1,
-    2T(n/2) + theta(n) & n > 2
-  ) $
-
-  La complessità in tempo in ogni caso è $O(n log n)$
 ]
 
 #figure(
   image("../images/merge_sort.png", width: 30%),
 )
 
-#note[
-  La relazione di ricorrenza è la definizione matematica di un processo, descrive il numero di operazioni di un algoritmo ricorsivo in funzione del suo input. La complessità in tempo invece è la misurazione asintotica di tale relazione
+La procedura `merge` fonde due sotto-array ordinati $A[p..q]$ e $A[q+1..r]$ in un unico sotto-array ordinato $A[p..r]$, utilizzando due array ausiliari $L$ e $R$.
 
-  #figure(
-    image("../images/albero_ricorsione_merge_sort.png", width: 25%),
-  )
+#algorithm(title: "Procedura Merge")[
+  ```
+  merge(int[] A, int p, int q, int r){
+      int n1 = q - p + 1;
+      int n2 = r - q;
+      int[] L = new int[n1 + 1];
+      int[] R = new int[n2 + 1];
+
+      int i = 1;
+      while(i <= n1){
+          L[i] := A[p + i - 1];
+          i := i + 1;
+      }
+      int j = 1;
+      while(j <= n2){
+          R[j] := A[q + j];
+          j := j + 1;
+      }
+      L[n1 + 1] := +∞;
+      R[n2 + 1] := +∞;
+
+      i := 1;
+      j := 1;
+      int k = p;
+      while(k <= r){
+          if(L[i] <= R[j]){
+              A[k] := L[i];
+              i := i + 1;
+          } else {
+              A[k] := R[j];
+              j := j + 1;
+          }
+          k := k + 1;
+      }
+  }
+  ```
 ]
+
+#note(title: "Funzionamento di Merge")[
+  La procedura `merge` utilizza due *sentinelle* $+infinity$ alla fine degli array ausiliari $L$ e $R$: quando un array ausiliario e stato completamente percorso, la sentinella garantisce che il confronto selezioni sempre l'elemento dall'altro array, senza necessità di controlli aggiuntivi sugli indici. Ogni iterazione del ciclo `while` copia esattamente un elemento in $A$, per un totale di $n_1 + n_2 = r - p + 1$ iterazioni. La complessità di `merge` e dunque $Theta(n)$.
+]
+
+=== Relazione di ricorrenza e complessità
+
+La relazione di ricorrenza del Merge Sort e:
+$ T(n) = cases(
+  Theta(1) & "se" n = 1,
+  2T(n\/2) + Theta(n) & "se" n > 1
+) $
+
+Per comprendere intuitivamente la complessità, si puo analizzare l'*albero di ricorsione*: a ciascun livello $i$ dell'albero vi sono $2^i$ sotto-problemi, ciascuno di dimensione $n \/ 2^i$. Il costo al livello $i$ e $2^i dot c dot (n \/ 2^i) = c dot n = Theta(n)$. L'albero ha $log_2 n$ livelli, dunque il costo totale e $Theta(n log n)$.
+
+#figure(
+  image("../images/albero_ricorsione_merge_sort.png", width: 25%),
+)
 
 #figure(
   image("../images/chiamate_ricorsive_albero_ms.png", width: 30%),
 )
 
-```
-merge(int[] A, int p, int q, int r){
-    int n1 = q - p + 1;
-    int n2 = r - q;
-    int[] L = new int[n1 + 1];
-    int[] R = new int[n2 + 1];
-
-    int i = 1;
-    while(i <= n1){
-        L[i] := A[p + i - 1];
-        i := i + 1;
-    }
-    int j = 1;
-    while(j <= n2){
-        R[j] := A[q + j];
-        j := j + 1;
-    }
-    L[n1 + 1] := +∞;
-    R[n2 + 1] := +∞;
-
-    i := 1;
-    j := 1;
-    int k = p;
-    while(k <= r){
-        if(L[i] <= R[j]){
-            A[k] := L[i];
-            i := i + 1;
-        } else {
-            A[k] := R[j];
-            j := j + 1;
-        }
-        k := k + 1;
-    }
-}
-```
-
-#note[
-  La complessità di Merge è lineare
+#theorem(title: "Complessita del Merge Sort")[
+  La complessità in tempo del Merge Sort e $Theta(n log n)$ in *tutti i casi* (ottimo, medio, pessimo). La complessità in spazio e $O(n)$, dovuta agli array ausiliari utilizzati dalla procedura `merge`.
 ]
 
-#note[
-  In merge vengono utilizzati array di appoggio.
+#note(title: "Relazione di ricorrenza vs. complessità")[
+  La *relazione di ricorrenza* e la definizione matematica del costo di un algoritmo ricorsivo in funzione dell'input: descrive $T(n)$ in termini di $T$ applicata a sotto-problemi piùpiccoli. La *complessità* e il risultato della risoluzione di tale relazione, espressa in notazione asintotica.
 ]
 
-Per concludere la complessità in tempo del MergeSort è $theta(n log n)$ e la complessità in spazio è $O(n)$
+== Relazioni di ricorrenza
 
-=== Relazioni di ricorrenza
+Le relazioni di ricorrenza sono lo strumento matematico per descrivere la complessità $T(n)$ di algoritmi ricorsivi. Distinguiamo due forme principali.
 
-Le relazioni di ricorrenza servono a descrivere la complessità $T(n)$ di algoritmi ricorsivi.
+=== Relazioni bilanciate
 
-- *Relazioni bilanciate*:
-  $ T(n) = cases(
-    theta(1) & n <= n_0,
-    underbrace(a T(n/b), a in bb(N)^+ and b > 1\, b in bb(Q)) + underbrace(f(n), "forzante") & n > n_0
-  ) $
-
-- *Relazioni di ordine k*:
-  $ T(n) = cases(
-    theta(1) & n <= n_0,
-    alpha_1 T(n-1) + ... + alpha_k T(n-k) & n > n_0
-  ) $
-
-Il caso generale è:
+Una relazione di ricorrenza si dice *bilanciata* quando i sotto-problemi hanno tutti la stessa dimensione:
 $ T(n) = cases(
-  theta(1) & n <= n_0,
-  alpha_1 T(n_1) + ... + alpha_k T(n-k) + f(n) & n > n_0
+  Theta(1) & "se" n <= n_0,
+  underbrace(a, "sotto-problemi") dot T(n\/b) + underbrace(f(n), "forzante") & "se" n > n_0
+) $
+dove $a in bb(N)^+$ (numero di sotto-problemi), $b > 1, b in bb(Q)$ (fattore di riduzione), e $f(n)$ e il termine *forzante* che rappresenta il costo delle fasi di divisione e combinazione.
+
+La ricerca binaria ($a=1$, $b=2$, $f(n)=Theta(1)$) e il Merge Sort ($a=2$, $b=2$, $f(n)=Theta(n)$) sono esempi di relazioni bilanciate.
+
+=== Relazioni di ordine $k$
+
+Una relazione e di *ordine $k$* quando $T(n)$ dipende dai $k$ valori precedenti:
+$ T(n) = cases(
+  Theta(1) & "se" n <= n_0,
+  alpha_1 T(n-1) + alpha_2 T(n-2) + dots.c + alpha_k T(n-k) + f(n) & "se" n > n_0
 ) $
 
-#note[
-  Merge Sort e ricerca binaria sono relazioni bilanciate
+Queste relazioni si risolvono con il *metodo dell'equazione caratteristica*. L'idea e la seguente: per la parte omogenea (cioè con $f(n) = 0$), si cerca una soluzione della forma $T(n) = x^n$. Sostituendo nella ricorrenza si ottiene:
+$ x^n = alpha_1 x^(n-1) + alpha_2 x^(n-2) + dots.c + alpha_k x^(n-k) $
+Dividendo per $x^(n-k)$ si ricava l'*equazione caratteristica*:
+$ x^k - alpha_1 x^(k-1) - alpha_2 x^(k-2) - dots.c - alpha_k = 0 $
+Se le $k$ radici $x_1, x_2, ..., x_k$ sono distinte, la soluzione generale e:
+$ T(n) = c_1 x_1^n + c_2 x_2^n + dots.c + c_k x_k^n $
+dove le costanti $c_1, ..., c_k$ si determinano dalle condizioni iniziali. Dal punto di vista asintotico, il termine dominante e quello con la radice di modulo massimo.
+
+#example(title: "Fibonacci come relazione di ordine 2")[
+  La successione di Fibonacci soddisfa $T(n) = T(n-1) + T(n-2)$, con $alpha_1 = 1$ e $alpha_2 = 1$.
+
+  L'equazione caratteristica e:
+  $ x^2 - x - 1 = 0 $
+  Le radici sono:
+  $ phi = frac(1 + sqrt(5), 2) approx 1.618 #h(2em) hat(phi) = frac(1 - sqrt(5), 2) approx -0.618 $
+  La soluzione generale e $T(n) = c_1 phi^n + c_2 hat(phi)^n$. Poiché $|hat(phi)| < 1$, il termine $hat(phi)^n -> 0$ e il termine dominante e $phi^n$, da cui:
+  $ T(n) = Theta(phi^n) approx Theta(1.618^n) $
+  La complessità della successione di Fibonacci e dunque *esponenziale*.
 ]
 
-=== Risoluzione relazioni di equivalenza
+=== Metodi di risoluzione
 
-+ Metodo iterativo: si sviluppa la ricorrenza fino ai casi base
-+ Metodo di sostituzione: si ipotizza una soluzione e la si dimostra per induzione
-+ Albero di ricorsione: ausilio grafico che rappresenta i costi ai vari livelli della ricorsione
-+ Teorema principale per le relazioni di ricorrenza bilanciate
+Esistono quattro metodi principali per risolvere le relazioni di ricorrenza:
++ *Metodo iterativo*: si espande (srotola) la ricorrenza fino a raggiungere i casi base, poi si somma il lavoro a tutti i livelli.
++ *Metodo di sostituzione*: si ipotizza una soluzione e la si dimostra per induzione.
++ *Albero di ricorsione*: ausilio grafico che rappresenta i costi ai vari livelli della ricorsione; spesso usato per formulare un'ipotesi da verificare col metodo di sostituzione.
++ *Master Theorem*: formula chiusa applicabile alle relazioni bilanciate (vedi sezione successiva).
 
-=== Master Theorem
+#example(title: "Metodo iterativo: MergeSort")[
+  Consideriamo la ricorrenza del MergeSort: $T(n) = 2T(n\/2) + n$ (con $T(1) = Theta(1)$).
 
-Con
-$ T(n) = cases(
-  theta(1) & n <= n_0,
-  a T(n/b) + f(n) & n > n_0
-) $
+  Si *srotola* (unrolling) la ricorrenza sostituendo ripetutamente la definizione di $T$:
+  $ T(n) &= 2T(n\/2) + n \
+         &= 2[2T(n\/4) + n\/2] + n = 4T(n\/4) + 2n \
+         &= 4[2T(n\/8) + n\/4] + 2n = 8T(n\/8) + 3n \
+         &= dots.c \
+         &= 2^k T(n\/2^k) + k n $
 
-Assumiamo che $a >= 1$ e $b > 1$ e $f(n) > 0$, allora abbiamo che se:
+  Il processo termina quando il sotto-problema raggiunge il caso base, cioè quando $n\/2^k = 1$, ovvero $k = log_2 n$. Sostituendo:
+  $ T(n) = 2^(log_2 n) dot T(1) + n log_2 n = n dot Theta(1) + n log n = Theta(n log n) $
 
-+ $exists epsilon > 0 : f(n) = O(n^(log_b a - epsilon)) arrow.double T(n) = theta(n^(log_b a))$
+  Il risultato coincide con quello ottenuto tramite il Master Theorem.
+]
 
-+ $f(n) = theta(n^(log_b a)) arrow.double T(n) = theta(n^(log_b a) times log n)$
+== Master Theorem
 
-+ $exists epsilon > 0 : f(n) = Omega(n^(log_b a + epsilon)), exists c < 1 : a f(n/b) <= c f(n) arrow.double T(n) = theta(f(n))$
+Il Master Theorem fornisce una soluzione in forma chiusa per le relazioni di ricorrenza bilanciate.
 
-Il secondo caso possiamo enunciarlo più generalmente nel seguente modo:
-$ exists k >= 0 : f(n) = theta(n^(log_b a) times log^k n) arrow.double T(n) = theta(n^(log_b a) times log^(k+1) n) $
+#theorem(title: "Master Theorem")[
+  Sia data la relazione di ricorrenza:
+  $ T(n) = a T(n\/b) + f(n) $
+  con $a >= 1$, $b > 1$ e $f(n) > 0$ definitivamente. Sia $c_("crit") = log_b a$. Allora:
 
-==== Esempi di applicazione del Master Theorem
+  + *Caso 1* -- $f(n)$ cresce piùlentamente di $n^(c_("crit"))$:\
+    Se $exists epsilon > 0 : f(n) = O(n^(log_b a - epsilon))$, allora $T(n) = Theta(n^(log_b a))$.
 
-#example(title: "Caso 1: Ricerca binaria")[
-  $T(n) = T(n/2) + Theta(1)$
+  + *Caso 2* -- $f(n)$ cresce come $n^(c_("crit"))$ (a meno di fattori logaritmici):\
+    Se $f(n) = Theta(n^(log_b a))$, allora $T(n) = Theta(n^(log_b a) dot log n)$.
 
-  Parametri: $a = 1$, $b = 2$, $f(n) = Theta(1)$
+  + *Caso 3* -- $f(n)$ cresce piùvelocemente di $n^(c_("crit"))$:\
+    Se $exists epsilon > 0 : f(n) = Omega(n^(log_b a + epsilon))$ e inoltre $exists c < 1 : a dot f(n\/b) <= c dot f(n)$ (condizione di regolarità), allora $T(n) = Theta(f(n))$.
+]
 
-  Calcoliamo $n^(log_b a) = n^(log_2 1) = n^0 = 1$
+#note(title: "Caso 2 generalizzato")[
+  Il secondo caso ammette una formulazione piùgenerale:
+  $ exists k >= 0 : f(n) = Theta(n^(log_b a) dot log^k n) arrow.double T(n) = Theta(n^(log_b a) dot log^(k+1) n) $
+  Il caso standard corrisponde a $k = 0$.
+]
 
-  Confronto: $f(n) = Theta(1) = Theta(n^0)$
+#note(title: "Interpretazione intuitiva")[
+  Il Master Theorem confronta il lavoro svolto dalla forzante $f(n)$ con il costo intrinseco della ricorsione, misurato da $n^(log_b a)$:
+  - *Caso 1*: la ricorsione domina: il costo totale e determinato dal numero di foglie dell'albero di ricorsione.
+  - *Caso 2*: forzante e ricorsione contribuiscono in modo bilanciato: il costo e amplificato da un fattore $log n$ (uno per livello dell'albero).
+  - *Caso 3*: la forzante domina: il costo totale e determinato dal lavoro alla radice dell'albero.
+]
 
-  $arrow.double$ *Caso 2*: $f(n) = Theta(n^(log_b a))$
+=== Come applicare il Master Theorem
 
-  *Soluzione*: $T(n) = Theta(n^0 dot log n) = Theta(log n)$
+#note(title: "Procedimento")[
+  + Identificare i parametri $a$, $b$ e $f(n)$.
+  + Calcolare l'*esponente critico* $c_("crit") = log_b a$.
+  + Confrontare la crescita di $f(n)$ con $n^(c_("crit"))$:
+    - se $f(n)$ cresce *polinomialmente piùlentamente* di $n^(c_("crit"))$ $arrow.double$ Caso 1;
+    - se $f(n)$ cresce *allo stesso modo* (a meno di fattori logaritmici) $arrow.double$ Caso 2;
+    - se $f(n)$ cresce *polinomialmente piùvelocemente* di $n^(c_("crit"))$ $arrow.double$ Caso 3 (verificare la condizione di regolarità).
+]
+
+=== Esempi di applicazione
+
+#example(title: "Caso 2: Ricerca Binaria")[
+  $T(n) = T(n\/2) + Theta(1)$
+
+  Parametri: $a = 1$, $b = 2$, $f(n) = Theta(1)$.
+
+  Esponente critico: $c_("crit") = log_2 1 = 0$, dunque $n^(c_("crit")) = n^0 = 1$.
+
+  Confronto: $f(n) = Theta(1) = Theta(n^0) = Theta(n^(log_b a))$.
+
+  $arrow.double$ *Caso 2*: $T(n) = Theta(n^0 dot log n) = Theta(log n)$.
 ]
 
 #example(title: "Caso 2: Merge Sort")[
-  $T(n) = 2T(n/2) + Theta(n)$
+  $T(n) = 2T(n\/2) + Theta(n)$
 
-  Parametri: $a = 2$, $b = 2$, $f(n) = Theta(n)$
+  Parametri: $a = 2$, $b = 2$, $f(n) = Theta(n)$.
 
-  Calcoliamo $n^(log_b a) = n^(log_2 2) = n^1 = n$
+  Esponente critico: $c_("crit") = log_2 2 = 1$, dunque $n^(c_("crit")) = n$.
 
-  Confronto: $f(n) = Theta(n) = Theta(n^(log_b a))$
+  Confronto: $f(n) = Theta(n) = Theta(n^(log_b a))$.
 
-  $arrow.double$ *Caso 2*: $f(n) = Theta(n^(log_b a))$
-
-  *Soluzione*: $T(n) = Theta(n dot log n) = Theta(n log n)$
+  $arrow.double$ *Caso 2*: $T(n) = Theta(n dot log n)$.
 ]
 
 #example(title: "Caso 1: Algoritmo ipotetico")[
-  $T(n) = 4T(n/2) + n$
+  $T(n) = 4T(n\/2) + n$
 
-  Parametri: $a = 4$, $b = 2$, $f(n) = n$
+  Parametri: $a = 4$, $b = 2$, $f(n) = n$.
 
-  Calcoliamo $n^(log_b a) = n^(log_2 4) = n^2$
+  Esponente critico: $c_("crit") = log_2 4 = 2$, dunque $n^(c_("crit")) = n^2$.
 
-  Confronto: $f(n) = n = O(n^(2 - epsilon))$ con $epsilon = 1$
+  Confronto: $f(n) = n = O(n^(2 - epsilon))$ con $epsilon = 1$. La forzante cresce piùlentamente di $n^2$.
 
-  $arrow.double$ *Caso 1*: $f(n) = O(n^(log_b a - epsilon))$
+  $arrow.double$ *Caso 1*: $T(n) = Theta(n^2)$.
 
-  *Soluzione*: $T(n) = Theta(n^2)$
+  Interpretazione: il costo e dominato dalle $4^(log_2 n) = n^2$ foglie dell'albero di ricorsione.
 ]
 
 #example(title: "Caso 3: Algoritmo ipotetico")[
-  $T(n) = T(n/2) + n$
+  $T(n) = T(n\/2) + n$
 
-  Parametri: $a = 1$, $b = 2$, $f(n) = n$
+  Parametri: $a = 1$, $b = 2$, $f(n) = n$.
 
-  Calcoliamo $n^(log_b a) = n^(log_2 1) = n^0 = 1$
+  Esponente critico: $c_("crit") = log_2 1 = 0$, dunque $n^(c_("crit")) = 1$.
 
-  Confronto: $f(n) = n = Omega(n^(0 + epsilon))$ con $epsilon = 1$
+  Confronto: $f(n) = n = Omega(n^(0 + epsilon))$ con $epsilon = 1$. La forzante cresce piùvelocemente di $n^0 = 1$.
 
-  Verifica condizione regolarità: $a dot f(n/b) = 1 dot n/2 = n/2 <= c dot n$ per $c = 1/2$
+  Verifica condizione di regolarità: $a dot f(n\/b) = 1 dot n\/2 = n\/2 <= c dot n$ con $c = 1\/2 < 1$. #sym.checkmark
 
-  $arrow.double$ *Caso 3*: $f(n) = Omega(n^(log_b a + epsilon))$
+  $arrow.double$ *Caso 3*: $T(n) = Theta(n)$.
 
-  *Soluzione*: $T(n) = Theta(n)$
+  Interpretazione: il costo e dominato dal lavoro alla radice.
 ]
 
-#note(title: "Come scegliere il caso")[
-  + Calcola $n^(log_b a)$
-  + Confronta $f(n)$ con $n^(log_b a)$:
-    - $f(n)$ cresce *più lentamente* → Caso 1
-    - $f(n)$ cresce *allo stesso modo* → Caso 2
-    - $f(n)$ cresce *più velocemente* → Caso 3 (verifica regolarità!)
+#example(title: "Caso non coperto dal Master Theorem")[
+  $T(n) = 2T(n\/2) + n log n$
+
+  Parametri: $a = 2$, $b = 2$, $f(n) = n log n$.
+
+  Esponente critico: $c_("crit") = log_2 2 = 1$, dunque $n^(c_("crit")) = n$.
+
+  Si ha $f(n) = n log n$, che cresce piùdi $n$ ma *non polinomialmente* piùdi $n$ (non esiste $epsilon > 0$ tale che $n log n = Omega(n^(1+epsilon))$). Non si applica il Caso 3.
+
+  Tuttavia, applicando il *Caso 2 generalizzato* con $k = 1$: $f(n) = Theta(n dot log^1 n)$, si ottiene $T(n) = Theta(n dot log^2 n)$.
 ]
 
-=== Limiti inferiori alla difficoltà di un problema
-
-Dato un problema $pi$, la complessità al caso pessimo (in funzione della dimensione dell'input e asintotica) del miglior algoritmo che risolve $pi$ misura la difficoltà di $pi$. Un algoritmo che risolve $pi$ fornisce un limite superiore alla difficoltà di $pi$.
-
-#definition(title: "Limite inferiore per " + $pi$)[
-  $L(n) arrow.double forall$ algoritmo $A$ che risolve $pi$ con $T_A (n) in Omega(L(n))$ (al caso pessimo).
-  $L(n)$ è il numero minimo di operazioni che sono necessarie per risolvere $pi$ al caso peggiore
-]
-
-=== Criteri
-
-==== Dimensione dell'input
-
-Se la soluzione di un problema richiede l'esame di tutti i dati, allora la dimensione dell'input $n$ è un limite inferiore: $L(n) = Omega(n)$
-
-#example[
-  La ricerca max in un vettore non ordinato deve necessariamente analizzare tutti gli $n$ elementi. ($L(n) = n$) (limite inferiore n).
-]
-
-#note[
-  La scansione lineare è un algoritmo che ha complessità lineare (limite superiore n). Un algoritmo di questo tipo è ottimo, e il limite inferiore lineare è significativo.
-]
-
-==== Albero di decisione
-
-Criterio per stabilire un limite inferiore alla difficoltà di un problema $pi$ che si applica a problemi risolvibili attraverso una sequenza di "decisioni" (es. confronti tra valori) che via via riducono lo spazio delle soluzioni
-
-#note[
-  Il caso pessimo di un algoritmo è la lunghezza max di radice-foglia (altezza dell'albero).
-]
-
-#note[
-  Se $"SOL"(n)$ è il numero di possibili soluzioni di $pi$, allora $log("SOL"(n))$ è un limite inferiore per $pi$
-]
-
-Il percorso radice-foglia è una possibile esecuzione: il percorso più breve è il caso ottimo; il percorso più lungo è il caso pessimo.
-
-#note[
-  Un albero bilanciato è un albero che ha caso ottimo coincidente con il caso pessimo.
-]
-
-#definition(title: "altezza albero")[
-  Altezza di un albero è la lunghezza del più lungo percorso dalla radice ad una foglia.
-]
-
-#note[
-  In un albero binario l'altezza minima $>= log_2 (\#"foglie")$
-]
-
-#definition(title: "Albero bilanciato")[
-  albero bilanciato $arrow.l.r.double$ altezza $in theta(log n)$, $theta(n)$ nodi e foglie
-]
-
-#note[
-  $log("SOL"(n)) = log(\#"foglie")$ è l'altezza minore che ci possa essere, ovvero è la complessità al caso pessimo del miglior algoritmo. L'algoritmo migliore al caso pessimo è quello che minimizza l'altezza dell'albero di decisione $arrow.double$ è quello che ha altezza logaritmica rispetto al numero di foglie
-]
-
-==== Eventi Contabili
-
-Se la ripetizione di un certo evento è indispensabile per risolvere $pi$, allora (\# volte che si deve ripetere $times$ costo evento) è un limite inferiore.
-
-#figure(
-  image("../images/oss_da_sistemare.png", width: 100%),
-)

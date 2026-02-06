@@ -1,299 +1,359 @@
 #import "../template.typ": *
 
-=== Heap e Heapsort
+== Heap e HeapSort
 
 === Definizione di Heap
 
-#definition(title: "Heap")[
-  Un *heap* (binario) è un albero binario quasi completo che soddisfa la *proprietà di heap*:
-  - *Max-Heap*: per ogni nodo $i$ diverso dalla radice: $A["Parent"(i)] >= A[i]$
-  - *Min-Heap*: per ogni nodo $i$ diverso dalla radice: $A["Parent"(i)] <= A[i]$
-]
-
 #definition(title: "Albero binario quasi completo")[
-  Un albero binario è *quasi completo* se tutti i livelli sono completamente riempiti, eccetto eventualmente l'ultimo che è riempito da sinistra a destra.
+  Un albero binario è *quasi completo* (o _nearly complete_) se tutti i livelli sono completamente riempiti, eccetto eventualmente l'ultimo, che deve essere riempito da sinistra verso destra senza interruzioni.
 ]
 
-=== Proprietà
+#definition(title: "Heap binario")[
+  Un *heap binario* è un albero binario quasi completo che soddisfa la *proprietà di heap*:
+  - *Max-Heap*: per ogni nodo $i$ diverso dalla radice vale $A["Parent"(i)] >= A[i]$, ossia ogni nodo ha chiave non superiore a quella del padre.
+  - *Min-Heap*: per ogni nodo $i$ diverso dalla radice vale $A["Parent"(i)] <= A[i]$, ossia ogni nodo ha chiave non inferiore a quella del padre.
 
-- L'elemento massimo (in un max-heap) è sempre nella radice
-- L'altezza di un heap con $n$ elementi è $Theta(log n)$
-- Un heap con $n$ elementi ha al massimo $ceil(n / 2^(h+1))$ nodi a altezza $h$
-
-=== Realizzazione implicita come Array
-
-Un heap può essere rappresentato efficientemente come un array $A$ dove:
-- $A[1]$ è la radice
-- Per un nodo in posizione $i$:
-  - *Parent*: $floor(i / 2)$
-  - *Left child*: $2i$
-  - *Right child*: $2i + 1$
-
-```
-int parent(int i){ return i / 2; }
-int left(int i)  { return 2 * i; }
-int right(int i) { return 2 * i + 1; }
-```
-
-#note[
-  Questa rappresentazione è molto efficiente:
-  - Non servono puntatori (risparmio di spazio)
-  - Navigazione padre/figli in $O(1)$
-  - Cache-friendly (elementi consecutivi in memoria)
+  Nel seguito tratteremo esclusivamente il caso del max-heap; le considerazioni per il min-heap sono simmetriche.
 ]
 
-#example[
-  Array: $[16, 14, 10, 8, 7, 9, 3, 2, 4, 1]$
+Da queste definizioni seguono immediatamente alcune proprietà fondamentali.
 
-  Rappresenta un max-heap dove:
-  - Radice = 16
-  - Figli di 16: 14 (sinistro), 10 (destro)
-  - Figli di 14: 8, 7
-  - Figli di 10: 9, 3
-  - ...
+#theorem(title: "Proprietà strutturali di un max-heap")[
+  Sia $A[1 .. n]$ un max-heap con $n$ elementi. Allora:
+  + L'elemento massimo si trova nella radice: $A[1] >= A[i]$ per ogni $i in {1, dots, n}$.
+  + L'altezza dell'heap è $h = floor(log_2 n)$, dunque $h = Theta(log n)$.
+  + Il numero di nodi a un'altezza $h'$ (contata dalle foglie) è al massimo $ceil(n \/ 2^(h'+1))$.
+  + Le foglie occupano le posizioni $floor(n\/2)+1, floor(n\/2)+2, dots, n$.
+]
+
+#demonstration[
+  (1) Segue direttamente dalla proprietà di max-heap applicata ripetutamente lungo il cammino dalla radice a qualsiasi nodo.
+
+  (2) In un albero binario quasi completo con $n$ nodi, il livello $ell$ (con la radice al livello 0) contiene al massimo $2^ell$ nodi. Poiché tutti i livelli fino a $h-1$ sono pieni, si ha $n >= 2^h$, da cui $h <= log_2 n$. Inoltre $n < 2^(h+1)$, da cui $h > log_2 n - 1$. Pertanto $h = floor(log_2 n)$.
+
+  (3) Sia $h' in {0, 1, dots, h}$ un'altezza misurata dalle foglie. I nodi a altezza $h'$ si trovano al livello $h - h'$. Poiché l'heap ha al massimo $n$ nodi e il numero di nodi fino al livello $h - h' - 1$ vale $2^(h - h') - 1$, i nodi al livello $h - h'$ sono al massimo $ceil(n \/ 2^(h'+1))$.
+
+  (4) Un nodo in posizione $i$ ha figlio sinistro in posizione $2i$. Se $2i > n$, allora il nodo non ha figli ed è dunque una foglia. Questo accade per $i > floor(n\/2)$.
+]
+
+=== Rappresentazione implicita come array
+
+Un heap puo essere memorizzato in modo compatto in un array $A[1 .. n]$, senza bisogno di puntatori espliciti. La radice si trova in $A[1]$ e, per un nodo in posizione $i$:
+
+$ "Parent"(i) = floor(i / 2) , quad "Left"(i) = 2i , quad "Right"(i) = 2i + 1 $
+
+#algorithm(title: "Navigazione nell'heap")[
+  ```
+  int parent(int i){ return i / 2; }
+  int left(int i)  { return 2 * i; }
+  int right(int i) { return 2 * i + 1; }
+  ```
+]
+
+#note(title: "Efficienza della rappresentazione")[
+  Questa rappresentazione implicita presenta diversi vantaggi:
+  - *Nessun puntatore*: la relazione padre-figlio e codificata dall'aritmetica sugli indici, con notevole risparmio di spazio.
+  - *Navigazione in* $O(1)$: le operazioni `parent`, `left` e `right` sono semplici divisioni e moltiplicazioni intere.
+  - *Localita in memoria*: gli elementi sono memorizzati in posizioni contigue, il che favorisce le prestazioni della cache.
+]
+
+#example(title: "Rappresentazione array di un max-heap")[
+  Consideriamo l'array $A = [16, 14, 10, 8, 7, 9, 3, 2, 4, 1]$ con $n = 10$.
+
+  Esso corrisponde al seguente max-heap:
+  - Radice: $A[1] = 16$
+  - Figli di $16$: $A[2] = 14$ (sinistro), $A[3] = 10$ (destro)
+  - Figli di $14$: $A[4] = 8$ (sinistro), $A[5] = 7$ (destro)
+  - Figli di $10$: $A[6] = 9$ (sinistro), $A[7] = 3$ (destro)
+  - Figli di $8$: $A[8] = 2$ (sinistro), $A[9] = 4$ (destro)
+  - Figlio di $7$: $A[10] = 1$ (sinistro; il destro non esiste)
+
+  Si puo verificare che la proprieta di max-heap vale per ogni nodo: $A["Parent"(i)] >= A[i]$ per $i = 2, dots, 10$.
 ]
 
 === Max-Heapify
 
-La procedura `Max-Heapify` ripristina la proprietà di max-heap su un sottoalbero, assumendo che i sottoalberi sinistro e destro siano già max-heap.
+La procedura `Max-Heapify` e il mattone fondamentale su cui si costruiscono tutte le operazioni sugli heap. Essa ripristina la proprieta di max-heap nel sottoalbero radicato in posizione $i$, sotto l'ipotesi che i sottoalberi sinistro e destro di $i$ siano gia max-heap validi. L'unica possibile violazione si trova dunque nel nodo $i$ stesso.
 
-```
-maxHeapify(int[] A, int i, int heapsize){
-    int l = left(i);
-    int r = right(i);
-    int largest = i;
+L'idea e semplice: si confronta $A[i]$ con i suoi due figli; se uno dei figli e maggiore, lo si scambia con $A[i]$ e si prosegue ricorsivamente verso il basso (_sift-down_).
 
-    // Trova il massimo tra A[i], A[l], A[r]
-    if((l <= heapsize) && (A[l] > A[i])){
-        largest := l;
-    }
+#algorithm(title: "Max-Heapify")[
+  ```
+  maxHeapify(int[] A, int i, int heapsize){
+      int l = left(i);
+      int r = right(i);
+      int largest = i;
 
-    if((r <= heapsize) && (A[r] > A[largest])){
-        largest := r;
-    }
+      // Trova il massimo tra A[i], A[l], A[r]
+      if((l <= heapsize) && (A[l] > A[i])){
+          largest := l;
+      }
 
-    // Se il massimo non è il nodo corrente, scambia e ricorri
-    if(largest != i){
-        int temp = A[i];
-        A[i] := A[largest];
-        A[largest] := temp;
-        maxHeapify(A, largest, heapsize);
-    }
-}
-```
+      if((r <= heapsize) && (A[r] > A[largest])){
+          largest := r;
+      }
 
-=== Correttezza
-
-#demonstration[
-  Per induzione sull'altezza del nodo $i$:
-  - *Caso base* (altezza 0, foglia): non c'è nulla da fare
-  - *Passo induttivo*: se $A[i]$ viola la proprietà, lo scambiamo con il figlio maggiore. Dopo lo scambio, il sottoalbero radicato in quel figlio potrebbe violare la proprietà, ma ha altezza minore.
+      // Se il massimo non e il nodo corrente, scambia e ricorri
+      if(largest != i){
+          int temp = A[i];
+          A[i] := A[largest];
+          A[largest] := temp;
+          maxHeapify(A, largest, heapsize);
+      }
+  }
+  ```
 ]
 
-=== Complessità
+==== Correttezza di Max-Heapify
 
-$ T(n) = O(h) = O(log n) $
+#theorem(title: "Correttezza di Max-Heapify")[
+  Se i sottoalberi radicati in $"Left"(i)$ e $"Right"(i)$ sono max-heap, allora dopo la chiamata `Max-Heapify(A, i, heapsize)` il sottoalbero radicato in $i$ e un max-heap.
+]
 
-dove $h$ è l'altezza del nodo $i$. Nel caso pessimo, l'elemento "scende" fino alle foglie.
+#demonstration[
+  Procediamo per induzione sull'altezza $h$ del nodo $i$ nell'heap.
+
+  *Caso base* ($h = 0$): il nodo $i$ e una foglia, non ha figli, e dunque e banalmente radice di un max-heap. La procedura non esegue alcuno scambio.
+
+  *Passo induttivo* ($h > 0$): supponiamo che `Max-Heapify` funzioni correttamente per ogni nodo di altezza minore di $h$. La procedura calcola l'indice `largest` del massimo tra $A[i]$, $A[l]$ e $A[r]$.
+  - Se $"largest" = i$, allora $A[i] >= A[l]$ e $A[i] >= A[r]$. Poiche i sottoalberi di $l$ e $r$ sono max-heap per ipotesi, il sottoalbero radicato in $i$ e gia un max-heap.
+  - Se $"largest" != i$, si scambia $A[i]$ con $A["largest"]$. Dopo lo scambio, il nodo $i$ soddisfa la proprieta di max-heap rispetto ai suoi figli. Il sottoalbero radicato in `largest` potrebbe pero violare la proprieta, ma ha altezza al piu $h - 1$. Per ipotesi induttiva, la chiamata ricorsiva `Max-Heapify(A, largest, heapsize)` ripristina la proprieta.
+]
+
+==== Complessita di Max-Heapify
+
+#theorem(title: "Complessita di Max-Heapify")[
+  La procedura `Max-Heapify` su un nodo di altezza $h$ ha complessita $O(h)$. Per un heap di $n$ elementi, nel caso pessimo si ha:
+  $ T(n) = O(log n) $
+]
+
+#demonstration[
+  A ogni chiamata ricorsiva, la procedura scende di un livello nell'heap. Il numero massimo di livelli che puo attraversare e l'altezza $h$ del nodo di partenza. Poiche ogni livello richiede lavoro $O(1)$ (un confronto e un eventuale scambio), il costo totale e $O(h)$.
+
+  L'altezza massima di un nodo nell'heap e $floor(log_2 n)$, da cui $T(n) = O(log n)$.
+]
 
 #example(title: "Max-Heapify passo-passo")[
-  Consideriamo l'array $A = [16, 4, 10, 14, 7, 9, 3, 2, 8, 1]$ e chiamiamo `Max-Heapify(A, 2)` (indice del nodo con valore 4).
+  Consideriamo l'array $A = [16, 4, 10, 14, 7, 9, 3, 2, 8, 1]$ con $"heapsize" = 10$ e invochiamo `Max-Heapify(A, 2, 10)`.
 
-  I sottoalberi sinistro (radice 14) e destro (radice 7) sono già max-heap, ma il nodo 4 viola la proprietà.
+  Il nodo in posizione 2 ha valore 4. I sottoalberi sinistro (radice $A[4] = 14$) e destro (radice $A[5] = 7$) sono gia max-heap, ma $A[2] = 4 < A[4] = 14$, quindi la proprieta di max-heap e violata in posizione 2.
 
-  *Passo 1: Confronto iniziale*
+  *Passo 1: confronto in posizione 2*
   - Nodo corrente: $A[2] = 4$
   - Figlio sinistro: $A[4] = 14$
   - Figlio destro: $A[5] = 7$
-  - Il massimo tra $\{4, 14, 7\}$ è $14$ (in posizione 4)
-  - Poiché $14 > 4$, scambiamo $A[2]$ con $A[4]$
+  - $"largest" = 4$ (poiche $14 > 4$ e $14 > 7$)
+  - Scambio $A[2] arrow.l.r A[4]$
 
-  Array dopo passo 1: $[16, bold(14), 10, bold(4), 7, 9, 3, 2, 8, 1]$
+  Array dopo il passo 1: $[16, bold(14), 10, bold(4), 7, 9, 3, 2, 8, 1]$
 
-  *Passo 2: Ricorsione su posizione 4*
+  *Passo 2: chiamata ricorsiva in posizione 4*
   - Nodo corrente: $A[4] = 4$
   - Figlio sinistro: $A[8] = 2$
   - Figlio destro: $A[9] = 8$
-  - Il massimo tra $\{4, 2, 8\}$ è $8$ (in posizione 9)
-  - Poiché $8 > 4$, scambiamo $A[4]$ con $A[9]$
+  - $"largest" = 9$ (poiche $8 > 4$ e $8 > 2$)
+  - Scambio $A[4] arrow.l.r A[9]$
 
-  Array dopo passo 2: $[16, 14, 10, bold(8), 7, 9, 3, 2, bold(4), 1]$
+  Array dopo il passo 2: $[16, 14, 10, bold(8), 7, 9, 3, 2, bold(4), 1]$
 
-  *Passo 3: Ricorsione su posizione 9*
+  *Passo 3: chiamata ricorsiva in posizione 9*
   - Nodo corrente: $A[9] = 4$
-  - Figlio sinistro: $A[18]$ non esiste (fuori dall'heap)
-  - Figlio destro: $A[19]$ non esiste (fuori dall'heap)
-  - Il nodo è una foglia: terminazione
+  - $"Left"(9) = 18 > "heapsize"$: nessun figlio
+  - Il nodo e una foglia: la procedura termina
 
-  *Risultato finale*: $[16, 14, 10, 8, 7, 9, 3, 2, 4, 1]$
+  *Risultato finale*: $A = [16, 14, 10, 8, 7, 9, 3, 2, 4, 1]$
 
-  Il valore 4 è "sceso" dalla posizione 2 alla posizione 9, attraverso 2 scambi.
+  Il valore 4 e "sceso" dalla posizione 2 alla posizione 9, attraversando 2 scambi (altezza percorsa $= 2$).
 ]
 
 === Build-Max-Heap
 
-Costruisce un max-heap a partire da un array non ordinato.
+Data un array arbitrario $A[1 .. n]$, la procedura `Build-Max-Heap` lo trasforma in un max-heap. L'idea e applicare `Max-Heapify` a tutti i nodi interni, procedendo dal basso verso l'alto (dalle foglie verso la radice). Poiche le foglie sono gia heap banali (sottalberi di un solo nodo), si parte dalla posizione $floor(n\/2)$ e si scende fino a 1.
 
-```
-buildMaxHeap(int[] A, int n){
-    int heapsize = n;
-    int i = n / 2;
-    while(i >= 1){
-        maxHeapify(A, i, heapsize);
-        i := i - 1;
-    }
-}
-```
-
-#note[
-  Partiamo da $floor(n/2)$ perché i nodi da $floor(n/2)+1$ a $n$ sono foglie e sono già heap (banalmente).
+#algorithm(title: "Build-Max-Heap")[
+  ```
+  buildMaxHeap(int[] A, int n){
+      int heapsize = n;
+      int i = n / 2;
+      while(i >= 1){
+          maxHeapify(A, i, heapsize);
+          i := i - 1;
+      }
+  }
+  ```
 ]
 
-=== Correttezza
+#note[
+  Si parte da $i = floor(n\/2)$ e non da $i = n$ perche i nodi nelle posizioni $floor(n\/2)+1, dots, n$ sono foglie (non hanno figli) e sono pertanto max-heap banali di un singolo elemento. Iniziare da essi sarebbe corretto ma inutile.
+]
 
-#definition(title: "Invariante di ciclo")[
-  All'inizio di ogni iterazione del ciclo `for`, ogni nodo $i+1, i+2, ..., n$ è radice di un max-heap.
+==== Correttezza di Build-Max-Heap
+
+#definition(title: "Invariante di ciclo per Build-Max-Heap")[
+  All'inizio di ogni iterazione del ciclo `while`, ogni nodo $j in {i+1, i+2, dots, n}$ e radice di un max-heap.
 ]
 
 #demonstration[
-  - *Inizializzazione*: Prima della prima iterazione ($i = floor(n/2)$), i nodi $floor(n/2)+1, ..., n$ sono foglie, quindi banalmente radici di max-heap.
-  - *Mantenimento*: `Max-Heapify(A, i)` rende $i$ radice di un max-heap (i figli sono già radici di max-heap per l'invariante)
-  - *Terminazione*: Quando $i = 0$, ogni nodo $1, 2, ..., n$ è radice di un max-heap. In particolare il nodo 1 (radice).
+  *Inizializzazione*: prima della prima iterazione si ha $i = floor(n\/2)$. I nodi $floor(n\/2)+1, dots, n$ sono foglie, dunque radici di max-heap banali. L'invariante vale.
+
+  *Mantenimento*: all'iterazione corrente, l'invariante garantisce che i figli del nodo $i$ (che si trovano nelle posizioni $2i$ e $2i+1$, entrambe $> i$) sono radici di max-heap. Questo e esattamente il prerequisito di `Max-Heapify(A, i, heapsize)`, che rende il sottoalbero radicato in $i$ un max-heap. Dopo il decremento $i := i - 1$, l'invariante si estende al nodo $i+1$ appena trattato.
+
+  *Terminazione*: il ciclo termina quando $i = 0$. A quel punto l'invariante afferma che ogni nodo $j in {1, 2, dots, n}$ e radice di un max-heap. In particolare, il nodo 1 (la radice dell'intero albero) e radice di un max-heap, il che significa che l'intero array e un max-heap.
+]
+
+==== Complessita di Build-Max-Heap
+
+===== Analisi ingenua
+
+Si effettuano $O(n)$ chiamate a `Max-Heapify`, ciascuna di costo $O(log n)$. Questo porta a un limite superiore di $O(n log n)$, che e tuttavia non stretto.
+
+===== Analisi stretta
+
+#theorem(title: "Complessita di Build-Max-Heap")[
+  La procedura `Build-Max-Heap` ha complessita $Theta(n)$.
+]
+
+#demonstration[
+  L'altezza dell'heap e $h = floor(log_2 n)$. Il costo di `Max-Heapify` su un nodo a altezza $h'$ (misurata dalle foglie) e $O(h')$.
+
+  Per la proprieta (3) degli heap, a altezza $h'$ vi sono al massimo $ceil(n \/ 2^(h'+1))$ nodi. Sommando su tutte le altezze:
+
+  $ T(n) = sum_(h'=0)^(floor(log_2 n)) ceil(n / 2^(h'+1)) dot O(h') = O(n sum_(h'=0)^(floor(log_2 n)) h' / 2^(h')) $
+
+  La serie $sum_(h'=0)^(infinity) h' / 2^(h')$ converge e vale esattamente 2, essendo derivata della serie geometrica. Pertanto:
+
+  $ T(n) = O(n dot 2) = O(n) $
+
+  Il limite inferiore $Omega(n)$ segue banalmente dal fatto che ogni elemento dell'array deve essere esaminato almeno una volta. Dunque $T(n) = Theta(n)$.
+]
+
+#note(title: "Intuizione della complessita lineare")[
+  Il risultato $Theta(n)$ puo sembrare sorprendente, poiche si eseguono $O(n)$ chiamate a `Max-Heapify`, ciascuna potenzialmente $O(log n)$. Il punto chiave e che la _maggior parte_ dei nodi ha altezza piccola: circa $n\/2$ nodi sono foglie (altezza 0), circa $n\/4$ hanno altezza 1, e cosi via. Solo un nodo (la radice) ha altezza $floor(log n)$. Il lavoro effettivo e quindi dominato dai nodi bassi.
 ]
 
 #example(title: "Build-Max-Heap passo-passo")[
   Costruiamo un max-heap dall'array $A = [7, 4, 3, 8, 9, 6]$ con $n = 6$.
 
-  Calcoliamo $floor(n\/2) = floor(6\/2) = 3$, quindi partiamo da $i = 3$ e andiamo fino a $i = 1$.
+  Calcoliamo $floor(n\/2) = 3$: partiamo da $i = 3$ e procediamo fino a $i = 1$.
 
   *Stato iniziale*:
   #align(center)[
-    Array: $[7, 4, 3, 8, 9, 6]$ (indici 1-6)
+    Array: $[7, 4, 3, 8, 9, 6]$ (indici $1, dots, 6$)
   ]
 
-  *Iterazione 1: Max-Heapify(A, 3)*
+  *Iterazione $i = 3$: Max-Heapify(A, 3, 6)*
   - Nodo: $A[3] = 3$
-  - Figlio sinistro: $A[6] = 6$
-  - Figlio destro: non esiste
-  - Massimo: $6 > 3$, scambio $A[3]$ con $A[6]$
+  - Figlio sinistro: $A[6] = 6$, figlio destro: non esiste
+  - $"largest" = 6$ (poiche $6 > 3$), scambio $A[3] arrow.l.r A[6]$
 
-  Array dopo i=3: $[7, 4, bold(6), 8, 9, bold(3)]$
+  Array: $[7, 4, bold(6), 8, 9, bold(3)]$
 
-  *Iterazione 2: Max-Heapify(A, 2)*
+  *Iterazione $i = 2$: Max-Heapify(A, 2, 6)*
   - Nodo: $A[2] = 4$
-  - Figlio sinistro: $A[4] = 8$
-  - Figlio destro: $A[5] = 9$
-  - Massimo: $9 > 4$, scambio $A[2]$ con $A[5]$
-  - Ricorsione su posizione 5: è una foglia, termina
+  - Figlio sinistro: $A[4] = 8$, figlio destro: $A[5] = 9$
+  - $"largest" = 5$ (poiche $9 > 4$ e $9 > 8$), scambio $A[2] arrow.l.r A[5]$
+  - Chiamata ricorsiva su posizione 5: e una foglia, termina
 
-  Array dopo i=2: $[7, bold(9), 6, 8, bold(4), 3]$
+  Array: $[7, bold(9), 6, 8, bold(4), 3]$
 
-  *Iterazione 3: Max-Heapify(A, 1)*
+  *Iterazione $i = 1$: Max-Heapify(A, 1, 6)*
   - Nodo: $A[1] = 7$
-  - Figlio sinistro: $A[2] = 9$
-  - Figlio destro: $A[3] = 6$
-  - Massimo: $9 > 7$, scambio $A[1]$ con $A[2]$
+  - Figlio sinistro: $A[2] = 9$, figlio destro: $A[3] = 6$
+  - $"largest" = 2$ (poiche $9 > 7$ e $9 > 6$), scambio $A[1] arrow.l.r A[2]$
 
   Array intermedio: $[bold(9), bold(7), 6, 8, 4, 3]$
 
-  - Ricorsione su posizione 2:
+  - Chiamata ricorsiva su posizione 2:
     - Nodo: $A[2] = 7$
-    - Figlio sinistro: $A[4] = 8$
-    - Figlio destro: $A[5] = 4$
-    - Massimo: $8 > 7$, scambio $A[2]$ con $A[4]$
+    - Figlio sinistro: $A[4] = 8$, figlio destro: $A[5] = 4$
+    - $"largest" = 4$ (poiche $8 > 7$), scambio $A[2] arrow.l.r A[4]$
 
-  Array dopo i=1: $[9, bold(8), 6, bold(7), 4, 3]$
+  Array: $[9, bold(8), 6, bold(7), 4, 3]$
 
-  - Ricorsione su posizione 4: è una foglia, termina
+  - Chiamata ricorsiva su posizione 4: figli $A[8]$ e $A[9]$ non esistono, termina
 
-  *Risultato finale*: $[9, 8, 6, 7, 4, 3]$
+  *Risultato finale*: $A = [9, 8, 6, 7, 4, 3]$ -- un max-heap valido.
 
   #align(center)[
     #table(
       columns: 4,
       align: center,
-      [*Iterazione*], [*i*], [*Operazione*], [*Array*],
+      [*Iterazione*], [*$i$*], [*Operazione*], [*Array risultante*],
       [Iniziale], [-], [-], [$[7, 4, 3, 8, 9, 6]$],
-      [1], [3], [scambio 3 $arrow.l.r$ 6], [$[7, 4, 6, 8, 9, 3]$],
-      [2], [2], [scambio 4 $arrow.l.r$ 9], [$[7, 9, 6, 8, 4, 3]$],
-      [3], [1], [scambio 7 $arrow.l.r$ 9, poi 7 $arrow.l.r$ 8], [$[9, 8, 6, 7, 4, 3]$],
+      [1], [3], [scambio $3 arrow.l.r 6$], [$[7, 4, 6, 8, 9, 3]$],
+      [2], [2], [scambio $4 arrow.l.r 9$], [$[7, 9, 6, 8, 4, 3]$],
+      [3], [1], [scambio $7 arrow.l.r 9$, poi $7 arrow.l.r 8$], [$[9, 8, 6, 7, 4, 3]$],
     )
   ]
 ]
 
-=== Complessità
+=== HeapSort
 
-==== Analisi naive
+L'algoritmo HeapSort sfrutta la struttura del max-heap per ordinare un array in loco.
 
-$O(n)$ chiamate a `Max-Heapify`, ognuna costa $O(log n)$, quindi $O(n log n)$.
+==== Idea dell'algoritmo
 
-==== Analisi più stretta
++ Si costruisce un max-heap dall'array con `Build-Max-Heap`. A questo punto il massimo e in $A[1]$.
++ Si scambia $A[1]$ (il massimo) con l'ultimo elemento dell'heap $A["heapsize"]$.
++ Si riduce `heapsize` di 1: l'elemento appena spostato in fondo si trova nella sua posizione finale.
++ Si invoca `Max-Heapify(A, 1, heapsize)` per ripristinare la proprieta di max-heap sulla parte rimanente.
++ Si ripetono i passi 2--4 finche `heapsize` vale 1.
 
-#theorem(title: "Complessità di Build-Max-Heap")[
-  `Build-Max-Heap` ha complessità $Theta(n)$.
+#algorithm(title: "HeapSort")[
+  ```
+  heapsort(int[] A, int n){
+      buildMaxHeap(A, n);
+      int heapsize = n;
+      int i = n;
+      while(i >= 2){
+          // swap(A[1], A[i]) - metti il massimo in fondo
+          int temp = A[1];
+          A[1] := A[i];
+          A[i] := temp;
+
+          heapsize := heapsize - 1;
+          maxHeapify(A, 1, heapsize);
+          i := i - 1;
+      }
+  }
+  ```
+]
+
+==== Correttezza di HeapSort
+
+#definition(title: "Invariante di ciclo per HeapSort")[
+  All'inizio di ogni iterazione del ciclo `while` con indice $i$:
+  + $A[1 .. i]$ e un max-heap contenente gli $i$ elementi piu piccoli di $A[1 .. n]$.
+  + $A[i+1 .. n]$ contiene gli $n - i$ elementi piu grandi di $A[1 .. n]$, in ordine crescente.
 ]
 
 #demonstration[
-  Un heap di $n$ elementi ha altezza $h = floor(log n)$.
+  *Inizializzazione*: prima della prima iterazione, $i = n$. L'array $A[1 .. n]$ e un max-heap (appena costruito da `Build-Max-Heap`) e $A[n+1 .. n]$ e vuoto. L'invariante vale banalmente.
 
-  A ogni altezza $i$, ci sono al massimo $ceil(n / 2^(i+1))$ nodi.
+  *Mantenimento*: all'inizio dell'iterazione con indice $i$, $A[1]$ contiene il massimo di $A[1 .. i]$ (proprieta del max-heap). Scambiandolo con $A[i]$, l'elemento piu grande finisce in posizione $i$. Ora $A[i .. n]$ contiene gli $n - i + 1$ elementi piu grandi in ordine crescente. Dopo il decremento di `heapsize` e la chiamata a `Max-Heapify(A, 1, heapsize)`, il sotto-array $A[1 .. i-1]$ e nuovamente un max-heap. L'invariante vale con $i - 1$.
 
-  Il costo di `Max-Heapify` su un nodo a altezza $i$ è $O(i)$.
-
-  Costo totale:
-  $ sum_(i=0)^(floor(log n)) ceil(n / 2^(i+1)) dot O(i) = O(n sum_(i=0)^(floor(log n)) i / 2^i) $
-
-  Usando $sum_(i=0)^infinity i / 2^i = 2$ (serie convergente):
-  $ O(n dot 2) = O(n) $
+  *Terminazione*: quando $i = 1$, l'invariante afferma che $A[2 .. n]$ contiene gli $n - 1$ elementi piu grandi in ordine crescente, e $A[1]$ e il minimo. L'array e ordinato.
 ]
 
-=== Heapsort
+==== Complessita di HeapSort
 
-L'algoritmo Heapsort sfrutta la struttura heap per ordinare un array.
-
-```
-heapsort(int[] A, int n){
-    buildMaxHeap(A, n);
-    int heapsize = n;
-    int i = n;
-    while(i >= 2){
-        // swap(A[1], A[i]) - metti il max in fondo
-        int temp = A[1];
-        A[1] := A[i];
-        A[i] := temp;
-
-        heapsize := heapsize - 1;
-        maxHeapify(A, 1, heapsize);  // ripristina heap
-        i := i - 1;
-    }
-}
-```
-
-=== Idea
-
-+ Costruisci un max-heap dall'array
-+ Il massimo è in $A[1]$: scambialo con l'ultimo elemento
-+ Riduci la dimensione dell'heap di 1
-+ Ripristina la proprietà di max-heap sulla radice
-+ Ripeti finché l'heap ha un solo elemento
-
-=== Correttezza
-
-#definition(title: "Invariante di ciclo")[
-  All'inizio di ogni iterazione:
-  - $A[1..i]$ è un max-heap contenente gli $i$ elementi più piccoli
-  - $A[i+1..n]$ contiene gli $n-i$ elementi più grandi, ordinati
+#theorem(title: "Complessita di HeapSort")[
+  HeapSort ha complessita $Theta(n log n)$ nel caso pessimo, ottimo e medio.
 ]
 
-=== Complessità
+#demonstration[
+  $ T(n) = underbrace(Theta(n), "Build-Max-Heap") + underbrace((n-1) dot O(log n), "ciclo principale") = O(n log n) $
 
-$ T(n) = underbrace(O(n), "Build-Max-Heap") + underbrace((n-1) dot O(log n), "ciclo for") = O(n log n) $
+  La chiamata a `Build-Max-Heap` costa $Theta(n)$. Il ciclo esegue $n - 1$ iterazioni, ciascuna con una chiamata a `Max-Heapify` sulla radice di un heap di dimensione decrescente, per un costo di $O(log n)$ per iterazione. Questo stabilisce il limite superiore $O(n log n)$.
 
-#note[
-  Heapsort:
-  - Ha complessità $O(n log n)$ in *tutti* i casi
-  - È *in-place* (non richiede memoria aggiuntiva)
-  - Non è stabile (può cambiare l'ordine relativo di elementi uguali)
+  Per il limite inferiore, si osserva che qualsiasi algoritmo di ordinamento basato su confronti richiede $Omega(n log n)$ confronti nel caso pessimo (limite inferiore informazionale). Pertanto $T(n) = Theta(n log n)$.
+]
+
+#note(title: "Caratteristiche di HeapSort")[
+  - *Complessita*: $Theta(n log n)$ nel caso pessimo, ottimo e medio. A differenza di QuickSort, non ha un caso pessimo $O(n^2)$.
+  - *In-place*: utilizza solo una quantita costante di memoria aggiuntiva (nessun array ausiliario).
+  - *Non stabile*: lo scambio tra radice e ultimo elemento puo alterare l'ordine relativo di elementi con chiave uguale.
+  - Nella pratica, QuickSort e spesso piu veloce di HeapSort a causa di una migliore localita di cache, nonostante il caso pessimo peggiore.
 ]
 
 #example(title: "HeapSort passo-passo")[
@@ -301,12 +361,12 @@ $ T(n) = underbrace(O(n), "Build-Max-Heap") + underbrace((n-1) dot O(log n), "ci
 
   *Fase 1: Build-Max-Heap*
 
-  Come visto nell'esempio precedente, dopo `Build-Max-Heap` otteniamo:
+  Come mostrato nell'esempio precedente, dopo `Build-Max-Heap` si ottiene:
   #align(center)[
     $A = [9, 8, 6, 7, 4, 3]$ con $"heapsize" = 6$
   ]
 
-  *Fase 2: Estrazione iterativa del massimo*
+  *Fase 2: estrazione iterativa del massimo*
 
   #align(center)[
     #table(
@@ -321,139 +381,195 @@ $ T(n) = underbrace(O(n), "Build-Max-Heap") + underbrace((n-1) dot O(log n), "ci
     )
   ]
 
-  La barra verticale "|" separa la parte heap (sinistra) dalla parte ordinata (destra).
+  La barra verticale "$|$" separa la parte heap (sinistra) dalla parte gia ordinata (destra).
 
-  *Dettaglio iterazione 1*:
-  - Scambio $A[1]=9$ con $A[6]=3$: array $= [3, 8, 6, 7, 4, 9]$
-  - Riduco heapsize a 5 (il 9 è "fuori" dall'heap, nella sua posizione finale)
+  *Dettaglio iterazione 1* ($i = 6$):
+  - Scambio $A[1] = 9$ con $A[6] = 3$: array $= [3, 8, 6, 7, 4, 9]$
+  - Riduco `heapsize` a 5 (il 9 e nella sua posizione finale)
   - `Max-Heapify(A, 1, 5)`:
-    - $A[1]=3$, figli: $A[2]=8$, $A[3]=6$
-    - Massimo: 8, scambio $A[1]$ con $A[2]$: $[8, 3, 6, 7, 4, 9]$
-    - Ricorsione su posizione 2: $A[2]=3$, figli: $A[4]=7$, $A[5]=4$
-    - Massimo: 7, scambio $A[2]$ con $A[4]$: $[8, 7, 6, 3, 4, 9]$
+    - $A[1] = 3$, figli: $A[2] = 8$, $A[3] = 6$. Massimo: 8, scambio $A[1] arrow.l.r A[2]$
+    - Risultato intermedio: $[8, 3, 6, 7, 4, 9]$
+    - Ricorsione su posizione 2: $A[2] = 3$, figli: $A[4] = 7$, $A[5] = 4$. Massimo: 7, scambio $A[2] arrow.l.r A[4]$
+    - Risultato: $[8, 7, 6, 3, 4, 9]$
 
-  *Dettaglio iterazione 2*:
-  - Scambio $A[1]=8$ con $A[5]=4$: array $= [4, 7, 6, 3, 8, 9]$
-  - Riduco heapsize a 4
+  *Dettaglio iterazione 2* ($i = 5$):
+  - Scambio $A[1] = 8$ con $A[5] = 4$: array $= [4, 7, 6, 3, 8, 9]$
+  - Riduco `heapsize` a 4
   - `Max-Heapify(A, 1, 4)`:
-    - $A[1]=4$, figli: $A[2]=7$, $A[3]=6$
-    - Massimo: 7, scambio $A[1]$ con $A[2]$: $[7, 4, 6, 3, 8, 9]$
-    - Ricorsione su posizione 2: $A[2]=4$, figli: $A[4]=3$, nessun figlio destro
-    - $4 > 3$: nessuno scambio, termina
+    - $A[1] = 4$, figli: $A[2] = 7$, $A[3] = 6$. Massimo: 7, scambio $A[1] arrow.l.r A[2]$
+    - Risultato: $[7, 4, 6, 3, 8, 9]$
+    - Ricorsione su posizione 2: $A[2] = 4$, figli: $A[4] = 3$, nessun figlio destro. $4 > 3$: nessuno scambio
 
-  *Dettaglio iterazione 3*:
-  - Scambio $A[1]=7$ con $A[4]=3$: array $= [3, 4, 6, 7, 8, 9]$
-  - Riduco heapsize a 3
+  *Dettaglio iterazione 3* ($i = 4$):
+  - Scambio $A[1] = 7$ con $A[4] = 3$: array $= [3, 4, 6, 7, 8, 9]$
+  - Riduco `heapsize` a 3
   - `Max-Heapify(A, 1, 3)`:
-    - $A[1]=3$, figli: $A[2]=4$, $A[3]=6$
-    - Massimo: 6, scambio $A[1]$ con $A[3]$: $[6, 4, 3, 7, 8, 9]$
-    - Ricorsione su posizione 3: è una foglia, termina
+    - $A[1] = 3$, figli: $A[2] = 4$, $A[3] = 6$. Massimo: 6, scambio $A[1] arrow.l.r A[3]$
+    - Risultato: $[6, 4, 3, 7, 8, 9]$
 
-  *Dettaglio iterazione 4*:
-  - Scambio $A[1]=6$ con $A[3]=3$: array $= [3, 4, 6, 7, 8, 9]$
-  - Riduco heapsize a 2
+  *Dettaglio iterazione 4* ($i = 3$):
+  - Scambio $A[1] = 6$ con $A[3] = 3$: array $= [3, 4, 6, 7, 8, 9]$
+  - Riduco `heapsize` a 2
   - `Max-Heapify(A, 1, 2)`:
-    - $A[1]=3$, figlio sinistro: $A[2]=4$
-    - Massimo: 4, scambio $A[1]$ con $A[2]$: $[4, 3, 6, 7, 8, 9]$
+    - $A[1] = 3$, figlio sinistro: $A[2] = 4$. Scambio $A[1] arrow.l.r A[2]$
+    - Risultato: $[4, 3, 6, 7, 8, 9]$
 
-  *Dettaglio iterazione 5*:
-  - Scambio $A[1]=4$ con $A[2]=3$: array $= [3, 4, 6, 7, 8, 9]$
-  - Riduco heapsize a 1
+  *Dettaglio iterazione 5* ($i = 2$):
+  - Scambio $A[1] = 4$ con $A[2] = 3$: array $= [3, 4, 6, 7, 8, 9]$
+  - Riduco `heapsize` a 1
   - `Max-Heapify(A, 1, 1)`: un solo elemento, nulla da fare
 
-  *Risultato finale*: $[3, 4, 6, 7, 8, 9]$ (array ordinato in ordine crescente)
+  *Risultato finale*: $A = [3, 4, 6, 7, 8, 9]$ -- l'array e ordinato in ordine crescente.
 ]
 
-=== Code di Priorità
+=== Code di priorita
 
-#definition(title: "Coda di priorità")[
-  Una *coda di priorità* è una struttura dati che mantiene un insieme $S$ di elementi, ognuno con una *chiave* (priorità) associata, e supporta le seguenti operazioni:
-  - `Insert(S, x)`: inserisce $x$ in $S$
-  - `Maximum(S)`: restituisce l'elemento con chiave massima
-  - `Extract-Max(S)`: rimuove e restituisce l'elemento con chiave massima
-  - `Increase-Key(S, x, k)`: aumenta la chiave di $x$ al nuovo valore $k$
+Una coda di priorita e una struttura dati astratta che mantiene una collezione dinamica di elementi, ciascuno dotato di una *chiave* (o _priorita_), e supporta operazioni efficienti di inserimento ed estrazione dell'elemento con chiave massima (o minima). Le code di priorita sono alla base di numerosi algoritmi fondamentali.
+
+#definition(title: "Coda di priorita (max)")[
+  Una *coda di priorita max* e una struttura dati che mantiene un insieme dinamico $S$ di elementi, ciascuno con una chiave associata, e supporta le seguenti operazioni:
+  - `Maximum(S)`: restituisce l'elemento di $S$ con chiave massima, senza modificare $S$.
+  - `Extract-Max(S)`: rimuove e restituisce l'elemento di $S$ con chiave massima.
+  - `Increase-Key(S, x, k)`: aumenta la chiave dell'elemento $x$ al nuovo valore $k >= A[x]$.
+  - `Insert(S, x)`: inserisce un nuovo elemento $x$ in $S$.
 ]
 
-=== Applicazioni
+==== Applicazioni
 
-- Scheduling di processi (priorità = importanza del processo)
-- Simulazione di eventi discreti (priorità = tempo dell'evento)
-- Algoritmo di Dijkstra (priorità = distanza stimata)
-- Algoritmo di Prim per MST
+Le code di priorita trovano impiego in numerosi contesti:
+- *Scheduling di processi*: il sistema operativo seleziona il processo con priorita piu alta da eseguire.
+- *Simulazione di eventi discreti*: gli eventi vengono estratti in ordine cronologico (priorita = tempo dell'evento).
+- *Algoritmo di Dijkstra*: coda di priorita min per estrarre il vertice con distanza stimata minima.
+- *Algoritmo di Prim*: per la costruzione dell'albero di copertura minimo (MST).
 
-=== Implementazione con Max-Heap
+==== Implementazione con Max-Heap
 
-==== Maximum
+Un max-heap fornisce un'implementazione naturale ed efficiente di una coda di priorita max.
 
-```
-int heapMaximum(int[] A){
-    return A[1];
-}
-```
-Complessità: $O(1)$
+===== Maximum
 
-==== Extract-Max
+L'operazione piu semplice: il massimo e sempre la radice dell'heap.
 
-```
-int heapExtractMax(int[] A, int heapsize){
-    if(heapsize < 1){
-        // error "heap underflow"
-        return -1;
-    }
-    int max = A[1];
-    A[1] := A[heapsize];
-    heapsize := heapsize - 1;
-    maxHeapify(A, 1, heapsize);
-    return max;
-}
-```
-Complessità: $O(log n)$
+#algorithm(title: "Heap-Maximum")[
+  ```
+  int heapMaximum(int[] A){
+      return A[1];
+  }
+  ```
+]
 
-==== Increase-Key
+Complessita: $O(1)$.
 
-```
-heapIncreaseKey(int[] A, int i, int key){
-    if(key < A[i]){
-        // error "nuova chiave minore della precedente"
-        return;
-    }
-    A[i] := key;
-    // Risali verso la radice finché necessario
-    while((i > 1) && (A[parent(i)] < A[i])){
-        int temp = A[i];
-        A[i] := A[parent(i)];
-        A[parent(i)] := temp;
-        i := parent(i);
-    }
-}
-```
-Complessità: $O(log n)$
+===== Extract-Max
 
-==== Insert
+Si salva il valore della radice, si sostituisce la radice con l'ultimo elemento dell'heap, si riduce la dimensione e si invoca `Max-Heapify` per ripristinare la proprieta.
 
-```
-heapInsert(int[] A, int key, int heapsize){
-    heapsize := heapsize + 1;
-    A[heapsize] := -∞;
-    heapIncreaseKey(A, heapsize, key);
-}
-```
-Complessità: $O(log n)$
+#algorithm(title: "Heap-Extract-Max")[
+  ```
+  int heapExtractMax(int[] A, int heapsize){
+      if(heapsize < 1){
+          // errore: heap vuoto (underflow)
+          return -1;
+      }
+      int max = A[1];
+      A[1] := A[heapsize];
+      heapsize := heapsize - 1;
+      maxHeapify(A, 1, heapsize);
+      return max;
+  }
+  ```
+]
 
-=== Riepilogo complessità
+Complessita: $O(log n)$, dominata dalla chiamata a `Max-Heapify`.
+
+===== Increase-Key
+
+Per aumentare la chiave di un elemento, si aggiorna il valore e si fa "risalire" l'elemento verso la radice (_sift-up_), scambiandolo con il padre finche la proprieta di max-heap non e ripristinata.
+
+#algorithm(title: "Heap-Increase-Key")[
+  ```
+  heapIncreaseKey(int[] A, int i, int key){
+      if(key < A[i]){
+          // errore: la nuova chiave e minore della precedente
+          return;
+      }
+      A[i] := key;
+      // Risali verso la radice finche necessario
+      while((i > 1) && (A[parent(i)] < A[i])){
+          int temp = A[i];
+          A[i] := A[parent(i)];
+          A[parent(i)] := temp;
+          i := parent(i);
+      }
+  }
+  ```
+]
+
+Complessita: $O(log n)$. Nel caso pessimo l'elemento risale dalla foglia fino alla radice, percorrendo $O(log n)$ livelli.
+
+===== Insert
+
+Per inserire un nuovo elemento, si estende l'heap di una posizione in fondo, si inserisce un valore "sentinella" $-infinity$ e si invoca `Increase-Key` per portare la chiave al valore desiderato.
+
+#algorithm(title: "Heap-Insert")[
+  ```
+  heapInsert(int[] A, int key, int heapsize){
+      heapsize := heapsize + 1;
+      A[heapsize] := -∞;
+      heapIncreaseKey(A, heapsize, key);
+  }
+  ```
+]
+
+Complessita: $O(log n)$, dominata dalla chiamata a `Increase-Key`.
+
+#example(title: "Operazioni su una coda di priorita")[
+  Partiamo dal max-heap $A = [16, 14, 10, 8, 7, 9, 3, 2, 4, 1]$ con $"heapsize" = 10$.
+
+  *Operazione 1: Maximum*
+  - Restituisce $A[1] = 16$. L'heap non cambia.
+
+  *Operazione 2: Extract-Max*
+  - Si salva $max = A[1] = 16$
+  - Si pone $A[1] := A[10] = 1$, si riduce `heapsize` a 9
+  - Array: $[1, 14, 10, 8, 7, 9, 3, 2, 4]$
+  - `Max-Heapify(A, 1, 9)`:
+    - $A[1] = 1$, figli: $14$, $10$. Scambio con 14 (posizione 2)
+    - $A[2] = 1$, figli: $8$, $7$. Scambio con 8 (posizione 4)
+    - $A[4] = 1$, figli: $2$, $4$. Scambio con 4 (posizione 9)
+  - Risultato: $A = [14, 8, 10, 4, 7, 9, 3, 2, 1]$, restituisce 16
+
+  *Operazione 3: Increase-Key(A, 9, 15)* (aumento la chiave in posizione 9 a 15)
+  - Si pone $A[9] := 15$
+  - Array: $[14, 8, 10, 4, 7, 9, 3, 2, 15]$
+  - Risalita: $A[9] = 15 > A[4] = 4$, scambio. Array: $[14, 8, 10, 15, 7, 9, 3, 2, 4]$
+  - Risalita: $A[4] = 15 > A[2] = 8$, scambio. Array: $[14, 15, 10, 8, 7, 9, 3, 2, 4]$
+  - Risalita: $A[2] = 15 > A[1] = 14$, scambio. Array: $[15, 14, 10, 8, 7, 9, 3, 2, 4]$
+  - $i = 1$: radice raggiunta, terminazione
+
+  *Operazione 4: Insert(A, 12)* con $"heapsize" = 9$
+  - Si pone $"heapsize" := 10$, $A[10] := -infinity$
+  - `Increase-Key(A, 10, 12)`: $A[10] := 12$
+  - Risalita: $A[10] = 12 > A[5] = 7$, scambio. Array con $A[5] = 12$, $A[10] = 7$
+  - Risalita: $A[5] = 12 < A[2] = 14$: nessuno scambio, terminazione
+  - Risultato: $A = [15, 14, 10, 8, 12, 9, 3, 2, 4, 7]$
+]
+
+==== Riepilogo complessita
 
 #figure(
   table(
     columns: 3,
-    [*Operazione*], [*Heap*], [*Array non ordinato*],
+    align: center,
+    [*Operazione*], [*Max-Heap*], [*Array non ordinato*],
     [`Maximum`], [$O(1)$], [$O(n)$],
     [`Extract-Max`], [$O(log n)$], [$O(n)$],
     [`Insert`], [$O(log n)$], [$O(1)$],
     [`Increase-Key`], [$O(log n)$], [$O(1)$],
   ),
-  caption: [Confronto implementazioni code di priorità]
+  caption: [Confronto delle complessita per le operazioni sulle code di priorita]
 )
 
-#note[
-  Lo heap offre un buon compromesso: tutte le operazioni hanno costo logaritmico, mentre con un array non ordinato alcune operazioni sono costanti ma `Maximum` ed `Extract-Max` richiedono tempo lineare.
+#note(title: "Compromesso dell'implementazione con heap")[
+  L'implementazione con max-heap offre un buon compromesso: tutte e quattro le operazioni hanno costo al piu logaritmico. Con un array non ordinato, `Insert` e `Increase-Key` sono $O(1)$, ma `Maximum` ed `Extract-Max` richiedono una scansione lineare $O(n)$. Simmetricamente, con un array ordinato `Maximum` ed `Extract-Max` sono $O(1)$, ma l'inserimento richiede $O(n)$ per mantenere l'ordinamento.
 ]
